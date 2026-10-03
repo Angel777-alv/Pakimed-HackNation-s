@@ -15,19 +15,19 @@
 </head>
 <body>
 
-  <!-- Barra Superior de Control para el Pitch -->
+  <!-- Barra Superior de Control Institucional -->
   <header class="pitch-header">
     <div class="pitch-header-content">
       <div class="brand-group">
-        <span class="hackathon-tag">Global AI Hackathon 2026 &middot; Salud</span>
-        <h1 class="main-title">Pakimed &middot; Registro Clínico por Voz sin Internet</h1>
+        <span class="hackathon-tag">Pakimed Enterprise Health &middot; Telemedicina Rural</span>
+        <h1 class="main-title">Pakimed &middot; Asistente Clínico Inteligente On-Device</h1>
       </div>
       <div class="pitch-actions">
-        <button id="btnQuickDemo" class="btn btn-pitch-demo" title="Recorre todo el flujo automáticamente en 3 segundos">
-          ⚡ Probar Demo Completa (1 Clic)
+        <button id="btnQuickDemo" class="btn btn-pitch-demo" title="Demostración guiada del flujo de consulta clínica">
+          ⚡ Demostración de Flujo Clínico
         </button>
         <button id="networkToggle" class="btn btn-network-toggle">
-          Simular: Detectar señal de internet (3G)
+          Conectividad: Simular Red Móvil (3G)
         </button>
       </div>
     </div>
@@ -48,7 +48,7 @@
           <span id="phoneClock" class="clock-display">10:42</span>
           <div class="phone-speaker-notch"></div>
           <div class="phone-status-pills">
-            <span id="phoneBadge" class="status-pill offline">🚫 100% Sin señal</span>
+            <span id="phoneBadge" class="status-pill offline">Modo Local (Sin red)</span>
             <span class="battery-readout">🔋 94%</span>
           </div>
         </div>
@@ -59,29 +59,29 @@
             <span class="mobile-logo-circle">🎙️</span>
             <div>
               <h2 class="mobile-app-title">Pakimed</h2>
-              <p class="mobile-app-subtitle">📍 Consultorio Comunitario Rural</p>
+              <p class="mobile-app-subtitle">📍 Centro de Salud Comunitario</p>
             </div>
           </div>
-          <span class="offline-mode-chip">Funciona 100% sin internet</span>
+          <span class="offline-mode-chip">Almacenamiento Local Seguro</span>
         </div>
 
         <!-- Pestañas de Paso a Paso -->
-        <nav class="mobile-stepper" aria-label="Progreso">
+        <nav class="mobile-stepper" aria-label="Progreso de la Consulta">
           <button class="step-tab active" data-step="1">
             <span class="step-num">1</span>
             <span class="step-text">Dictado</span>
           </button>
           <button class="step-tab" data-step="2">
             <span class="step-num">2</span>
-            <span class="step-text">Procesando</span>
+            <span class="step-text">Estructuración</span>
           </button>
           <button class="step-tab" data-step="3">
             <span class="step-num">3</span>
-            <span class="step-text">Revisión</span>
+            <span class="step-text">Validación</span>
           </button>
           <button class="step-tab" data-step="4">
             <span class="step-num">4</span>
-            <span class="step-text">Guardado</span>
+            <span class="step-text">Expediente</span>
           </button>
         </nav>
 
@@ -94,39 +94,53 @@
           <div class="phone-screen-view active" data-screen="1">
             
             <div class="phone-card">
-              <label class="field-title" for="scenarioSelect">Casos de prueba para demostración:</label>
+              <label class="field-title" for="scenarioSelect">Plantillas de Consulta Rápida:</label>
               <select id="scenarioSelect" class="clean-select"></select>
 
-              <!-- Animación de Onda de Voz -->
-              <div class="wave-visualizer">
-                <span class="wave-stick"></span>
-                <span class="wave-stick tall"></span>
-                <span class="wave-stick"></span>
-                <span class="wave-stick taller"></span>
-                <span class="wave-stick"></span>
-                <span class="wave-stick tall"></span>
-                <span class="wave-stick"></span>
+              <!-- Indicadores de Audio y Onda -->
+              <div class="audio-feedback-container">
+                <div id="recordTimerBadge" class="record-timer-badge hidden">
+                  <span class="recording-dot"></span>
+                  <span id="recordTimerText">00:00</span>
+                  <span class="record-timer-label">&middot; Grabando consulta</span>
+                </div>
+
+                <div id="waveVisualizer" class="wave-visualizer dormant">
+                  <span class="wave-stick"></span>
+                  <span class="wave-stick tall"></span>
+                  <span class="wave-stick"></span>
+                  <span class="wave-stick taller"></span>
+                  <span class="wave-stick"></span>
+                  <span class="wave-stick tall"></span>
+                  <span class="wave-stick"></span>
+                </div>
               </div>
 
               <!-- Botón Principal del Micrófono -->
               <div class="mic-trigger-wrap">
-                <button id="micBtn" class="big-mic-button" aria-label="Iniciar dictado">
-                  🎤
+                <button id="micBtn" class="big-mic-button" aria-label="Iniciar captura de audio clínico">
+                  <span id="micIcon" class="mic-icon">🎤</span>
                 </button>
-                <p id="micStatusText" class="mic-helper-text">Toca para dictar por voz</p>
+                <p id="micStatusText" class="mic-helper-text">Toca para iniciar captura de audio</p>
+                
+                <!-- Indicador de Carga / Procesamiento de Audio -->
+                <div id="audioProcessingIndicator" class="audio-processing-indicator hidden">
+                  <div class="mini-spinner"></div>
+                  <span>Procesando audio localmente...</span>
+                </div>
               </div>
 
               <!-- Texto Dictado -->
               <div class="transcript-card">
                 <div class="transcript-header-row">
-                  <span class="transcript-label">Lo que el médico dijo:</span>
-                  <span class="privacy-label">🔒 Cero datos a la nube</span>
+                  <span class="transcript-label">Transcripción del Dictado Médico:</span>
+                  <span class="privacy-label">🔒 Confidencialidad On-Device</span>
                 </div>
-                <textarea id="dictationText" class="transcript-box" placeholder="El texto dictado aparecerá aquí..."></textarea>
+                <textarea id="dictationText" class="transcript-box" placeholder="El dictado clínico estructurado aparecerá aquí..."></textarea>
               </div>
 
               <button id="processBtn" class="btn btn-action-main full-width">
-                Organizar datos de la consulta &rarr;
+                Estructurar Datos Clínicos &rarr;
               </button>
             </div>
 
@@ -138,12 +152,12 @@
           <div class="phone-screen-view" data-screen="2">
             <div class="phone-card text-center padding-lg">
               <div class="loading-spinner"></div>
-              <h3 class="step-heading">Organizando en el teléfono</h3>
+              <h3 class="step-heading">Estructuración Clínica Local</h3>
               <p id="processingStepText" class="step-desc">
-                Extrayendo signos vitales y datos del paciente...
+                Extrayendo signos vitales y entidades clínicas en el dispositivo...
               </p>
               <div class="local-guarantee-box">
-                <p>⚙️ <strong>100% en este dispositivo:</strong> Tu audio no viaja a ningún servidor comercial ni sale de este teléfono.</p>
+                <p>⚙️ <strong>Privacidad del Paciente:</strong> El procesamiento del lenguaje y audio se ejecuta en la memoria local, sin transmisión externa de datos sensibles.</p>
               </div>
             </div>
           </div>
@@ -153,15 +167,15 @@
                ---------------------------------------------------- -->
           <div class="phone-screen-view" data-screen="3">
             
-            <!-- Banner de Seguridad Ética -->
+            <!-- Banner de Protocolo Clínico -->
             <div id="guardrailAlert" class="safety-banner secure">
-              🛡️ <strong>Seguridad garantizada:</strong> La IA solo organizó lo que dictaste. No agregó diagnósticos ni recetas por su cuenta.
+              🛡️ <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión y firma médica.
             </div>
 
             <div class="phone-card">
               <div class="card-title-row">
-                <h3 class="card-heading-clean">📋 Resumen de la Consulta</h3>
-                <button id="btnOpenEdit" class="btn-edit-pill">✏️ Modificar datos</button>
+                <h3 class="card-heading-clean">📋 Expediente Clínico Estructurado</h3>
+                <button id="btnOpenEdit" class="btn-edit-pill">✏️ Ajustar Registro</button>
               </div>
 
               <!-- Signos Vitales (Directos y Claros) -->
@@ -187,7 +201,7 @@
 
               <!-- Síntomas -->
               <div class="summary-block">
-                <span class="block-title">Síntomas reportados:</span>
+                <span class="block-title">Síntomas registrados:</span>
                 <div id="prevSymptoms" class="tag-row">
                   <span class="tag-pill symptom">tos seca</span>
                   <span class="tag-pill symptom">fiebre</span>
@@ -196,7 +210,7 @@
 
               <!-- Medicación -->
               <div class="summary-block">
-                <span class="block-title">Medicamentos indicados por el médico:</span>
+                <span class="block-title">Esquema terapéutico indicado:</span>
                 <div id="prevMeds" class="rx-stack">
                   <div class="rx-row">
                     <span class="rx-badge">💊 Receta</span>
@@ -210,17 +224,17 @@
 
               <!-- Respaldo del Audio Dictado -->
               <div class="summary-block">
-                <span class="block-title">Respaldo del dictado original:</span>
+                <span class="block-title">Transcripción original de referencia:</span>
                 <p id="prevNotes" class="quote-text">"Notas originales..."</p>
               </div>
 
               <!-- Botones de Visto Bueno -->
               <div class="approval-buttons">
                 <button class="btn btn-secondary-clean" onclick="window.pakimedApp.goToScreen(1)">
-                  Volver a dictar
+                  Reanudar dictado
                 </button>
                 <button id="approveBtn" class="btn btn-approve-main">
-                  ✓ Aprobar y Guardar
+                  ✓ Validar y Registrar en Expediente
                 </button>
               </div>
             </div>
@@ -233,15 +247,15 @@
           <div class="phone-screen-view" data-screen="4">
             <div class="phone-card text-center padding-lg">
               <div class="success-icon-badge">✓</div>
-              <h3 class="step-heading">¡Consulta Guardada!</h3>
+              <h3 class="step-heading">Expediente Clínico Registrado</h3>
               <p class="step-desc">
-                El expediente se guardó de forma segura en la memoria de este teléfono.
+                La consulta se ha almacenado de forma segura e inmutable en el almacenamiento local del dispositivo.
               </p>
               <div class="offline-notice-box">
-                <p>⏳ En cuanto el teléfono detecte señal de internet (3G o Wi-Fi), se enviará automáticamente al sistema oficial de salud pública.</p>
+                <p>⏳ <strong>Sincronización Store-and-Forward:</strong> En cuanto se detecte conectividad institucional (3G / Wi-Fi), el expediente se integrará automáticamente al sistema central de salud.</p>
               </div>
               <button class="btn btn-action-main full-width margin-top-md" onclick="window.pakimedApp.goToScreen(1)">
-                + Atender a otro paciente
+                + Iniciar Nueva Consulta
               </button>
             </div>
           </div>
@@ -254,53 +268,53 @@
 
 
     <!-- ====================================================================
-         LADO DERECHO: Consola de Demostración para los Jueces
+         LADO DERECHO: Centro de Telemetría Institucional
          ==================================================================== -->
-    <section class="demo-console-column" aria-label="Consola de Demostración">
+    <section class="demo-console-column" aria-label="Centro de Telemetría">
       
       <div class="console-wrapper">
         
         <div class="console-header">
-          <span class="console-tag">Monitoreo en Tiempo Real para Jueces</span>
-          <h2 class="console-title">Qué está pasando detrás de escena</h2>
-          <p class="console-subtitle">Comprobación técnica de funcionamiento 100% local y conexión con el sistema de salud.</p>
+          <span class="console-tag">Centro de Control y Telemetría Institucional</span>
+          <h2 class="console-title">Monitoreo de Datos y Sincronización</h2>
+          <p class="console-subtitle">Auditoría en tiempo real de procesamiento on-device, validación médica y conformidad con estándares de salud pública.</p>
         </div>
 
-        <!-- Cuadrícula de Pruebas Técnicas -->
+        <!-- Cuadrícula de Métricas Técnicas -->
         <div class="metrics-grid">
           
           <!-- Métrica 1: Cero Tráfico a Internet -->
           <div class="metric-card">
             <div class="metric-top">
-              <span class="metric-name">Datos enviados a internet</span>
-              <span class="pill-green">100% Privado</span>
+              <span class="metric-name">Tráfico Externo Durante Consulta</span>
+              <span class="pill-green">Confinamiento Local</span>
             </div>
             <div id="telemBytes" class="metric-huge">0.0 KB</div>
-            <p class="metric-explain">Ningún dato sensible ni audio del paciente sale del teléfono.</p>
+            <p class="metric-explain">Total ausencia de peticiones externas durante la atención clínica.</p>
           </div>
 
           <!-- Métrica 2: Guardarraíl Ético -->
           <div class="metric-card">
             <div class="metric-top">
-              <span class="metric-name">Seguridad Ética (IEEE 7000)</span>
-              <span class="pill-green">Verificado</span>
+              <span class="metric-name">Supervisión Clínica y Guardarraíles</span>
+              <span class="pill-green">Validado</span>
             </div>
             <div id="telemSafety" class="metric-status-line">
-              <span class="dot-ok"></span> Cumple regla de No-Diagnóstico
+              <span class="dot-ok"></span> Protocolo de Transcripción Fiel Activo
             </div>
-            <p class="metric-explain">La IA solo transcribe. Jamás inventa diagnósticos ni tratamientos médicos.</p>
+            <p class="metric-explain">Prevención activa de inferencias diagnósticas no avaladas por el facultativo.</p>
           </div>
 
           <!-- Métrica 3: Estado de Red -->
           <div class="metric-card full-width-metric">
             <div class="metric-top">
-              <span class="metric-name">Estado de Conectividad</span>
-              <span class="pill-neutral">Simulador</span>
+              <span class="metric-name">Canal de Conectividad</span>
+              <span class="pill-neutral">Store &amp; Forward</span>
             </div>
             <div id="telemNetwork" class="metric-network-state">
-              Sin conexión a internet (Modo autónomo)
+              Modo Autónomo Local (Almacenamiento Seguro)
             </div>
-            <p class="metric-explain">Usa el botón superior para simular que el médico llega a una zona con cobertura.</p>
+            <p class="metric-explain">Los expedientes se resguardan en cola local cifrada hasta restablecer enlace institucional.</p>
           </div>
 
         </div>
@@ -309,16 +323,16 @@
         <div class="console-card">
           <div class="card-header-actions">
             <div>
-              <h3 class="console-card-title">📦 Consultas guardadas en la memoria del teléfono</h3>
-              <p class="console-card-desc">Esperando señal de internet para sincronizarse en lote:</p>
+              <h3 class="console-card-title">📦 Cola Local de Expedientes Clínicos</h3>
+              <p class="console-card-desc">Registros almacenados localmente a la espera de enlace institucional:</p>
             </div>
             <button id="syncAllBtn" class="btn btn-sync-cloud">
-              Enviar consultas pendientes
+              Sincronizar Lote con DHIS2
             </button>
           </div>
 
           <div id="syncStatusAlert" class="sync-info-banner">
-            Las consultas se guardan de forma local e inmediata, sin riesgo de perderse por falta de señal.
+            Los expedientes se preservan íntegros en almacenamiento local ante cortes de energía o cobertura.
           </div>
 
           <div id="queueList" class="queue-list-items"></div>
@@ -328,13 +342,13 @@
         <div class="console-card">
           <div class="card-header-actions">
             <div>
-              <h3 class="console-card-title">🏥 Datos generados para el Sistema de Salud (DHIS2)</h3>
-              <p class="console-card-desc">Estructura oficial lista para incorporarse al sistema nacional:</p>
+              <h3 class="console-card-title">🏥 Integración con Sistema de Salud (DHIS2)</h3>
+              <p class="console-card-desc">Carga estructurada según estándar oficial DHIS2 Tracker / Event API:</p>
             </div>
-            <span class="standard-pill">Estándar Global DHIS2</span>
+            <span class="standard-pill">DHIS2 Compliant</span>
           </div>
 
-          <pre id="dhis2JsonViewer" class="json-viewer-screen">// Al aprobar una consulta, aquí verás los datos estructurados en formato oficial DHIS2</pre>
+          <pre id="dhis2JsonViewer" class="json-viewer-screen">// Al validar una consulta, aquí se generará el objeto estructurado en formato DHIS2</pre>
         </div>
 
       </div>
@@ -350,13 +364,13 @@
   <div id="editModal" class="clean-modal-backdrop" aria-hidden="true" role="dialog">
     <div class="clean-modal-card">
       <div class="modal-card-top">
-        <h3 class="modal-card-title">✏️ Corregir o completar datos del paciente</h3>
+        <h3 class="modal-card-title">✏️ Ajustar Registro Clínico del Paciente</h3>
         <button id="btnCloseModal" class="btn-close-x" aria-label="Cerrar">&times;</button>
       </div>
 
       <div class="modal-card-content">
         <p class="modal-card-intro">
-          El médico tiene siempre la última palabra. Puedes ajustar cualquier valor antes de guardar:
+          El criterio facultativo prevalece sobre cualquier inferencia automatizada. Valide o modifique los valores antes del registro definitivo:
         </p>
 
         <div class="form-row-2">
@@ -390,24 +404,24 @@
         </div>
 
         <div class="form-item">
-          <label class="item-label" for="fieldSymptoms">Síntomas reportados (separados por coma):</label>
+          <label class="item-label" for="fieldSymptoms">Síntomas registrados (separados por coma):</label>
           <input type="text" id="fieldSymptoms" class="clean-input" placeholder="Ej: fiebre, tos seca, dolor de cabeza">
         </div>
 
         <div class="form-item">
-          <label class="item-label" for="fieldMeds">Medicamentos recetados por el médico:</label>
+          <label class="item-label" for="fieldMeds">Medicamentos e indicaciones facultativas:</label>
           <input type="text" id="fieldMeds" class="clean-input" placeholder="Ej: Paracetamol 500mg cada 8 horas">
         </div>
 
         <div class="form-item">
-          <label class="item-label" for="fieldNotes">Notas adicionales:</label>
+          <label class="item-label" for="fieldNotes">Observaciones clínicas de respaldo:</label>
           <textarea id="fieldNotes" class="clean-textarea" rows="2"></textarea>
         </div>
       </div>
 
       <div class="modal-card-bottom">
         <button id="btnCancelEdit" class="btn btn-secondary-clean">Cancelar</button>
-        <button id="btnSaveEdit" class="btn btn-action-main">Guardar cambios</button>
+        <button id="btnSaveEdit" class="btn btn-action-main">Guardar Registro</button>
       </div>
     </div>
   </div>

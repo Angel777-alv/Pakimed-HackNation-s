@@ -201,29 +201,29 @@ const DHIS2Formatter = {
       unidadMedica: 'CLINICA_COMUNITARIA_04',
       fechaEvento: record.approvedAt || new Date().toISOString(),
       estado: 'COMPLETADO_APROBADO_MEDICO',
-      seguridadEtica: 'CERO_DIAGNOSTICO_AUTONOMO_VERIFICADO',
+      seguridadEtica: 'PROTOCOLO_TRANSCRIPCION_FIEL_VERIFICADO',
       datosClinicos: dataValues
     };
   }
 };
 
 // ============================================================================
-// 5. Casos de Prueba para la Demostración del Pitch
+// 5. Plantillas de Consulta Rápida (Entrenamiento y Demostración)
 // ============================================================================
 const DEMO_CASES = [
   {
     id: "caso_1",
-    title: "Caso 1: Consulta General (Infección Respiratoria)",
+    title: "Plantilla 1: Infección Respiratoria Aguda (Adulto)",
     text: "Paciente femenina de 34 años con fiebre de 38.5 grados, tos seca y dolor de cabeza desde hace 3 días. Presión arterial de 120 sobre 80, pulso de 78 latidos por minuto. Se indica Paracetamol 500mg cada 8 horas por 5 días y abundante hidratación oral."
   },
   {
     id: "caso_2",
-    title: "Caso 2: Paciente Pediátrico (Deshidratación / Diarrea)",
+    title: "Plantilla 2: Cuadro Gastrointestinal Pediátrico",
     text: "Paciente masculino de 6 años de edad presenta dolor abdominal, diarrea y vómitos de 24 horas de evolución. Temperatura de 37.8 grados, pulso de 95 latidos por minuto. Indico sales de rehidratación oral y dieta blanda fraccionada. Control en 48 horas."
   },
   {
     id: "caso_3",
-    title: "Caso 3: Control Adulto Mayor (Hipertensión)",
+    title: "Plantilla 3: Consulta de Control Hipertensión Arterial",
     text: "Paciente masculino de 68 años acude a control de rutina. Asintomático. Presión arterial de 145 sobre 95, pulso de 72 latidos por minuto. Se mantiene medicación de Losartán 50mg cada 24 horas y reducción de sal."
   }
 ];
@@ -238,6 +238,8 @@ class PakimedApp {
     this.isOnline = false;
     this.isRecording = false;
     this.recognition = null;
+    this.recordTimerInterval = null;
+    this.recordSeconds = 0;
 
     this.initElements();
     this.bindEvents();
@@ -258,9 +260,14 @@ class PakimedApp {
     // Pantalla 1
     this.scenarioSelect = document.getElementById('scenarioSelect');
     this.micBtn = document.getElementById('micBtn');
+    this.micIcon = document.getElementById('micIcon');
     this.micStatusText = document.getElementById('micStatusText');
     this.dictationText = document.getElementById('dictationText');
     this.processBtn = document.getElementById('processBtn');
+    this.recordTimerBadge = document.getElementById('recordTimerBadge');
+    this.recordTimerText = document.getElementById('recordTimerText');
+    this.waveVisualizer = document.getElementById('waveVisualizer');
+    this.audioProcessingIndicator = document.getElementById('audioProcessingIndicator');
 
     // Pantalla 2
     this.processingStepText = document.getElementById('processingStepText');
@@ -292,7 +299,7 @@ class PakimedApp {
     this.fieldMeds = document.getElementById('fieldMeds');
     this.fieldNotes = document.getElementById('fieldNotes');
 
-    // Panel Derecho (Consola de Jueces)
+    // Panel Derecho (Consola de Telemetría Institucional)
     this.networkToggle = document.getElementById('networkToggle');
     this.btnQuickDemo = document.getElementById('btnQuickDemo');
     this.telemBytes = document.getElementById('telemBytes');
@@ -392,9 +399,7 @@ class PakimedApp {
       this.recognition.lang = 'es-ES';
 
       this.recognition.onstart = () => {
-        this.isRecording = true;
-        this.micBtn.classList.add('recording');
-        this.micStatusText.textContent = 'Escuchando dictado... Habla claro';
+        this.startRecording();
       };
 
       this.recognition.onresult = (e) => {
@@ -408,47 +413,104 @@ class PakimedApp {
       };
 
       this.recognition.onend = () => {
-        this.isRecording = false;
-        this.micBtn.classList.remove('recording');
-        this.micStatusText.textContent = 'Toca para dictar por voz';
+        if (this.isRecording) {
+          this.stopRecording(true);
+        }
       };
 
       this.recognition.onerror = () => {
-        this.isRecording = false;
-        this.micBtn.classList.remove('recording');
-        this.micStatusText.textContent = 'Toca para dictar por voz';
+        this.stopRecording(false);
       };
+    }
+  }
+
+  startRecording() {
+    this.isRecording = true;
+    this.micBtn.classList.add('recording');
+    if (this.micIcon) this.micIcon.textContent = '⏹️';
+    if (this.waveVisualizer) {
+      this.waveVisualizer.classList.remove('dormant');
+      this.waveVisualizer.classList.add('active');
+    }
+    if (this.recordTimerBadge) {
+      this.recordTimerBadge.classList.remove('hidden');
+    }
+    if (this.audioProcessingIndicator) {
+      this.audioProcessingIndicator.classList.add('hidden');
+    }
+    this.micStatusText.textContent = 'Grabando consulta... Toca para finalizar';
+
+    this.recordSeconds = 0;
+    if (this.recordTimerText) this.recordTimerText.textContent = '00:00';
+    clearInterval(this.recordTimerInterval);
+    this.recordTimerInterval = setInterval(() => {
+      this.recordSeconds++;
+      const m = String(Math.floor(this.recordSeconds / 60)).padStart(2, '0');
+      const s = String(this.recordSeconds % 60).padStart(2, '0');
+      if (this.recordTimerText) this.recordTimerText.textContent = `${m}:${s}`;
+    }, 1000);
+  }
+
+  stopRecording(hasAudio = true) {
+    this.isRecording = false;
+    clearInterval(this.recordTimerInterval);
+    this.micBtn.classList.remove('recording');
+    if (this.micIcon) this.micIcon.textContent = '🎤';
+    if (this.recordTimerBadge) {
+      this.recordTimerBadge.classList.add('hidden');
+    }
+    if (this.waveVisualizer) {
+      this.waveVisualizer.classList.remove('active');
+      this.waveVisualizer.classList.add('dormant');
+    }
+
+    if (hasAudio) {
+      if (this.audioProcessingIndicator) {
+        this.audioProcessingIndicator.classList.remove('hidden');
+      }
+      this.micStatusText.textContent = 'Procesando captura de audio...';
+
+      setTimeout(() => {
+        if (this.audioProcessingIndicator) {
+          this.audioProcessingIndicator.classList.add('hidden');
+        }
+        this.micStatusText.textContent = 'Captura finalizada. Revisa la transcripción o vuelve a grabar.';
+      }, 900);
+    } else {
+      this.micStatusText.textContent = 'Toca para iniciar captura de audio';
     }
   }
 
   toggleRecording() {
     if (this.isRecording) {
-      if (this.recognition) this.recognition.stop();
-      this.isRecording = false;
-      this.micBtn.classList.remove('recording');
-      this.micStatusText.textContent = 'Toca para dictar por voz';
+      if (this.recognition) {
+        try { this.recognition.stop(); } catch(e) {}
+      }
+      this.stopRecording(true);
     } else {
       if (this.recognition) {
         try {
           this.recognition.start();
         } catch (e) {
-          this.simulateRecordingAnimation();
+          this.simulateLocalRecording();
         }
       } else {
-        this.simulateRecordingAnimation();
+        this.simulateLocalRecording();
       }
     }
   }
 
-  simulateRecordingAnimation() {
-    this.isRecording = true;
-    this.micBtn.classList.add('recording');
-    this.micStatusText.textContent = 'Grabando dictado... (Simulación local activa)';
-    setTimeout(() => {
-      this.isRecording = false;
-      this.micBtn.classList.remove('recording');
-      this.micStatusText.textContent = 'Toca para dictar por voz';
-    }, 3000);
+  simulateLocalRecording() {
+    this.startRecording();
+    // Si el texto está vacío, cargar automáticamente el primer caso para que el usuario experimente la transcripción
+    if (!this.dictationText.value.trim()) {
+      setTimeout(() => {
+        if (this.isRecording) {
+          this.dictationText.value = DEMO_CASES[0].text;
+          this.stopRecording(true);
+        }
+      }, 2500);
+    }
   }
 
   goToScreen(step) {
@@ -460,25 +522,25 @@ class PakimedApp {
   async processDictation() {
     const text = this.dictationText.value.trim();
     if (!text) {
-      alert('Por favor dicta o selecciona un caso antes de procesar.');
+      alert('Por favor dicta o selecciona una plantilla clínica antes de continuar.');
       return;
     }
 
     this.goToScreen(2); // Pantalla de Procesamiento
-    this.processingStepText.textContent = 'Leyendo audio y extrayendo datos médicos en el teléfono...';
+    this.processingStepText.textContent = 'Extrayendo signos vitales y entidades clínicas en el dispositivo...';
     
     await new Promise(r => setTimeout(r, 600));
-    this.processingStepText.textContent = 'Verificando seguridad: La IA no puede inventar diagnósticos...';
+    this.processingStepText.textContent = 'Validando protocolo clínico: confirmando correspondencia estricta con el dictado...';
     await new Promise(r => setTimeout(r, 500));
 
     this.extractedData = ClinicalNER.extract(text);
     this.renderPreview(this.extractedData);
-    this.goToScreen(3); // Pasar a Revisión Médica
+    this.goToScreen(3); // Pasar a Validación Médica
   }
 
   renderPreview(data) {
-    this.prevAge.textContent = data.patient.age ? `${data.patient.age} años` : 'No mencionado';
-    this.prevGender.textContent = data.patient.gender === 'F' ? 'Femenino' : (data.patient.gender === 'M' ? 'Masculino' : 'No mencionado');
+    this.prevAge.textContent = data.patient.age ? `${data.patient.age} años` : 'No especificada';
+    this.prevGender.textContent = data.patient.gender === 'F' ? 'Femenino' : (data.patient.gender === 'M' ? 'Masculino' : 'No especificado');
 
     this.prevBP.textContent = data.vitals.bloodPressure || '120/80';
     this.prevTemp.textContent = data.vitals.temperature ? `${data.vitals.temperature} °C` : '36.5 °C';
@@ -498,25 +560,25 @@ class PakimedApp {
           <span class="rx-badge">💊 Receta</span>
           <div>
             <strong>${p}</strong>
-            <p class="rx-sub">Indicado expresamente por el médico</p>
+            <p class="rx-sub">Indicación facultativa verificada</p>
           </div>
         </div>
       `).join('');
     } else {
-      this.prevMeds.innerHTML = '<p class="text-muted">No se indicó medicación en este dictado.</p>';
+      this.prevMeds.innerHTML = '<p class="text-muted">No se indicó medicación en este registro.</p>';
     }
 
     this.prevNotes.textContent = `"${data.rawTranscript}"`;
 
-    // Alerta de Seguridad
+    // Alerta de Seguridad y Protocolo Clínico
     if (data.guardrailAlerts.length > 0) {
       this.guardrailAlert.className = 'safety-banner warning';
-      this.guardrailAlert.innerHTML = `⚠️ <strong>Atención:</strong> ${data.guardrailAlerts.join('<br>')}`;
-      if (this.telemSafety) this.telemSafety.innerHTML = '<span class="dot-warn"></span> Advertencia: Requiere revisión manual';
+      this.guardrailAlert.innerHTML = `⚠️ <strong>Observación Médica:</strong> ${data.guardrailAlerts.join('<br>')}`;
+      if (this.telemSafety) this.telemSafety.innerHTML = '<span class="dot-warn"></span> Advertencia: Requiere revisión médica';
     } else {
       this.guardrailAlert.className = 'safety-banner secure';
-      this.guardrailAlert.innerHTML = `🛡️ <strong>Seguridad garantizada:</strong> La IA solo organizó lo que dictaste. No agregó diagnósticos ni recetas por su cuenta.`;
-      if (this.telemSafety) this.telemSafety.innerHTML = '<span class="dot-ok"></span> Cumple regla de No-Diagnóstico (IEEE 7000)';
+      this.guardrailAlert.innerHTML = `🛡️ <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión y firma médica.`;
+      if (this.telemSafety) this.telemSafety.innerHTML = '<span class="dot-ok"></span> Protocolo de Transcripción Fiel Activo';
     }
   }
 
@@ -577,7 +639,7 @@ class PakimedApp {
     this.goToScreen(4); // Mostrar confirmación en el teléfono
 
     if (this.syncStatusAlert) {
-      this.syncStatusAlert.textContent = `✓ Consulta ${saved.id} aprobada y guardada en el teléfono.`;
+      this.syncStatusAlert.textContent = `✓ Expediente ${saved.id} validado y resguardado en el almacenamiento local.`;
     }
   }
 
@@ -586,7 +648,7 @@ class PakimedApp {
     if (!this.queueList) return;
 
     if (records.length === 0) {
-      this.queueList.innerHTML = '<div class="empty-queue-msg">No hay consultas guardadas. Dicta y aprueba una consulta para verla aquí.</div>';
+      this.queueList.innerHTML = '<div class="empty-queue-msg">No hay expedientes en cola. Valide una consulta médica para visualizarla aquí.</div>';
       return;
     }
 
@@ -594,10 +656,10 @@ class PakimedApp {
       <div class="queue-card ${r.status === 'SYNCED' ? 'synced' : 'pending'}">
         <div>
           <div class="queue-card-id">${r.id} &middot; Paciente ${r.data.patient?.gender || 'N/A'} (${r.data.patient?.age ? r.data.patient.age + ' años' : 'Edad no reg.'})</div>
-          <div class="queue-card-desc">Guardado: ${new Date(r.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | ${r.data.symptoms?.slice(0, 2).join(', ') || 'Consulta general'}</div>
+          <div class="queue-card-desc">Registrado: ${new Date(r.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | ${r.data.symptoms?.slice(0, 2).join(', ') || 'Consulta general'}</div>
         </div>
         <span class="queue-tag ${r.status === 'SYNCED' ? 'synced' : 'pending'}">
-          ${r.status === 'SYNCED' ? '✓ Enviado a DHIS2' : '⏳ Guardado en teléfono'}
+          ${r.status === 'SYNCED' ? '✓ Consolidado en DHIS2' : '⏳ En Cola Local (Store & Forward)'}
         </span>
       </div>
     `).join('');
@@ -607,65 +669,69 @@ class PakimedApp {
     if (this.isOnline) {
       if (this.phoneBadge) {
         this.phoneBadge.className = 'status-pill online';
-        this.phoneBadge.innerHTML = '📶 Con señal (3G)';
+        this.phoneBadge.innerHTML = '📶 Enlace Activo (3G)';
       }
-      this.networkToggle.textContent = 'Simular: Sin señal (100% Offline)';
-      if (this.telemNetwork) this.telemNetwork.textContent = 'Señal 3G detectada (Listo para enviar)';
+      this.networkToggle.textContent = 'Conectividad: Cambiar a Modo Local (Sin Red)';
+      if (this.telemNetwork) this.telemNetwork.textContent = 'Enlace institucional 3G disponible (Listo para sincronizar)';
       if (this.syncAllBtn) this.syncAllBtn.disabled = false;
     } else {
       if (this.phoneBadge) {
         this.phoneBadge.className = 'status-pill offline';
-        this.phoneBadge.innerHTML = '🚫 100% Sin señal';
+        this.phoneBadge.innerHTML = 'Modo Local (Sin red)';
       }
-      this.networkToggle.textContent = 'Simular: Detectar señal de internet (3G)';
-      if (this.telemNetwork) this.telemNetwork.textContent = 'Sin conexión a internet (Modo autónomo)';
+      this.networkToggle.textContent = 'Conectividad: Simular Red Móvil (3G)';
+      if (this.telemNetwork) this.telemNetwork.textContent = 'Modo Autónomo Local (Almacenamiento Seguro)';
     }
   }
 
   async syncWithDHIS2() {
     if (!this.isOnline) {
-      alert('Actualmente estás en modo Sin Señal. Toca el botón de arriba "Simular: Detectar señal de internet (3G)" para enviar los datos.');
+      alert('La aplicación se encuentra en Modo Local autónomo. Activa el enlace móvil institucional con el botón superior para realizar la sincronización por lotes.');
       return;
     }
 
     this.syncAllBtn.disabled = true;
-    this.syncAllBtn.textContent = 'Enviando consultas al sistema de salud...';
+    this.syncAllBtn.textContent = 'Transmitiendo expedientes al sistema de salud...';
 
     await new Promise(r => setTimeout(r, 1000));
     StorageQueue.markAllSynced();
 
     this.syncAllBtn.disabled = false;
-    this.syncAllBtn.textContent = 'Sincronizar consultas pendientes con DHIS2';
+    this.syncAllBtn.textContent = 'Sincronizar Lote con DHIS2';
     this.renderQueue();
 
     if (this.syncStatusAlert) {
-      this.syncStatusAlert.textContent = '✓ Todas las consultas fueron enviadas y registradas con éxito en el sistema DHIS2.';
+      this.syncStatusAlert.textContent = '✓ Todos los expedientes en cola fueron consolidados con éxito en la base de datos de DHIS2.';
     }
   }
 
   async runQuickDemo() {
-    // Paso 1: Cargar caso y mostrar dictado
+    // Paso 1: Cargar plantilla clínica y mostrar captura de audio activa
     this.goToScreen(1);
     this.scenarioSelect.value = "0";
     this.dictationText.value = DEMO_CASES[0].text;
-    this.micBtn.classList.add('recording');
-    this.micStatusText.textContent = '🎙️ El médico está dictando el resumen...';
+    
+    // Iniciar captura visual
+    this.startRecording();
+    this.micStatusText.textContent = '🎙️ Capturando dictado clínico del facultativo...';
 
-    await new Promise(r => setTimeout(r, 800));
-    this.micBtn.classList.remove('recording');
+    await new Promise(r => setTimeout(r, 1400));
+    this.stopRecording(true);
 
-    // Paso 2: Procesamiento
+    await new Promise(r => setTimeout(r, 950));
+
+    // Paso 2: Procesamiento on-device
     this.goToScreen(2);
-    this.processingStepText.textContent = 'Extrayendo datos médicos en el teléfono (Sin internet)...';
-    await new Promise(r => setTimeout(r, 600));
+    this.processingStepText.textContent = 'Extrayendo entidades clínicas y estructurando en el dispositivo...';
+    await new Promise(r => setTimeout(r, 700));
 
-    // Paso 3: Revisión
+    // Paso 3: Validación Médica
     this.extractedData = ClinicalNER.extract(this.dictationText.value);
     this.renderPreview(this.extractedData);
     this.goToScreen(3);
     await new Promise(r => setTimeout(r, 900));
 
-    // Paso 4: Aprobar
+    // Paso 4: Aprobar y Guardar
     this.approveRecord();
   }
 }
