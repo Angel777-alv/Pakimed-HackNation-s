@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pakimed - Asistente de Registro Clínico Offline (Edge AI)</title>
+  <meta name="description" content="Asistente de registro clínico por voz 100% offline para médicos rurales con Moonshine Voice ASR, previsualización HITL y sincronización Store-and-Forward hacia DHIS2.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="./src/assets/styles.css">
+</head>
+<body>
+
+  <!-- Barra de Demostración Superior para el Pitch -->
+  <aside class="pitch-toolbar" aria-label="Controles de Demostración del Pitch">
+    <div class="pitch-toolbar-container">
+      <div class="toolbar-brand">
+        <span class="toolbar-pill">Global AI Hackathon 2026</span>
+        <span class="toolbar-title">Pakimed &middot; Tactical Clinical Edge AI</span>
+      </div>
+      <div class="toolbar-actions">
+        <button id="btnQuickDemo" class="btn btn-demo" title="Ejecuta todo el flujo médico automáticamente en 3 segundos">
+          ⚡ Demo Pitch (1-Click Pipeline)
+        </button>
+        <button id="networkToggle" class="btn btn-network" title="Alternar entre 100% Offline y Conectividad 3G">
+          📶 Simular Señal 3G
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Contenedor Principal: Simulador Smartphone de Campo -->
+  <div class="phone-wrapper">
+    <div class="phone-frame">
+      
+      <!-- 1. Telemetría de Hardware & Barra de Estado Superior -->
+      <header class="phone-status-bar">
+        <div class="status-left">
+          <span id="phoneClock" class="status-time">10:42</span>
+          <span id="networkBadge" class="status-badge-offline">
+            <span class="status-icon">📶</span> OFFLINE
+          </span>
+        </div>
+
+        <div class="phone-notch">
+          <div class="phone-camera"></div>
+          <div class="phone-speaker"></div>
+        </div>
+
+        <div class="status-right">
+          <span class="edge-ai-pill">
+            <span class="pulse-dot"></span> 100% Edge AI
+          </span>
+          <span class="battery-status" title="Batería 92%">🔋 92%</span>
+        </div>
+      </header>
+
+      <!-- 2. Cabecera Institucional y Ubicación de Clínica Rural -->
+      <div class="app-header-strip">
+        <div class="header-left">
+          <div class="app-avatar-icon">🎙️</div>
+          <div>
+            <h1 class="app-brand-title">Pakimed Edge AI</h1>
+            <p class="app-clinic-subtitle">📍 Puesto de Salud Rural #04</p>
+          </div>
+        </div>
+        <div class="queue-pill-header">
+          <span id="headerQueueCount" class="queue-badge-counter">34 Encolados</span>
+          <span class="queue-badge-sub">Store & Forward</span>
+        </div>
+      </div>
+
+      <!-- 3. Stepper de Navegación del User Journey (4 Pantallas) -->
+      <nav class="stepper-nav" aria-label="Fases del User Journey">
+        <button class="step-btn active" data-step="1" id="stepBtn1">
+          <span class="step-badge">1</span>
+          <span class="step-label">Dictado</span>
+        </button>
+        <button class="step-btn" data-step="2" id="stepBtn2">
+          <span class="step-badge">2</span>
+          <span class="step-label">Edge AI</span>
+        </button>
+        <button class="step-btn" data-step="3" id="stepBtn3">
+          <span class="step-badge">3</span>
+          <span class="step-label">Revisión</span>
+        </button>
+        <button class="step-btn" data-step="4" id="stepBtn4">
+          <span class="step-badge">4</span>
+          <span class="step-label">DHIS2</span>
+        </button>
+      </nav>
+
+      <!-- 4. Canvas Principal de Contenido Clínico -->
+      <main class="phone-screen-content">
+
+        <!-- ==============================================
+             PANTALLA 1: Captura Acústica (Moonshine Voice)
+             ============================================== -->
+        <section class="screen-view active" data-screen="1" id="screen-dictation">
+          
+          <!-- Tarjeta de Entrada de Voz -->
+          <div class="tactical-card glow-cyan">
+            <div class="card-header-clean">
+              <div class="header-info-group">
+                <span class="badge-tech-cyan">🎙️ Moonshine Voice ASR</span>
+                <h2 class="card-title-lg">Dictado Clínico On-Device</h2>
+              </div>
+              <span class="badge-lang-tag">Español / Dialectos</span>
+            </div>
+
+            <!-- Selector de Casos Clínicos -->
+            <div class="input-block">
+              <label class="input-label-sm" for="scenarioSelect">Casos de prueba precargados para demo:</label>
+              <select id="scenarioSelect" class="tactical-select"></select>
+            </div>
+
+            <!-- Visualización de Onda Acústica (Audio Waveform) -->
+            <div class="waveform-container">
+              <div class="waveform-bars">
+                <span class="wave-bar" style="animation-delay: 0.1s; height: 10px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.4s; height: 24px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.2s; height: 16px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.7s; height: 28px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.3s; height: 18px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.6s; height: 26px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.2s; height: 14px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.8s; height: 30px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.5s; height: 20px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.3s; height: 12px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.9s; height: 24px;"></span>
+                <span class="wave-bar" style="animation-delay: 0.1s; height: 8px;"></span>
+              </div>
+            </div>
+
+            <!-- Botón Central de Micrófono -->
+            <div class="mic-trigger-container">
+              <div class="mic-ring-pulse"></div>
+              <button id="micBtn" class="mic-tactical-btn" aria-label="Iniciar o detener dictado por voz">
+                🎤
+              </button>
+              <p id="micStatusText" class="mic-status-caption">
+                Toca para iniciar el dictado clínico
+              </p>
+            </div>
+
+            <!-- Caja de Transcripción de Texto -->
+            <div class="transcription-stream-box">
+              <div class="stream-header">
+                <span class="stream-label">Flujo de Transcripción Local</span>
+                <span class="stream-telemetry">🔒 0 Bytes Enviados</span>
+              </div>
+              <textarea id="dictationText" class="tactical-textarea" placeholder="El dictado clínico aparecerá aquí automáticamente en tiempo real..."></textarea>
+            </div>
+
+            <!-- Botón de Acción -->
+            <button id="processBtn" class="btn-primary-glow full-width">
+              Procesar con Small AI (Edge NER) &rarr;
+            </button>
+          </div>
+
+        </section>
+
+
+        <!-- ==============================================
+             PANTALLA 2: Inferencia Edge SLM On-Device
+             ============================================== -->
+        <section class="screen-view" data-screen="2" id="screen-processing">
+          <div class="tactical-card inference-hero-card">
+            
+            <div class="inference-radar-wrapper">
+              <div class="radar-outer-ring"></div>
+              <div class="radar-inner-spinner"></div>
+              <div class="radar-ai-core">🧠</div>
+            </div>
+
+            <h2 class="inference-main-heading">Inferencia On-Device (SLM)</h2>
+            <p id="processingStepText" class="inference-status-desc">
+              Extrayendo entidades clínicas locales...
+            </p>
+
+            <div class="telemetry-grid-card">
+              <div class="telemetry-row">
+                <span class="telem-key">Motor Acústico:</span>
+                <span class="telem-val">Moonshine Voice (Edge ASR)</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telem-key">Tráfico a la Nube:</span>
+                <span class="telem-val highlight-cyan">0.0 KB (100% Offline)</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telem-key">Guardarraíl IEEE 7000:</span>
+                <span class="telem-val highlight-green">✓ Cero Diagnóstico Activo</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telem-key">Latencia On-Device:</span>
+                <span class="telem-val">~18ms (WASM Local)</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- ==============================================
+             PANTALLA 3: Previsualización y Human-in-the-Loop
+             ============================================== -->
+        <section class="screen-view" data-screen="3" id="screen-review">
+          
+          <!-- Banner de Guardarraíles de Seguridad -->
+          <div id="guardrailAlerts" class="guardrail-alert-wrapper"></div>
+
+          <!-- Tarjeta de Previsualización del Paciente -->
+          <div class="tactical-card preview-master-card">
+            
+            <div class="card-header-clean">
+              <div>
+                <span class="badge-tech-cyan">Ficha Clínica Consolidada</span>
+                <h2 class="card-title-lg">Previsualización del Expediente</h2>
+              </div>
+              <button id="btnOpenEditModal" class="btn-modify-sheet" title="Modificar datos del paciente">
+                ✏️ Modificar
+              </button>
+            </div>
+
+            <!-- Matriz de Signos Vitales (4-Tile Matrix) -->
+            <div class="vitals-matrix-grid">
+              
+              <!-- P.A. -->
+              <div class="vital-tile">
+                <div class="vital-tile-header">
+                  <span class="vital-label">Presión Arterial</span>
+                  <span class="vital-icon">🫀</span>
+                </div>
+                <div class="vital-number-wrap">
+                  <span id="prevBP" class="vital-number">120/80</span>
+                  <span class="vital-unit">mmHg</span>
+                </div>
+                <span class="vital-pill-status green">Normotenso</span>
+              </div>
+
+              <!-- Temperatura -->
+              <div class="vital-tile">
+                <div class="vital-tile-header">
+                  <span class="vital-label">Temp. Corporal</span>
+                  <span class="vital-icon">🌡️</span>
+                </div>
+                <div class="vital-number-wrap">
+                  <span id="prevTemp" class="vital-number">38.5</span>
+                  <span class="vital-unit">°C</span>
+                </div>
+                <span class="vital-pill-status amber">Fiebre</span>
+              </div>
+
+              <!-- Pulso -->
+              <div class="vital-tile">
+                <div class="vital-tile-header">
+                  <span class="vital-label">Frec. Cardíaca</span>
+                  <span class="vital-icon">💓</span>
+                </div>
+                <div class="vital-number-wrap">
+                  <span id="prevHR" class="vital-number">78</span>
+                  <span class="vital-unit">lpm</span>
+                </div>
+                <span class="vital-pill-status green">Ritmo Normal</span>
+              </div>
+
+              <!-- Demografía -->
+              <div class="vital-tile">
+                <div class="vital-tile-header">
+                  <span class="vital-label">Paciente</span>
+                  <span class="vital-icon">👤</span>
+                </div>
+                <div class="vital-number-wrap">
+                  <span id="prevAge" class="vital-number" style="font-size: 1.1rem;">34a</span>
+                  <span id="prevGender" class="vital-unit" style="font-size: 0.75rem;">(Femenino)</span>
+                </div>
+                <span class="vital-pill-status cyan">Demografía</span>
+              </div>
+
+            </div>
+
+            <!-- Síntomas Clínicos -->
+            <div class="clinical-section-box">
+              <div class="section-box-header">
+                <span class="box-title">Síntomas Reportados por el Paciente</span>
+                <span class="box-note">NER Detectado</span>
+              </div>
+              <div id="prevSymptoms" class="symptom-tag-cloud">
+                <span class="symptom-chip">tos seca</span>
+                <span class="symptom-chip">fiebre</span>
+              </div>
+            </div>
+
+            <!-- Tratamiento y Prescripción Médica -->
+            <div class="clinical-section-box">
+              <div class="section-box-header">
+                <span class="box-title">Medicación Indicada por el Médico</span>
+                <span class="box-note">Sin Prescripción IA</span>
+              </div>
+              <div id="prevMeds" class="prescriptions-list">
+                <div class="prescription-row">
+                  <span class="rx-icon">💊</span>
+                  <div class="rx-info">
+                    <strong>Paracetamol 500mg</strong>
+                    <span>1 tableta cada 8 horas por 5 días</span>
+                  </div>
+                  <span class="rx-stock-badge">En Botiquín Rural</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dictado Original -->
+            <div class="clinical-section-box">
+              <div class="section-box-header">
+                <span class="box-title">Transcripción Original de Respaldo</span>
+              </div>
+              <p id="prevNotes" class="dictation-quote">"Dictado original del médico..."</p>
+            </div>
+
+            <!-- Acciones HITL -->
+            <div class="hitl-actions-grid">
+              <button class="btn-tactical-outline" onclick="window.pakimedApp.goToScreen(1)">
+                &larr; Redictar
+              </button>
+              <button id="approveBtn" class="btn-success-glow">
+                ✓ Aprobar Expediente
+              </button>
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ==============================================
+             PANTALLA 4: Store-and-Forward & DHIS2
+             ============================================== -->
+        <section class="screen-view" data-screen="4" id="screen-sync">
+          
+          <div class="tactical-card">
+            <div class="card-header-clean">
+              <div>
+                <span class="badge-tech-cyan">Cola Local Store & Forward</span>
+                <h2 class="card-title-lg">Expedientes en Dispositivo</h2>
+              </div>
+              <button id="syncAllBtn" class="btn-sync-trigger">
+                Sincronizar Lote
+              </button>
+            </div>
+
+            <div id="queueContainer" class="queue-stack-list"></div>
+          </div>
+
+          <div class="tactical-card" style="margin-top: 0.85rem;">
+            <div class="card-header-clean">
+              <div>
+                <span class="badge-tech-cyan">DHIS2 Tracker / Event API</span>
+                <h2 class="card-title-lg">Payload JSON Estándar</h2>
+              </div>
+              <span class="badge-lang-tag">ISO/IEC 29148</span>
+            </div>
+
+            <pre id="jsonPreview" class="dhis2-code-viewer">// El payload DHIS2 generado aparecerá aquí</pre>
+            
+            <div style="margin-top: 0.75rem; display: flex; justify-content: flex-end;">
+              <button class="btn-tactical-outline" onclick="window.pakimedApp.goToScreen(1)">
+                + Nueva Consulta
+              </button>
+            </div>
+          </div>
+
+        </section>
+
+      </main>
+
+      <!-- 5. Barra Inferior Home Indicator -->
+      <div class="phone-home-indicator"></div>
+
+    </div>
+  </div>
+
+
+  <!-- ==============================================
+       VENTANA MODAL / BOTTOM SHEET: Ajuste Manual HITL
+       ============================================== -->
+  <div id="editModal" class="modal-backdrop" aria-hidden="true" role="dialog">
+    <div class="modal-sheet-dialog">
+      
+      <div class="modal-sheet-header">
+        <div>
+          <span class="badge-tech-cyan">Human-in-the-Loop</span>
+          <h3 class="modal-sheet-title">✏️ Ajustar Formulario Clínico</h3>
+        </div>
+        <button id="btnCloseModal" class="btn-modal-close" aria-label="Cerrar ventana">&times;</button>
+      </div>
+
+      <div class="modal-sheet-body">
+        <p class="modal-sheet-intro">
+          Modifica o complementa manualmente los valores extraídos antes de la aprobación médica definitiva:
+        </p>
+
+        <div class="form-grid-2">
+          <div class="input-block">
+            <label class="input-label-sm" for="fieldAge">Edad (Años):</label>
+            <input type="number" id="fieldAge" class="tactical-input" placeholder="Ej: 34">
+          </div>
+          <div class="input-block">
+            <label class="input-label-sm" for="fieldGender">Género:</label>
+            <select id="fieldGender" class="tactical-select">
+              <option value="">Seleccionar</option>
+              <option value="F">Femenino (F)</option>
+              <option value="M">Masculino (M)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="input-block">
+            <label class="input-label-sm" for="fieldBP">P. Arterial:</label>
+            <input type="text" id="fieldBP" class="tactical-input" placeholder="120/80">
+          </div>
+          <div class="input-block">
+            <label class="input-label-sm" for="fieldTemp">Temp (°C):</label>
+            <input type="text" id="fieldTemp" class="tactical-input" placeholder="38.5">
+          </div>
+          <div class="input-block">
+            <label class="input-label-sm" for="fieldHR">Pulso (lpm):</label>
+            <input type="number" id="fieldHR" class="tactical-input" placeholder="78">
+          </div>
+        </div>
+
+        <div class="input-block">
+          <label class="input-label-sm" for="fieldSymptoms">Síntomas Reportados (separados por coma):</label>
+          <input type="text" id="fieldSymptoms" class="tactical-input" placeholder="Ej: fiebre, tos seca, dolor de cabeza">
+        </div>
+
+        <div class="input-block">
+          <label class="input-label-sm" for="fieldMeds">Medicación y Posología Indicada:</label>
+          <input type="text" id="fieldMeds" class="tactical-input" placeholder="Ej: Paracetamol 500mg c/8h por 5 días">
+        </div>
+
+        <div class="input-block">
+          <label class="input-label-sm" for="fieldNotes">Notas Adicionales del Médico:</label>
+          <textarea id="fieldNotes" class="tactical-textarea" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-sheet-footer">
+        <button id="btnCancelEdit" class="btn-tactical-outline">Cancelar</button>
+        <button id="btnSaveEdit" class="btn-primary-glow">Guardar Cambios</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module" src="./src/app/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "pakimed-offline-clinical-assistant",
+  "version": "1.0.0",
+  "description": "Pakimed - Asistente de Registro Clínico Offline (Edge AI) para el Global AI Hackathon 2026",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/guardrails.test.js && node tests/dhis2_payload.test.js",
+    "start": "npx serve ."
+  },
+  "keywords": ["edge-ai", "small-ai", "dhis2", "offline-first", "healthcare", "pakimed"],
+  "author": "Pakimed Team",
+  "license": "MIT"
+}
