@@ -1,14 +1,18 @@
-# Dependencies
+# Configuración interna del agente / IDE
+.agents/
+
+# Guiones y notas privadas de estrategia
+docs/pitch_script.md
+proyecto_voxmed_*.md
+*.draft.md
+
+# Dependencias y temporales
 node_modules/
 .npm/
-
-# OS and IDE Files
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
 *.log
-
-# Temp files
 scratch/
 tmp/
