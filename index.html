@@ -94,17 +94,17 @@
           <div class="phone-screen-view active" data-screen="1">
             
             <div class="phone-card">
-              <!-- Selector Táctico de Motor Small AI -->
+              <!-- Selector Táctico de Pipeline Small AI -->
               <div class="ai-engine-selector-bar">
                 <div class="engine-toggle-group">
-                  <button type="button" id="btnEngineHeuristic" class="engine-toggle-btn active" title="Motor heurístico instantáneo (< 30 KB, 2 ms)">
+                  <button type="button" id="btnEngineHeuristic" class="engine-toggle-btn" title="Modo ultra-ligero puramente determinista (< 30 KB, < 2 ms)">
                     ⚡ ConText
                   </button>
-                  <button type="button" id="btnEngineQwen" class="engine-toggle-btn" title="Modelo neuronal ligero multilingüe Qwen2.5-0.5B">
-                    🧠 Qwen2.5 SLM
+                  <button type="button" id="btnEngineQwen" class="engine-toggle-btn active" title="Ensamble Híbrido: ConText (Signos/Datos) + Qwen2.5 (Semántica)">
+                    🧬 Ensamble Híbrido
                   </button>
                 </div>
-                <span id="aiEngineStatusBadge" class="ai-engine-badge">⚡ ConText (2ms)</span>
+                <span id="aiEngineStatusBadge" class="ai-engine-badge qwen">🧬 Híbrido Activo</span>
               </div>
 
               <label class="field-title" for="scenarioSelect">Plantillas de Consulta Rápida:</label>
@@ -513,6 +513,7 @@
   <script src="./src/core/guardrails/guardrails.js"></script>
   <script src="./src/core/nlp/clinical_ner.js"></script>
   <script src="./src/core/nlp/qwen_adapter.js"></script>
+  <script src="./src/core/nlp/fusion_engine.js"></script>
   <script src="./src/core/audio/voice_recorder.js"></script>
   <script src="./src/core/storage/clinical_db.js"></script>
   <script src="./src/integrations/dhis2/dhis2_adapter.js"></script>

@@ -1485,7 +1485,8 @@ body {
   letter-spacing: 0.02em;
 }
 
-.ai-engine-badge.qwen {
+.ai-engine-badge.qwen,
+.ai-engine-badge.hybrid {
   color: #7c3aed;
   background: rgba(124, 58, 237, 0.1);
 }
@@ -1502,7 +1503,8 @@ body {
   margin-top: 0.2rem;
 }
 
-.ai-engine-badge-sub.qwen {
+.ai-engine-badge-sub.qwen,
+.ai-engine-badge-sub.hybrid {
   color: #7c3aed;
   background: #f5f3ff;
   border-color: #ddd6fe;

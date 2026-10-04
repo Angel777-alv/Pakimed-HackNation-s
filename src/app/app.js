@@ -84,7 +84,7 @@ class PakimedApp {
     this.btnEngineQwen = document.getElementById('btnEngineQwen');
     this.aiEngineStatusBadge = document.getElementById('aiEngineStatusBadge');
     this.prevEngineBadge = document.getElementById('prevEngineBadge');
-    this.activeEngine = 'heuristic';
+    this.activeEngine = 'hybrid';
   }
 
   setupInitialState() {
@@ -241,7 +241,7 @@ class PakimedApp {
       this.btnEngineHeuristic.addEventListener('click', () => this.setEngine('heuristic'));
     }
     if (this.btnEngineQwen) {
-      this.btnEngineQwen.addEventListener('click', () => this.setEngine('qwen'));
+      this.btnEngineQwen.addEventListener('click', () => this.setEngine('hybrid'));
     }
   }
 
@@ -251,15 +251,15 @@ class PakimedApp {
       this.btnEngineHeuristic.classList.toggle('active', engine === 'heuristic');
     }
     if (this.btnEngineQwen) {
-      this.btnEngineQwen.classList.toggle('active', engine === 'qwen');
+      this.btnEngineQwen.classList.toggle('active', engine === 'hybrid');
     }
     if (this.aiEngineStatusBadge) {
-      if (engine === 'qwen') {
-        this.aiEngineStatusBadge.textContent = '🧠 Qwen2.5 (Comprobando...)';
+      if (engine === 'hybrid') {
+        this.aiEngineStatusBadge.textContent = '🧬 Híbrido (Comprobando...)';
         this.aiEngineStatusBadge.classList.add('qwen');
         await this.checkQwenAvailability();
       } else {
-        this.aiEngineStatusBadge.textContent = '⚡ ConText (2ms)';
+        this.aiEngineStatusBadge.textContent = '⚡ ConText (< 2 ms)';
         this.aiEngineStatusBadge.classList.remove('qwen');
       }
     }
@@ -271,13 +271,13 @@ class PakimedApp {
       const isUp = await Qwen.checkAvailability();
       if (isUp) {
         console.log('[PakimedApp] Micro-servidor Qwen2.5 detectado y listo en el dispositivo.');
-        if (this.aiEngineStatusBadge && this.activeEngine === 'qwen') {
-          this.aiEngineStatusBadge.textContent = '🧠 Qwen2.5 (En línea)';
+        if (this.aiEngineStatusBadge && this.activeEngine === 'hybrid') {
+          this.aiEngineStatusBadge.textContent = '🧬 Híbrido Activo';
           this.aiEngineStatusBadge.classList.add('qwen');
         }
       } else {
-        console.log('[PakimedApp] Micro-servidor Qwen2.5 no detectado (Fallback activo).');
-        if (this.aiEngineStatusBadge && this.activeEngine === 'qwen') {
+        console.log('[PakimedApp] Micro-servidor Qwen2.5 no detectado (Fallback activo a ConText).');
+        if (this.aiEngineStatusBadge && this.activeEngine === 'hybrid') {
           this.aiEngineStatusBadge.textContent = '⚡ ConText (Qwen offline)';
           this.aiEngineStatusBadge.classList.remove('qwen');
         }
@@ -318,27 +318,39 @@ class PakimedApp {
     this.isRecordApproved = false;
     this.goToScreen(2);
 
-    // Animación visual del pipeline con Small AI (< 25 KB)
-    this.setPipelineStep(1, 'Normalizando transcripción e identificando paciente...');
-    await new Promise(r => setTimeout(r, 400));
+    // Animación visual del pipeline híbrido
+    this.setPipelineStep(1, 'Normalizando transcripción y extrayendo ancla determinista con ConText (< 2 ms)...');
+    await new Promise(r => setTimeout(r, 250));
 
-    const Qwen = window.Pakimed?.QwenAdapter;
     const NER = window.Pakimed?.NER;
+    const Qwen = window.Pakimed?.QwenAdapter;
+    const FusionEngine = window.Pakimed?.FusionEngine;
 
-    if (this.activeEngine === 'qwen' && Qwen) {
-      this.setPipelineStep(2, 'Extrayendo entidades con modelo neuronal Qwen2.5-0.5B...');
-      this.extractedData = await Qwen.extract(text);
+    // 1. Extracción ancla infalible con ConText (0% alucinación en constantes y datos)
+    const nerResult = NER ? NER.extract(text) : null;
+
+    if (this.activeEngine === 'hybrid' && Qwen && FusionEngine) {
+      this.setPipelineStep(2, 'Refinando semántica y desambiguando prescripciones con Qwen2.5...');
+      let slmResult = null;
+      try {
+        slmResult = await Qwen.extract(text);
+      } catch (err) {
+        console.warn('[PakimedApp] Qwen no respondió, continuando con ancla ConText:', err);
+      }
+
+      this.setPipelineStep(3, 'Ejecutando fusión de datos deterministas y razonamiento semántico...');
+      await new Promise(r => setTimeout(r, 250));
+      this.extractedData = FusionEngine.fuse(nerResult, slmResult, text);
+    } else if (FusionEngine) {
+      this.setPipelineStep(2, 'Estructurando con motor determinista ConText on-device (< 25 KB)...');
+      await new Promise(r => setTimeout(r, 200));
+      this.extractedData = FusionEngine.fuse(nerResult, null, text);
     } else {
-      this.setPipelineStep(2, 'Extrayendo entidades mediante motor ConText on-device (< 25 KB)...');
-      await new Promise(r => setTimeout(r, 450));
-      this.extractedData = NER ? NER.extract(text) : { rawTranscript: text, patient: {}, vitals: {}, symptoms: [], prescriptions: [] };
+      this.extractedData = nerResult;
     }
 
-    this.setPipelineStep(3, 'Verificando guardarraíles éticos IEEE 7000 (Cero diagnóstico autónomo)...');
-    await new Promise(r => setTimeout(r, 400));
-
-    this.setPipelineStep(4, 'Auditando identificación obligatoria y rangos fisiológicos para DHIS2...');
-    await new Promise(r => setTimeout(r, 350));
+    this.setPipelineStep(4, 'Verificando guardarraíles éticos IEEE 7000 y formato DHIS2...');
+    await new Promise(r => setTimeout(r, 250));
 
     this.renderPreview(this.extractedData);
     this.goToScreen(3);
@@ -370,13 +382,13 @@ class PakimedApp {
 
     // 0. Distintivo del Motor de Extracción Realmente Utilizado
     if (this.prevEngineBadge) {
-      const actuallyRanQwen = Boolean(data.patient?.engine && data.patient.engine.includes('Qwen'));
-      if (actuallyRanQwen) {
+      const engineName = data.patient?.engine || '';
+      if (engineName.includes('Híbrido')) {
+        this.prevEngineBadge.textContent = '🧬 Ensamble Híbrido (ConText + Qwen2.5)';
+        this.prevEngineBadge.classList.add('qwen');
+      } else if (engineName.includes('Qwen')) {
         this.prevEngineBadge.textContent = '🧠 Qwen2.5-0.5B (Small AI)';
         this.prevEngineBadge.classList.add('qwen');
-      } else if (this.activeEngine === 'qwen') {
-        this.prevEngineBadge.textContent = '⚡ ConText (Fallback: Qwen SLM no detectado)';
-        this.prevEngineBadge.classList.remove('qwen');
       } else {
         this.prevEngineBadge.textContent = '⚡ ConText Edge AI (25 KB)';
         this.prevEngineBadge.classList.remove('qwen');

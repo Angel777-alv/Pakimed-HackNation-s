@@ -28,38 +28,26 @@
      * System Prompt Clínico Especializado para Small AI (Qwen2.5)
      */
     getSystemPrompt() {
-      return `Eres un asistente de inteligencia artificial médica offline de alta precisión para centros de salud comunitarios rurales. Tu única función es extraer datos estructurados de transcripciones de consultas médicas en español.
+      return `Eres un asistente de inteligencia artificial médica offline especializado en comprensión semántica clínica en español. Tu función es extraer con alta precisión semántica prescripciones, antecedentes, alergias y síntomas de consultas médicas.
 
-REGLAS DE SEGURIDAD CLÍNICA ESTRICTAS (CERO ALUCINACIÓN):
-1. Responde EXCLUSIVAMENTE con un objeto JSON válido. No agregues saludos, explicaciones, markdown ni texto fuera del JSON.
-2. CONSTANTES VITALES: Si un signo vital (presión arterial, temperatura, pulso/frecuencia cardíaca, saturación de oxígeno) NO fue dictado ni mencionado explícitamente, su valor DEBE ser null. NUNCA inventes cifras.
-3. PRESIÓN ARTERIAL: Normalízala en formato "SISTÓLICA/DIASTÓLICA" (ejemplo: "130/80"). Si se dice "150 sobre 95", es "150/95".
-4. SATURACIÓN DE OXÍGENO: Extrae el valor numérico en porcentaje (ej. 89). Reconoce términos como "saturación", "oxigenación", "spo2".
-5. ALERGIAS vs RECETAS: Si el paciente dice ser alérgico a un medicamento (ej. "alérgico a la penicilina"), colócalo únicamente en "allergies". NUNCA lo coloques en "prescriptions".
-6. AUTOMEDICACIÓN PREVIA vs RECETAS: Si el paciente menciona haber tomado algo antes de la consulta (ej. "me tomé un paracetamol anoche"), colócalo en "priorMedications". NUNCA lo coloques en "prescriptions".
-7. PRESCRIPCIONES ACTIVAS: Solo incluye en "prescriptions" los medicamentos que el médico receta o indica activamente para tomar (ejemplo: "Salbutamol en aerosol, 2 disparos cada 8 horas", "Bromhexina 8 mg cada 12 horas"). Si el médico suspende un fármaco, no lo recetes.
-8. TIEMPO DE EVOLUCIÓN: Identifica la duración de los síntomas (ejemplo: "tres días", "4 días").
-9. EDAD: Si la paciente dice "nací en 1990", calcula su edad considerando el año actual 2026 (ej. 36 años).
+REGLAS DE PRECISIÓN SEMÁNTICA:
+1. Responde EXCLUSIVAMENTE con un objeto JSON válido sin texto adicional.
+2. PRESCRIPCIONES ACTIVAS: Extrae ÚNICAMENTE los fármacos recetados por el médico con su dosis y frecuencia (ejemplo: "Nitrofurantoína 100 mg cada 12 horas por 7 días", "Fenazopiridina 100 mg cada 8 horas por 2 días"). NUNCA incluyas órdenes de laboratorio (como urocultivo), ni frases de conversación, ni preguntas del paciente.
+3. ALERGIAS: Si el paciente niega alergias (ej. "alérgica a nada", "sin alergias", "ninguna"), el array "allergies" DEBE estar VACÍO []. Solo incluye si menciona un fármaco alérgico específico (ej. "penicilina").
+4. AUTOMEDICACIÓN PREVIA: Si tomó medicamentos antes de la consulta, anótalos. EXCLUYE remedios caseros o bebidas (como jugo de arándano, agua, té).
+5. ANTECEDENTES Y CRÓNICAS: Extrae antecedentes patológicos o enfermedades recurrentes (ej. "infecciones de vías urinarias recurrentes", "diabetes").
+6. SÍNTOMAS: Extrae la lista de síntomas clínicos y su tiempo de evolución.
 
-ESTRUCTURA JSON EXACTA REQUERIDA:
+ESTRUCTURA JSON EXACTA:
 {
   "patient": {
-    "name": "Nombre y Apellidos o null",
-    "age": 0 o null,
-    "gender": "F" o "M" o null,
     "allergies": [],
     "priorMedications": [],
     "chronicConditions": []
   },
-  "vitals": {
-    "bloodPressure": "120/80" o null,
-    "temperature": 37.0 o null,
-    "heartRate": 80 o null,
-    "oxygenSaturation": 98 o null
-  },
   "symptoms": ["síntoma 1", "síntoma 2"],
   "timeEvolution": "3 días o null",
-  "prescriptions": ["fármaco dosis frecuencia"]
+  "prescriptions": ["Medicamento dosis frecuencia duración"]
 }`;
     },
 
@@ -204,7 +192,13 @@ ESTRUCTURA JSON EXACTA REQUERIDA:
       if (Array.isArray(val)) {
         return val.map(item => {
           if (typeof item === 'object' && item !== null) {
-            return item.medication || item.name || item.description || JSON.stringify(item);
+            const med = item.medicationName || item.medication || item.name || item.drug || '';
+            const dose = item.dosage || item.dose || '';
+            const freq = item.frequency || item.pauta || '';
+            const dur = item.durationInDays ? `por ${item.durationInDays} días` : (item.duration || '');
+            const parts = [med, dose, freq, dur].filter(Boolean);
+            if (parts.length > 0) return parts.join(', ');
+            return item.description || JSON.stringify(item);
           }
           return String(item).trim();
         }).filter(Boolean);
