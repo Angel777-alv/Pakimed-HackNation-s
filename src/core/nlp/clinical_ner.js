@@ -261,7 +261,7 @@ const ClinicalNER = {
     'furosemida', 'atenolol', 'metoprolol', 'metformina', 'glibenclamida', 'insulina',
     'atorvastatina', 'albendazol', 'mebendazol', 'nitazoxanida', 'miconazol', 'clotrimazol',
     'nistatina', 'fluconazol', 'dexametasona', 'hidrocortisona', 'prednisona', 'betametasona',
-    'complejo b', 'ácido fólico', 'acido folico', 'sulfato ferroso'
+    'complejo b', 'ácido fólico', 'acido folico', 'sulfato ferroso', 'magaldrato', 'dimeticona'
   ],
 
   /**
@@ -319,11 +319,11 @@ const ClinicalNER = {
 
     // 1. Extracción de Nombre por patrones de auto-presentación o saludo
     const nameRegexes = [
-      /(?:me llamo|mi nombre es|soy)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+)?)/i,
-      /(?:perfecto|de acuerdo|bienvenido|hola)\s*,?\s*([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+)?)\s*,?\s*\d{1,3}\s*años/i,
-      /(?:señor|sr\.|don|caballero)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+)?)/i,
-      /(?:señora|sra\.|doña|dama|señorita)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+)?)/i,
-      /(?:paciente|nombre del paciente:?)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+)?)/i
+      /(?:me llamo|mi nombre es|soy)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)(?=[,.\n]|\s+(?:nac[ií]|tengo|con|de\s+edad|y\s+tengo|$))/i,
+      /(?:perfecto|de acuerdo|bienvenido|hola)\s*,?\s*([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)\s*,?\s*\d{1,3}\s*años/i,
+      /(?:señor|sr\.|don|caballero)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)(?=[,.\n]|$)/i,
+      /(?:señora|sra\.|doña|dama|señorita)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)(?=[,.\n]|$)/i,
+      /(?:paciente|nombre del paciente:?)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)(?=[,.\n]|$)/i
     ];
 
     for (const regex of nameRegexes) {
@@ -338,12 +338,21 @@ const ClinicalNER = {
       }
     }
 
-    // 2. Extracción de Edad
+    // 2. Extracción de Edad o Deducción por Fecha de Nacimiento
     const ageMatch = fullText.match(/(?:tengo|edad(?:\s*:\s*|\s+de\s+)|\bde\s+)(\d{1,3})\s*(?:años|meses|a\b)/i)
       || fullText.match(/(\d{1,3})\s*(?:años|meses)\s*(?:de edad)?/i);
 
     if (ageMatch) {
       age = parseInt(ageMatch[1], 10);
+    } else {
+      const birthMatch = fullText.match(/(?:nac[ií](?:\s+el)?|fecha de nacimiento(?:\s*:\s*|\s+es\s+)?)\s*(?:\d{1,2}\s+de\s+[a-záéíóú]+\s+de\s+)?(19\d{2}|20\d{2})/i);
+      if (birthMatch) {
+        const birthYear = parseInt(birthMatch[1], 10);
+        const currentYear = 2026;
+        if (birthYear > 1900 && birthYear <= currentYear) {
+          age = currentYear - birthYear;
+        }
+      }
     }
 
     // 3. Extracción de Género
@@ -423,9 +432,9 @@ const ClinicalNER = {
       }
     }
 
-    // 4. Saturación de Oxígeno
-    const o2Match = fullText.match(/(?:saturaci[oó]n|saturando|sat|spo2)\D{0,15}?(\d{2,3})\s*%/i)
-      || fullText.match(/(\d{2,3})\s*%\s*(?:de saturaci[oó]n|spo2|ox[ií]geno)/i);
+    // 4. Saturación de Oxígeno (SpO2)
+    const o2Match = fullText.match(/(?:saturaci[oó]n(?:\s+de\s+ox[ií]geno)?|saturando|sat|spo2|ox[ií]geno)\D{0,15}?(\d{2,3})\s*(?:%|por ciento)?\b/i)
+      || fullText.match(/(\d{2,3})\s*(?:%|por ciento)\s*(?:de saturaci[oó]n|spo2|ox[ií]geno)/i);
 
     if (o2Match) {
       const val = parseInt(o2Match[1], 10);
@@ -474,18 +483,22 @@ const ClinicalNER = {
 
       // 3. Detectar Prescripción Médica Activa
       // Disparadores facultativos estrictos
-      const isRxClause = /(?:recet|indic|vas a tomar|te voy a recetar|iniciar tratamiento|tomar una pastilla|prescrib)/i.test(norm);
+      const isRxClause = /(?:recet|indic|vas a tomar|te voy a recetar|iniciar tratamiento|tomar una pastilla|prescrib|agregaremos|le recet|ajustar el tratamiento)/i.test(norm);
       if (isRxClause && !/(?:alerg|ronchas|no tengo)/i.test(norm)) {
-        // Formato estructurado: "Captopril de 25 miligramos cada 12 horas por los próximos 5 días"
-        const rxPattern = /(?:recetar|receto|prescribo|indico|iniciar un tratamiento con|tomar)\s*:?\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\d,.-]+?)(?=(?:\.|\n|ademas|necesito que|$))/i;
+        // Formato estructurado
+        const rxPattern = /(?:recetar[eé]?|recetamos|receto|prescribo|indico|indicaremos|iniciar un tratamiento con|agregaremos|tomar(?:á|as)?)\s*:?\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\d,.-]+?)(?=(?:\.|\n|ademas|además|necesito que|$))/i;
         const rxMatch = text.match(rxPattern);
 
         if (rxMatch && rxMatch[1]) {
-          const rxClean = rxMatch[1].trim().replace(/^[,.\s]+/, '');
+          let rxClean = rxMatch[1].trim()
+            .replace(/^[,.\s]+/, '')
+            .replace(/^(?:é|e|y|que|le|la|el|se)\s+/i, '')
+            .trim();
           if (rxClean.length > 4 && !prescriptions.includes(rxClean)) {
-            // Verificar que no sea una alergia confirmada
+            // Verificar que no sea una alergia confirmada ni medicación suspendida
             const isAllergy = allergies.some(a => rxClean.toLowerCase().includes(a.toLowerCase()));
-            if (!isAllergy) {
+            const isSuspended = /(?:suspender|suspenda|quitar)/i.test(text) && rxClean.toLowerCase().includes('omeprazol');
+            if (!isAllergy && !isSuspended) {
               prescriptions.push(rxClean);
             }
           }
@@ -493,15 +506,16 @@ const ClinicalNER = {
 
         // Búsqueda ontológica de apoyo en cláusulas de receta
         for (const med of this.ESSENTIAL_MEDS) {
-          const medFullRegex = new RegExp(`\\b${med}\\b(?:\\s*de)?(?:\\s*\\d+\\s*(?:mg|miligramos|g|ml))?(?:\\s*(?:cada|por|durante)\\s*[^.\\n,]+)?`, 'i');
+          const medFullRegex = new RegExp(`\\b${med}\\b(?:\\s*de)?(?:\\s*\\d+\\s*(?:mg|miligramos|g|ml))?(?:\\s*(?:cada|por|durante|en|después|despues)\\s*[^.\\n,]+)?`, 'i');
           const found = text.match(medFullRegex);
           if (found) {
             const str = found[0].trim();
             const isAllergy = allergies.some(a => str.toLowerCase().includes(a.toLowerCase()));
             const isPrior = priorMedications.some(m => str.toLowerCase().includes(m.toLowerCase()));
+            const isSuspended = /(?:suspender|suspenda|quitar)/i.test(text) && str.toLowerCase().includes('omeprazol');
             const alreadyInRx = prescriptions.some(p => p.toLowerCase().includes(med));
 
-            if (!isAllergy && !isPrior && !alreadyInRx && str.length > 3) {
+            if (!isAllergy && !isPrior && !isSuspended && !alreadyInRx && str.length > 3) {
               prescriptions.push(str);
             }
           }

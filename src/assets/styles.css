@@ -498,6 +498,11 @@ body {
   display: none !important;
 }
 
+/* Generic Hidden Utility */
+.hidden {
+  display: none !important;
+}
+
 .recording-dot {
   width: 8px;
   height: 8px;

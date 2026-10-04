@@ -350,9 +350,12 @@ class PakimedApp {
     if (this.allergiesBox && this.allergiesText) {
       if (data.patient?.allergies?.length > 0) {
         this.allergiesBox.classList.remove('hidden');
+        this.allergiesBox.style.display = 'block';
         this.allergiesText.textContent = data.patient.allergies.join(', ');
       } else {
         this.allergiesBox.classList.add('hidden');
+        this.allergiesBox.style.display = 'none';
+        this.allergiesText.textContent = '';
       }
     }
 
