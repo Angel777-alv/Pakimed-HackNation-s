@@ -207,13 +207,18 @@ class TelemetryController {
         this.phoneBadge.textContent = i18n ? i18n.get('phone_status_online') : '📶 3G Link Active';
       }
       if (this.networkToggle) {
-        this.networkToggle.textContent = 'Network: Switch to Offline Mode';
+        this.networkToggle.classList.add('online');
+        this.networkToggle.innerHTML = `
+          <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h2"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V4"/></svg>
+          <span>Network: Switch to Offline</span>
+        `;
       }
       if (this.telemNetworkText) {
         this.telemNetworkText.textContent = '3G Health Network Online';
       }
       if (this.syncAllBtn) {
         this.syncAllBtn.disabled = false;
+        this.syncAllBtn.style.opacity = '1';
       }
     } else {
       if (this.phoneBadge) {
@@ -221,7 +226,11 @@ class TelemetryController {
         this.phoneBadge.textContent = i18n ? i18n.get('phone_status_offline') : 'Local Mode (Offline)';
       }
       if (this.networkToggle) {
-        this.networkToggle.textContent = 'Network: Simulate 3G Online Link';
+        this.networkToggle.classList.remove('online');
+        this.networkToggle.innerHTML = `
+          <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h2"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V4"/></svg>
+          <span>Network: Simulate 3G Link</span>
+        `;
       }
       if (this.telemNetworkText) {
         this.telemNetworkText.textContent = 'Offline Autonomous';

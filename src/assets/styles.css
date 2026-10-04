@@ -226,6 +226,18 @@ body {
   color: var(--text-main);
 }
 
+.btn-network-toggle.online {
+  background: var(--emerald-light);
+  border-color: var(--emerald-border);
+  color: var(--emerald-text);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.28);
+}
+
+.btn-network-toggle.online:hover {
+  background: #d1fae5;
+  color: #064e3b;
+}
+
 .btn-action-main {
   background: var(--teal-gradient);
   color: #ffffff;

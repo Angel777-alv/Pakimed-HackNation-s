@@ -253,13 +253,7 @@ class PakimedApp {
       this.btnQuickDemo.addEventListener('click', () => this.runQuickDemo());
     }
 
-    // 11. Simulación de conectividad de red
-    if (this.networkToggle) {
-      this.networkToggle.addEventListener('click', () => {
-        const telem = window.pakimedTelemetry;
-        if (telem) telem.toggleNetwork();
-      });
-    }
+    // 11. Simulación de conectividad de red (gestionado por TelemetryController)
 
     // 12. Toggle de Pipeline Small AI
     if (this.btnEngineHeuristic) {
