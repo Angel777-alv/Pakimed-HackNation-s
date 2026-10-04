@@ -58,7 +58,7 @@
       };
 
       // 6. Prescripciones: SLM es superior desambiguando fármacos y eliminando ruido conversacional
-      const prescriptions = this._fusePrescriptions(nerResult?.prescriptions, slmResult?.prescriptions);
+      const prescriptions = this._fusePrescriptions(nerResult?.prescriptions, slmResult?.prescriptions, priorMedications);
 
       // 7. Síntomas y Duración (Unión deduplicada)
       const symptoms = this._fuseSymptoms(nerResult?.symptoms, slmResult?.symptoms);
@@ -123,11 +123,32 @@
     },
 
     /**
-     * Desambigua prescripciones eliminando frases espurias
+     * Desambigua prescripciones eliminando frases espurias y automedicación previa
      */
-    _fusePrescriptions(nerPrescriptions, slmPrescriptions) {
-      const isNoise = (text) => {
+    _fusePrescriptions(nerPrescriptions, slmPrescriptions, priorMeds = []) {
+      const isNoiseOrPrior = (text) => {
         const lower = text.toLowerCase().trim();
+        const hasReliefOrPriorPhrase = (
+          lower.includes('alivio parcial') ||
+          lower.includes('sin mejoría') ||
+          lower.includes('sin mejoria') ||
+          lower.includes('me tomé') ||
+          lower.includes('me tome') ||
+          lower.includes('me inyectaron') ||
+          lower.includes('un compañero')
+        );
+
+        if (hasReliefOrPriorPhrase) return true;
+
+        // Si el texto de la prescripción coincide con algún medicamento previamente tomado
+        if (Array.isArray(priorMeds) && priorMeds.length > 0) {
+          const isPrior = priorMeds.some(pm => {
+            const cleanPm = String(pm).toLowerCase().trim();
+            return cleanPm.length >= 4 && lower.includes(cleanPm);
+          });
+          if (isPrior) return true;
+        }
+
         return (
           lower.startsWith('te la primera') ||
           lower.startsWith('tomarte la primera') ||
@@ -144,7 +165,7 @@
       if (Array.isArray(slmPrescriptions) && slmPrescriptions.length > 0) {
         const cleaned = slmPrescriptions
           .map(p => String(p).trim())
-          .filter(p => p.length > 3 && !isNoise(p));
+          .filter(p => p.length > 3 && !isNoiseOrPrior(p));
         if (cleaned.length > 0) return cleaned;
       }
 
@@ -152,7 +173,7 @@
       if (Array.isArray(nerPrescriptions)) {
         return nerPrescriptions
           .map(p => String(p).trim())
-          .filter(p => p.length > 3 && !isNoise(p));
+          .filter(p => p.length > 3 && !isNoiseOrPrior(p));
       }
 
       return [];
@@ -232,9 +253,9 @@
     _sanitizePureNer(nerResult, rawTranscript) {
       if (!nerResult) return null;
       const sanitized = JSON.parse(JSON.stringify(nerResult));
-      sanitized.prescriptions = this._fusePrescriptions(sanitized.prescriptions, null);
       sanitized.patient.allergies = this._fuseAllergies(sanitized.patient?.allergies, null, rawTranscript);
       sanitized.patient.priorMedications = this._fusePriorMeds(sanitized.patient?.priorMedications, null);
+      sanitized.prescriptions = this._fusePrescriptions(sanitized.prescriptions, null, sanitized.patient.priorMedications);
       sanitized.patient.engine = 'ConText Edge AI (25 KB)';
       return sanitized;
     }
