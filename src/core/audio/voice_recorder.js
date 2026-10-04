@@ -2,10 +2,9 @@
  * Pakimed Voice Recorder & Edge ASR Bridge (Moonshine Voice Architecture)
  * 
  * Captura acústica on-device diseñada para hardware de recursos limitados.
- * Integra Web Speech API nativa con control preciso de estados:
- * - IDLE
- * - RECORDING
- * - PROCESSING
+ * Implementa gestión de Buffer Dual estricto para eliminar duplicaciones y 'efecto eco':
+ * - accumulatedFinal: Acumula fragmentos confirmados (isFinal === true).
+ * - currentInterim: Mantiene la hipótesis provisional sin concatenación recursiva.
  */
 
 class VoiceRecorder {
@@ -18,6 +17,10 @@ class VoiceRecorder {
     this.recognition = null;
     this.timerInterval = null;
     this.seconds = 0;
+
+    // Buffer dual de transcripción
+    this.accumulatedFinal = '';
+    this.currentInterim = '';
 
     this.initRecognition();
   }
@@ -35,28 +38,46 @@ class VoiceRecorder {
 
       this.recognition.onstart = () => {
         this.isRecording = true;
+        this.currentInterim = '';
         this.startTimer();
         this.onStateChange('RECORDING');
       };
 
       this.recognition.onresult = (event) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
+        let interimText = '';
 
         for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const item = event.results[i];
-          if (item.isFinal) {
-            finalTranscript += item[0].transcript;
+          const result = event.results[i];
+          const transcriptChunk = result[0].transcript;
+
+          if (result.isFinal) {
+            // Se agrega al texto confirmado de forma limpia
+            const cleanChunk = transcriptChunk.trim();
+            if (cleanChunk) {
+              this.accumulatedFinal = this.accumulatedFinal 
+                ? `${this.accumulatedFinal} ${cleanChunk}` 
+                : cleanChunk;
+            }
           } else {
-            interimTranscript += item[0].transcript;
+            // Hipótesis temporal en curso
+            interimText += transcriptChunk;
           }
         }
 
-        this.onResult({ finalTranscript, interimTranscript });
+        this.currentInterim = interimText.trim();
+
+        // Construir transcripción completa sin duplicados
+        const fullTranscript = (this.accumulatedFinal + (this.currentInterim ? ' ' + this.currentInterim : '')).trim();
+
+        this.onResult({
+          finalTranscript: this.accumulatedFinal,
+          interimTranscript: this.currentInterim,
+          fullTranscript: fullTranscript
+        });
       };
 
       this.recognition.onerror = (event) => {
-        console.warn('SpeechRecognition warning:', event.error);
+        console.warn('SpeechRecognition notice/error:', event.error);
         this.onError(event.error);
       };
 
@@ -64,15 +85,22 @@ class VoiceRecorder {
         if (this.isRecording) {
           this.stopTimer();
           this.isRecording = false;
+          this.currentInterim = '';
           this.onStateChange('IDLE');
         }
       };
     }
   }
 
+  setBaseTranscript(text = '') {
+    this.accumulatedFinal = (text || '').trim();
+    this.currentInterim = '';
+  }
+
   start() {
     if (this.isRecording) return;
     this.seconds = 0;
+    this.currentInterim = '';
 
     if (this.recognition) {
       try {
@@ -83,7 +111,7 @@ class VoiceRecorder {
       }
     }
 
-    // Fallback simulado para entornos donde el navegador bloquea permisos de mic sin SSL
+    // Fallback de temporizador
     this.isRecording = true;
     this.startTimer();
     this.onStateChange('RECORDING');
@@ -97,8 +125,14 @@ class VoiceRecorder {
       try {
         this.recognition.stop();
       } catch (e) {
-        // silencioso
+        // Silencioso
       }
+    }
+
+    // Consolidar lo que haya quedado en interim
+    if (this.currentInterim) {
+      this.accumulatedFinal = (this.accumulatedFinal + ' ' + this.currentInterim).trim();
+      this.currentInterim = '';
     }
 
     this.onStateChange('PROCESSING');
@@ -127,7 +161,7 @@ class VoiceRecorder {
   }
 
   /**
-   * Plantillas de consulta rápida (únicamente como demostración opcional)
+   * Plantillas de consulta rápida (Opcionales)
    */
   static getTemplates() {
     return [

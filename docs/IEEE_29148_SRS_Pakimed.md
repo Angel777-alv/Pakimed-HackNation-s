@@ -95,19 +95,21 @@ flowchart TD
 * **RF-01.3:** El sistema debe incluir un selector de escenarios clínicos precargados para demostración instantánea durante el pitch.
 * **RF-01.4:** El sistema debe incluir un botón de **Ejecución Automática de Pipeline (Demo 1-Click)** para recorrer fluidamente todo el ciclo de atención médica.
 
-#### RF-02: Extracción Estructurada de Entidades Clínicas (NER)
+#### RF-02: Extracción Estructurada de Entidades Clínicas (Motor Híbrido Semántico/Heurístico)
 * **RF-02.1:** El motor on-device debe procesar el texto transcrito y extraer los siguientes campos estructurados:
   * *Datos Demográficos:* Edad (número/unidad) y Género (F/M).
-  * *Signos Vitales:* Presión arterial (Sistólica/Diastólica en mmHg), Temperatura corporal (°C) y Frecuencia cardíaca (lpm).
-  * *Síntomas:* Lista normalizada de sintomatología referida.
+  * *Signos Vitales:* Presión arterial (Sistólica/Diastólica en mmHg), Temperatura corporal (°C), Frecuencia cardíaca (lpm) y Saturación de Oxígeno (SpO2 %).
+  * *Síntomas y Tiempo de Evolución:* Lista normalizada de sintomatología referida con soporte de matching difuso (Levenshtein) para variantes coloquiales rurales (ej. "dolor de panza", "calentura"), junto con el tiempo de evolución detectado.
   * *Prescripciones:* Nombre de fármacos, dosis y frecuencia dictadas explícitamente por el médico.
-* **RF-02.2:** La extracción debe completarse en un tiempo no mayor a 2.0 segundos en el dispositivo móvil.
+* **RF-02.2:** El motor debe utilizar escaneo de ventanas de contexto dinámicas (N-gramas ±4 tokens) para asociar magnitudes numéricas aisladas con su correspondiente signo vital aun en presencia de ruido o muletillas conversacionales.
+* **RF-02.3:** La extracción debe completarse en un tiempo no mayor a 50 milisegundos en el dispositivo móvil (< 25 KB footprint, cero dependencias de red o modelos pesados).
 
 #### RF-03: Guardarraíles de Seguridad y Ética (IEEE 7000)
 * **RF-03.1 (Regla Estricta de No-Diagnóstico):** El sistema **NUNCA** debe inferir, generar o sugerir diagnósticos médicos, pronósticos o tratamientos que no hayan sido expresamente dictados por el médico.
 * **RF-03.2 (Manejo de Baja Confianza):** Si el motor de extracción detecta ambigüedad o un nivel de confianza inferior al 75% en un término clínico, debe marcar el campo en blanco o resaltar la necesidad de llenado manual.
 * **RF-03.3 (Human-in-the-Loop Obligatorio):** Ningún registro podrá guardarse o encolarse sin la aprobación explícita mediante el botón de visto bueno por parte del profesional médico.
 * **RF-03.4 (Regla de Completitud Clínica y Calidad de Datos):** Si el dictado procesado carece de al menos un dato clínico válido (signo vital, síntoma o prescripción), el sistema debe clasificar el registro como *Incompleto*, disparar una alerta preventiva visible, bloquear el envío a DHIS2 y proveer mecanismos inmediatos para reanudar el dictado o completar manualmente vía la ventana modal HITL.
+* **RF-03.5 (Validación de Rangos Fisiológicos Plausibles):** El sistema debe auditar automáticamente las constantes vitales extraídas o editadas contra límites biológicos plausibles (PAS: 50-250 mmHg, PAD: 30-140 mmHg, Temp: 32.0-43.0 °C, FC: 30-230 lpm, SpO2: 50-100%). En caso de valores anómalos o incongruentes, emitirá una advertencia de seguridad clínica para revisión médica.
 
 #### RF-04: Previsualización Clínica y Ventana de Modificación de Formulario
 * **RF-04.1 (Previsualización Estructurada):** El sistema debe generar una tarjeta de previsualización integral y estética del expediente del paciente antes de la aprobación.
@@ -115,8 +117,8 @@ flowchart TD
 * **RF-04.3 (Verificación Ética Visible):** La previsualización debe mostrar un distintivo visible de cumplimiento de guardarraíles ("Cero diagnóstico generado automáticamente").
 
 #### RF-05: Almacenamiento Seguro Store-and-Forward
-* **RF-05.1:** Al aprobar la consulta, el registro debe almacenarse en la base de datos local del dispositivo (IndexedDB / LocalStorage) en estado `PENDING_SYNC`.
-* **RF-05.2:** El sistema debe listar el historial de consultas locales diferenciando registros sincronizados vs. pendientes.
+* **RF-05.1:** Al aprobar la consulta, el registro debe almacenarse en la base de datos local reactiva del dispositivo (`ClinicalDB` / LocalStorage / IndexedDB) en estado `PENDING_SYNC`.
+* **RF-05.2:** El sistema debe listar el historial de consultas locales diferenciando registros sincronizados vs. pendientes con actualización en tiempo real vía patrón observador.
 * **RF-05.3:** El sistema debe permitir al usuario alternar entre simulación Offline y detección de red 3G/Wi-Fi.
 
 #### RF-06: Serialización e Integración con DHIS2
@@ -128,12 +130,12 @@ flowchart TD
 ## 4. Requisitos No Funcionales (RNF)
 
 #### RNF-01: Rendimiento y Eficiencia (Small AI)
-* **RNF-01.1:** El consumo de memoria RAM de la aplicación en ejecución no debe exceder 1.5 GB.
-* **RNF-01.2:** La aplicación debe iniciar y estar lista para dictado en menos de 2.5 segundos.
+* **RNF-01.1:** El consumo de memoria RAM de la aplicación en ejecución no debe exceder 150 MB en navegador/dispositivo.
+* **RNF-01.2:** La aplicación debe iniciar y estar lista para dictado en menos de 1.0 segundo.
 
 #### RNF-02: Usabilidad y Experiencia de Usuario (UX)
-* **RNF-02.1:** Interfaz presentada en marco de smartphone (Mobile Viewport) con soporte responsive.
-* **RNF-02.2:** Contraste visual elevado y paleta de colores médicos profesionales (Dark Slate / Medical Cyan / Emerald) aptos para condiciones de luz variables en campo.
+* **RNF-02.1:** Interfaz presentada en marco de smartphone táctil optimizado para móviles y panel de telemetría institucional de apoyo.
+* **RNF-02.2:** Contraste visual elevado y paleta médica profesional (Dark Slate / Medical Cyan / Emerald) aptos para condiciones de luz variables en campo.
 
 #### RNF-03: Seguridad y Privacidad
 * **RNF-03.1:** Principio de privacidad por diseño: Ningún fragmento de audio o dato sensible de salud del paciente debe transmitirse a servidores de terceros.
@@ -145,11 +147,11 @@ flowchart TD
 
 | ID Requisito | Descripción | Componente en Código | Estándar / Criterio Hackatón |
 | :--- | :--- | :--- | :--- |
-| **RF-01** | Captura de audio (Moonshine Voice ASR) | `src/core/audio/voice_recorder.js` | Edge AI / Inclusión local |
-| **RF-02** | Extracción clínica estructurada | `src/core/nlp/clinical_ner.js` | Small AI on-device |
-| **RF-03** | Guardarraíles éticos & No-diagnóstico | `src/core/guardrails/guardrails.js` | IEEE 7000 / IA Responsable (Pass/Fail) |
-| **RF-04** | Previsualización y Ventana de Modificación | `src/app/index.js` & `index.html` | Supervisión médica obligatoria (HITL) |
-| **RF-05** | Cola Store-and-Forward | `src/core/storage/offline_queue.js` | Resiliencia Offline |
+| **RF-01** | Captura de audio (Dual-Buffer Streaming ASR) | `src/core/audio/voice_recorder.js` | Edge AI / Inclusión local |
+| **RF-02** | Extracción Híbrida Semántica & Heurística | `src/core/nlp/clinical_ner.js` | Small AI on-device (< 25 KB) |
+| **RF-03** | Guardarraíles éticos, No-diagnóstico y Rangos Fisiológicos | `src/core/guardrails/guardrails.js` | IEEE 7000 / IA Responsable (Pass/Fail) |
+| **RF-04** | Previsualización y Ventana de Modificación | `src/app/app.js` & `index.html` | Supervisión médica obligatoria (HITL) |
+| **RF-05** | Base de Datos Reactiva & Store-and-Forward | `src/core/storage/clinical_db.js` | Resiliencia Offline |
 | **RF-06** | Mapeo y serialización DHIS2 | `src/integrations/dhis2/dhis2_adapter.js` | Estándar global de salud pública |
 
 ---

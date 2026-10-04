@@ -120,11 +120,9 @@ class PakimedApp {
 
     if (VoiceRecorderClass) {
       this.voiceEngine = new VoiceRecorderClass({
-        onResult: ({ finalTranscript, interimTranscript }) => {
-          const current = this.dictationText.value;
-          const textChunk = finalTranscript || interimTranscript;
-          if (textChunk && !current.includes(textChunk)) {
-            this.dictationText.value = current ? `${current} ${textChunk}` : textChunk;
+        onResult: ({ fullTranscript }) => {
+          if (this.dictationText) {
+            this.dictationText.value = fullTranscript;
           }
         },
         onError: (err) => console.warn('Aviso de micrófono:', err),
@@ -196,6 +194,14 @@ class PakimedApp {
         const idx = parseInt(val, 10);
         if (!isNaN(idx) && templates[idx]) {
           this.dictationText.value = templates[idx].transcript;
+        }
+      });
+    }
+
+    if (this.dictationText) {
+      this.dictationText.addEventListener('input', (e) => {
+        if (this.voiceEngine) {
+          this.voiceEngine.setBaseTranscript(e.target.value);
         }
       });
     }

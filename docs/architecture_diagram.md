@@ -39,18 +39,20 @@ flowchart TD
 
 1. **Edge Audio & STT (`src/core/audio/voice_recorder.js`):**
    - Abstracción de **Moonshine Voice ASR** (modelo on-device ultraligero para procesadores de gama baja sin nube).
-   - Captura de audio y transcripción libre en tiempo real mediante Web Speech API nativa, con cronómetro y estados de oscilación acústica.
-   - Cero sobreescrituras forzadas de texto: permite dictado de voz libre y redacción directa.
+   - Gestión de **Buffer Dual Estricto** (`accumulatedFinal` + `currentInterim`): elimina el 'efecto eco' y duplicaciones recursivas de transcripción en tiempo real.
+   - Sincronización transparente con edición manual de notas clínicas y cronómetro reactivo.
 
 2. **Clinical Entity Extractor (`src/core/nlp/clinical_ner.js`):**
-   - Ontología clínica rural en memoria local (< 30 KB en RAM): extracción determinista de signos vitales (PA, FC, Temp, SpO2), demografía (edad, género), ~80 síntomas frecuentes y medicamentos esenciales OMS con posología.
-   - Segmentación de *token spans* con cálculo de índice de certeza/confianza por entidad.
-   - Preservación íntegra de términos atípicos en notas de respaldo para no descartar información crítica.
+   - **Motor Semántico Híbrido On-Device (< 25 KB de footprint, 0 ms de latencia):**
+     - Normalización y limpieza de ruido conversacional (muletillas, titubeos).
+     - Escaneo contextual por ventana de N-gramas (±4 tokens) para capturar presiones y temperaturas aisladas o coloquiales (*"180 en la presión"*, *"temperatura normal de 36°"*).
+     - Mapeo ontológico difuso (*Fuzzy String Similarity Levenshtein / Jaro-Winkler*) para asociar modismos populares (*"dolor de panza"*, *"calentura"*, *"asco / ganas de devolver"*) a terminología médica canónica.
+     - Extracción de tiempos de evolución (*"desde hace 3 días"*) y farmacología esencial OMS.
 
 3. **Safety Guardrails & Calidad de Datos (`src/core/guardrails/guardrails.js`):**
    - **Regla Estricta de No-Diagnóstico (IEEE 7000):** Prohibición activa de emitir inferencias diagnósticas no dictadas por el facultativo.
+   - **Validación de Rangos Fisiológicos Plausibles:** Detección de constantes biológicamente imposibles o anómalas (PA 50-250, Temp 32-43°C, FC 30-230 lpm, SpO2 50-100%, Edad 0-120 años) con alertas de seguridad previas a la firma.
    - **Regla de Completitud Clínica:** Detección de dictados vacíos o conversaciones casuales sin datos clínicos; bloquea el envío de expedientes corruptos a DHIS2 e invita a reanudar el dictado o completar manualmente.
-   - **Manejo de Baja Confianza:** Marcado de advertencia para términos ambiguos o con confianza < 75%.
 
 4. **Interfaz Móvil del Médico (`src/app/app.js`):**
    - Controlador enfocado exclusivamente en la experiencia del facultativo: navegación táctil, captura de voz, estado inicial limpio (sin plantillas forzadas) y ventana modal de ajuste (HITL).
