@@ -39,6 +39,11 @@ class TelemetryController {
         this.syncWithDHIS2();
       });
     }
+
+    window.addEventListener('pakimed:languageChanged', () => {
+      this.updateOnlineUI();
+      this.render();
+    });
   }
 
   subscribeToDB() {
@@ -59,16 +64,17 @@ class TelemetryController {
   }
 
   updateOnlineUI() {
+    const i18n = window.I18nManager;
     if (this.isOnline) {
       if (this.phoneBadge) {
         this.phoneBadge.className = 'status-pill online';
-        this.phoneBadge.innerHTML = '📶 Enlace Activo (3G)';
+        this.phoneBadge.textContent = i18n ? i18n.get('phone_status_online') : '📶 Enlace Activo (3G)';
       }
       if (this.networkToggle) {
-        this.networkToggle.textContent = 'Conectividad: Cambiar a Modo Local (Sin Red)';
+        this.networkToggle.textContent = i18n ? i18n.get('btn_network_offline') : 'Modo Local (Sin red)';
       }
       if (this.telemNetwork) {
-        this.telemNetwork.textContent = 'Enlace institucional 3G disponible (Listo para sincronizar)';
+        this.telemNetwork.textContent = i18n ? i18n.get('telemetry_network_state_online') : 'Enlace institucional 3G disponible (Listo para sincronizar)';
       }
       if (this.syncAllBtn) {
         this.syncAllBtn.disabled = false;
@@ -76,13 +82,13 @@ class TelemetryController {
     } else {
       if (this.phoneBadge) {
         this.phoneBadge.className = 'status-pill offline';
-        this.phoneBadge.innerHTML = 'Modo Local (Sin red)';
+        this.phoneBadge.textContent = i18n ? i18n.get('phone_status_offline') : 'Modo Local (Sin red)';
       }
       if (this.networkToggle) {
-        this.networkToggle.textContent = 'Conectividad: Simular Red Móvil (3G)';
+        this.networkToggle.textContent = i18n ? i18n.get('btn_network_sim') : 'Conectividad: Simular Red Móvil (3G)';
       }
       if (this.telemNetwork) {
-        this.telemNetwork.textContent = 'Modo Autónomo Local (Almacenamiento Seguro)';
+        this.telemNetwork.textContent = i18n ? i18n.get('telemetry_network_state_offline') : 'Modo Autónomo Local (Almacenamiento Seguro)';
       }
     }
   }

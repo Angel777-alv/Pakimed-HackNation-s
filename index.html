@@ -22,18 +22,18 @@
   <header class="pitch-header pitch-banner" role="banner">
     <div class="pitch-header-content pitch-banner-content">
       <div class="brand-group pitch-brand-block">
-        <span class="pitch-category-tag">GLOBAL AI HACKATHON 2026 &middot; SMALL AI SALUD</span>
-        <h1 class="pitch-main-title">Pakimed &mdash; Asistente Clínico Rural On-Device</h1>
-        <p class="pitch-subtitle">Inferencia Edge AI multilingüe para estructuración médica offline y sincronización resiliente con DHIS2.</p>
+        <span class="pitch-category-tag" data-i18n="app_brand_tag">GLOBAL AI HACKATHON 2026 &middot; SMALL AI SALUD</span>
+        <h1 class="pitch-main-title" data-i18n="app_main_title">Pakimed &mdash; Asistente Clínico Rural On-Device</h1>
+        <p class="pitch-subtitle" data-i18n="app_subtitle">Inferencia Edge AI multilingüe para estructuración médica offline y sincronización resiliente con DHIS2.</p>
       </div>
       <div class="pitch-actions">
         <button id="btnQuickDemo" class="btn btn-pitch-demo" title="Demostración guiada del flujo de consulta clínica">
           <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span>Demostración de Flujo Clínico</span>
+          <span data-i18n="btn_demo">Demostración de Flujo Clínico</span>
         </button>
         <button id="networkToggle" class="btn btn-network-toggle">
           <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h2"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V4"/></svg>
-          <span>Conectividad: Simular Red Móvil (3G)</span>
+          <span data-i18n="btn_network_sim">Conectividad: Simular Red Móvil (3G)</span>
         </button>
       </div>
     </div>
@@ -57,7 +57,7 @@
           <span id="phoneClock" class="clock-display">10:42</span>
           <div class="phone-speaker-notch"></div>
           <div class="phone-status-pills">
-            <span id="phoneBadge" class="status-pill offline">Modo Local (Sin red)</span>
+            <span id="phoneBadge" class="status-pill offline" data-i18n="phone_status_offline">Modo Local (Sin red)</span>
             <span class="battery-readout">
               <svg class="mono-icon inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="22" y1="11" x2="22" y2="13"/><rect x="4" y="9" width="10" height="6" fill="currentColor" rx="1"/></svg>
               94%
@@ -77,14 +77,14 @@
             <div class="assistant-welcome-card">
               <div class="welcome-copy">
                 <div class="greeting-row">
-                  <h3 class="welcome-heading">Hola, Dr. Morales</h3>
+                  <h3 class="welcome-heading" data-i18n="dr_greeting">Hola, Dr. Morales</h3>
                   <svg class="mono-icon spark-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
                 </div>
-                <p class="welcome-sub">Centro de Salud Comunitario &middot; Sala 04</p>
+                <p class="welcome-sub" data-i18n="dr_location">Centro de Salud Comunitario &middot; Sala 04</p>
               </div>
               <span class="ai-badge-chip">
                 <svg class="mono-icon inline" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 14 14"/></svg>
-                Edge AI Activo
+                <span data-i18n="badge_edge_active">Asistente Activo</span>
               </span>
             </div>
 
@@ -113,7 +113,7 @@
                           <span class="lang-role">Atención Comunitaria</span>
                         </div>
                       </div>
-                      <span class="slide-active-pill" id="badgeLangActive">Activo</span>
+                      <span class="slide-active-pill" id="badgeLangActive" data-i18n="slide_active_pill">Activo</span>
                     </div>
                     <p class="slide-desc">Dictado por voz y diálogo clínico natural en español. Estructuración médica on-device.</p>
                   </div>
@@ -128,7 +128,7 @@
                           <span class="lang-role">Global Telemedicine</span>
                         </div>
                       </div>
-                      <button class="slide-select-btn" type="button" data-switch-lang="en">Activar</button>
+                      <button class="slide-select-btn" type="button" data-switch-lang="en" data-i18n="carousel_action_switch">Activar</button>
                     </div>
                     <p class="slide-desc">Natural voice dictation and clinical dialogue in English. On-device local structuring.</p>
                   </div>
@@ -143,7 +143,7 @@
                           <span class="lang-role">Humanitärer Einsatz</span>
                         </div>
                       </div>
-                      <button class="slide-select-btn" type="button" data-switch-lang="de">Activar</button>
+                      <button class="slide-select-btn" type="button" data-switch-lang="de" data-i18n="carousel_action_switch">Activar</button>
                     </div>
                     <p class="slide-desc">Natürliches Sprachendiktat und Patientendialog auf Deutsch. Sichere Offline-Erfassung.</p>
                   </div>
@@ -191,7 +191,7 @@
               <div class="capture-card-header">
                 <span class="capture-badge-title">
                   <svg class="mono-icon inline" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  Captura de Consulta Facultativa
+                  <span data-i18n="screen2_title">Captura de Consulta Facultativa</span>
                 </span>
                 <span class="privacy-label">
                   <svg class="mono-icon inline" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -202,14 +202,14 @@
               <!-- Selector Táctico de Pipeline Small AI -->
               <div class="ai-engine-selector-bar">
                 <div class="engine-toggle-group">
-                  <button type="button" id="btnEngineHeuristic" class="engine-toggle-btn" title="Modo ultra-ligero puramente determinista (< 30 KB, < 2 ms)">
+                  <button type="button" id="btnEngineHeuristic" class="engine-toggle-btn" title="Modo ultra-ligero puramente determinista (< 30 KB, < 2 ms)" data-i18n="engine_context_btn">
                     ⚡ ConText
                   </button>
-                  <button type="button" id="btnEngineQwen" class="engine-toggle-btn active" title="Ensamble Híbrido: ConText (Signos/Datos) + Qwen2.5 (Semántica)">
+                  <button type="button" id="btnEngineQwen" class="engine-toggle-btn active" title="Ensamble Híbrido: ConText (Signos/Datos) + Qwen2.5 (Semántica)" data-i18n="engine_hybrid_btn">
                     🧬 Ensamble Híbrido
                   </button>
                 </div>
-                <span id="aiEngineStatusBadge" class="ai-engine-badge qwen">🧬 Híbrido Activo</span>
+                <span id="aiEngineStatusBadge" class="ai-engine-badge qwen" data-i18n="engine_status_hybrid">🧬 Híbrido Activo</span>
               </div>
 
               <!-- Indicadores de Audio y Onda -->
@@ -217,7 +217,7 @@
                 <div id="recordTimerBadge" class="record-timer-badge hidden">
                   <span class="recording-dot"></span>
                   <span id="recordTimerText">00:00</span>
-                  <span class="record-timer-label">&middot; Grabando</span>
+                  <span class="record-timer-label" data-i18n="timer_recording_label">&middot; Grabando</span>
                 </div>
 
                 <div id="waveVisualizer" class="wave-visualizer dormant">
@@ -238,25 +238,25 @@
                     <svg class="mono-icon-mic" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
                   </span>
                 </button>
-                <p id="micStatusText" class="mic-helper-text">Toca para iniciar captura de audio</p>
+                <p id="micStatusText" class="mic-helper-text" data-i18n="mic_hint">Toca para iniciar captura de audio</p>
                 
                 <!-- Indicador de Carga / Procesamiento de Audio -->
                 <div id="audioProcessingIndicator" class="audio-processing-indicator hidden">
                   <div class="mini-spinner"></div>
-                  <span>Procesando audio localmente...</span>
+                  <span data-i18n="audio_processing_text">Procesando audio localmente...</span>
                 </div>
               </div>
 
               <!-- Área de Dictado / Transcripción -->
               <div class="transcript-card">
                 <div class="transcript-header-row">
-                  <span class="transcript-label">Dictado del Facultativo:</span>
+                  <span class="transcript-label" data-i18n="screen2_desc">Dictado del Facultativo:</span>
                 </div>
-                <textarea id="dictationText" class="transcript-box" placeholder="El dictado clínico estructurado aparecerá aquí..."></textarea>
+                <textarea id="dictationText" class="transcript-box" data-i18n-placeholder="dictation_placeholder" placeholder="El dictado clínico estructurado aparecerá aquí..."></textarea>
               </div>
 
               <button id="processBtn" class="btn btn-action-main full-width">
-                <span>Estructurar Datos Clínicos</span>
+                <span data-i18n="btn_structure_action">Estructurar Consulta Médica</span>
                 <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             </div>
@@ -269,8 +269,8 @@
           <div class="phone-screen-view" data-screen="3">
             <div class="phone-card text-center padding-lg">
               <div class="loading-spinner"></div>
-              <h3 class="step-heading">Estructuración On-Device</h3>
-              <p id="processingStepText" class="step-desc">
+              <h3 class="step-heading" data-i18n="screen3_title">Estructuración On-Device</h3>
+              <p id="processingStepText" class="step-desc" data-i18n="screen3_desc">
                 Extrayendo signos vitales y entidades clínicas en el dispositivo...
               </p>
 
@@ -280,19 +280,19 @@
                   <span class="pipe-check">
                     <svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </span>
-                  <span class="pipe-text">Normalización de audio y ancla determinista</span>
+                  <span class="pipe-text" data-i18n="step1_capture">Normalización de audio y ancla determinista</span>
                 </div>
                 <div class="pipeline-progress-item active" id="pipeStep2">
                   <span class="pipe-check">
                     <svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>
                   </span>
-                  <span class="pipe-text">Refinamiento semántico de recetas con Qwen2.5</span>
+                  <span class="pipe-text" data-i18n="step2_ai">Refinamiento semántico de recetas con Qwen2.5</span>
                 </div>
                 <div class="pipeline-progress-item pending" id="pipeStep3">
                   <span class="pipe-check">
                     <svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
                   </span>
-                  <span class="pipe-text">Fusión de datos y guardarraíles IEEE 7000</span>
+                  <span class="pipe-text" data-i18n="step3_ready">Fusión de datos y guardarraíles</span>
                 </div>
                 <div class="pipeline-progress-item pending" id="pipeStep4">
                   <span class="pipe-check">
@@ -326,7 +326,7 @@
                 <p id="incompleteAlertMsg">No se identificaron signos vitales ni síntomas en el audio. Se requiere revisión facultativa.</p>
               </div>
               <div class="incomplete-actions">
-                <button class="btn btn-secondary-clean btn-sm" onclick="window.pakimedApp.goToScreen(2)">
+                <button class="btn btn-secondary-clean btn-sm" onclick="window.pakimedApp.goToScreen(2)" data-i18n="btn_dictate_again">
                   Dictar nuevamente
                 </button>
                 <button class="btn btn-action-main btn-sm" onclick="window.pakimedApp.openEditModal()">
@@ -346,12 +346,12 @@
             <div class="phone-card">
               <div class="card-title-row">
                 <div class="card-title-group">
-                  <h3 class="card-heading-clean">Signos Vitales & Validación</h3>
+                  <h3 class="card-heading-clean" data-i18n="screen4_title">Signos Vitales & Validación</h3>
                   <span id="prevEngineBadge" class="ai-engine-badge-sub hybrid">🧬 Ensamble Híbrido</span>
                 </div>
                 <button id="btnOpenEdit" class="btn-edit-pill">
                   <svg class="mono-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-                  <span>Ajustar</span>
+                  <span data-i18n="btn_edit">Ajustar</span>
                 </button>
               </div>
 
@@ -367,7 +367,7 @@
                 <!-- Presión Arterial -->
                 <div class="vital-dash-card">
                   <div class="dash-card-header">
-                    <span class="dash-card-label">Presión Arterial</span>
+                    <span class="dash-card-label" data-i18n="field_bp">Presión Arterial</span>
                     <span class="dash-status-dot"></span>
                   </div>
                   <div class="dash-value-row">
@@ -388,7 +388,7 @@
                 <!-- Frecuencia Cardíaca -->
                 <div class="vital-dash-card">
                   <div class="dash-card-header">
-                    <span class="dash-card-label">Frecuencia Cardíaca</span>
+                    <span class="dash-card-label" data-i18n="field_hr">Frecuencia Cardíaca</span>
                     <span class="dash-status-dot"></span>
                   </div>
                   <div class="dash-value-row">
@@ -407,14 +407,14 @@
                     </svg>
                   </div>
                   <div class="dash-card-footer">
-                    <span>Ritmo sinusal regular</span>
+                    <span data-i18n="status_sinus_regular">Ritmo sinusal regular</span>
                   </div>
                 </div>
 
                 <!-- Temperatura -->
                 <div class="vital-dash-card">
                   <div class="dash-card-header">
-                    <span class="dash-card-label">Temperatura</span>
+                    <span class="dash-card-label" data-i18n="field_temp">Temperatura</span>
                     <span class="dash-status-dot"></span>
                   </div>
                   <div class="dash-value-row">
@@ -427,14 +427,14 @@
                     </div>
                   </div>
                   <div class="dash-card-footer">
-                    <span class="alert-indicator-text">Estado febril leve</span>
+                    <span class="alert-indicator-text" data-i18n="status_fever_mild">Estado febril leve</span>
                   </div>
                 </div>
 
                 <!-- Sat O2 -->
                 <div class="vital-dash-card">
                   <div class="dash-card-header">
-                    <span class="dash-card-label">Sat. Oxígeno (SpO2)</span>
+                    <span class="dash-card-label" data-i18n="field_spo2">Sat. Oxígeno (SpO2)</span>
                     <span class="dash-status-dot"></span>
                   </div>
                   <div class="dash-value-row">
@@ -443,11 +443,11 @@
                   </div>
                   <div class="dash-chart-container">
                     <div class="patient-gender-badge">
-                      <span>Normoxemia</span>
+                      <span data-i18n="status_normoxemia">Normoxemia</span>
                     </div>
                   </div>
                   <div class="dash-card-footer">
-                    <span>Sin registro en consulta</span>
+                    <span data-i18n="status_no_record">Sin registro en consulta</span>
                   </div>
                 </div>
 
@@ -465,7 +465,7 @@
 
               <!-- Síntomas -->
               <div class="summary-block">
-                <span class="block-title">Síntomas registrados:</span>
+                <span class="block-title" data-i18n="field_symptoms">Síntomas registrados:</span>
                 <div id="prevSymptoms" class="tag-row">
                   <span class="tag-pill symptom">Disuria</span>
                 </div>
@@ -473,7 +473,7 @@
 
               <!-- Medicación -->
               <div class="summary-block">
-                <span class="block-title">Esquema terapéutico indicado:</span>
+                <span class="block-title" data-i18n="field_meds">Esquema terapéutico indicado:</span>
                 <div id="prevMeds" class="rx-stack">
                   <div class="rx-row">
                     <span class="rx-badge">💊 Receta</span>
@@ -487,18 +487,18 @@
 
               <!-- Respaldo del Audio Dictado -->
               <div class="summary-block">
-                <span class="block-title">Transcripción original de referencia:</span>
+                <span class="block-title" data-i18n="field_notes">Transcripción original de referencia:</span>
                 <p id="prevNotes" class="quote-text">"Notas originales..."</p>
               </div>
 
               <!-- Botones de Visto Bueno -->
               <div class="approval-buttons">
-                <button class="btn btn-secondary-clean" onclick="window.pakimedApp.goToScreen(2)">
+                <button class="btn btn-secondary-clean" onclick="window.pakimedApp.goToScreen(2)" data-i18n="btn_dictate_again">
                   Dictar nuevamente
                 </button>
                 <button id="approveBtn" class="btn btn-approve-main">
                   <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Validar y Registrar</span>
+                  <span data-i18n="btn_approve">Validar y Registrar</span>
                 </button>
               </div>
             </div>
@@ -516,7 +516,7 @@
                 <div class="scanner-card">
                   <div class="scanner-sheet">
                     <div class="sheet-line wide"></div>
-                    <div class="sheet-title-text">Expediente Clínico Digital</div>
+                    <div class="sheet-title-text" data-i18n="doc_scanner_sheet">Expediente Clínico Digital</div>
                     <div class="sheet-line"></div>
                     <div class="sheet-line short"></div>
                     <div class="scanner-barcode"></div>
@@ -531,39 +531,39 @@
                   <div class="flow-icon-circle">
                     <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
                   </div>
-                  <span class="flow-label">Captura Dictada</span>
+                  <span class="flow-label" data-i18n="pipeline_step_capture">Captura Dictada</span>
                 </div>
                 <div class="flow-arrow">&rarr;</div>
                 <div class="flow-step-item">
                   <div class="flow-icon-circle">
                     <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
                   </div>
-                  <span class="flow-label">Small AI NER</span>
+                  <span class="flow-label" data-i18n="pipeline_step_ner">Small AI NER</span>
                 </div>
                 <div class="flow-arrow">&rarr;</div>
                 <div class="flow-step-item active">
                   <div class="flow-icon-circle active">
                     <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </div>
-                  <span class="flow-label">Validado</span>
+                  <span class="flow-label" data-i18n="pipeline_step_validated">Validado</span>
                 </div>
               </div>
 
-              <h3 class="step-heading">Expediente Clínico Resguardado</h3>
-              <p class="step-desc">
+              <h3 class="step-heading" data-i18n="screen5_title">Expediente Clínico Resguardado</h3>
+              <p class="step-desc" data-i18n="screen5_desc">
                 La consulta ha sido encriptada e incorporada a la base de datos local inmutable del dispositivo.
               </p>
 
               <div class="offline-notice-box">
                 <p>
                   <svg class="mono-icon inline" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <strong>Sincronización Store-and-Forward:</strong> En cuanto se detecte enlace 3G o institucional, el lote se consolidará automáticamente en DHIS2.
+                  <span data-i18n="store_forward_notice"><strong>Sincronización Store-and-Forward:</strong> En cuanto se detecte enlace 3G o institucional, el lote se consolidará automáticamente en DHIS2.</span>
                 </p>
               </div>
 
               <button class="btn btn-action-main full-width margin-top-md" onclick="window.pakimedApp.goToScreen(2)">
                 <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <span>Nueva Consulta</span>
+                <span data-i18n="btn_new_consult">Nueva Consulta</span>
               </button>
             </div>
           </div>
@@ -579,18 +579,18 @@
           <!-- Elemento 1: Homepage / Inicio -->
           <button class="dock-tab active" type="button" data-dock-screen="1" title="Inicio / Dashboard">
             <svg class="mono-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span class="dock-label">Inicio</span>
+            <span class="dock-label" data-i18n="dock_home">Inicio</span>
           </button>
 
           <!-- Elemento 2: Estructuración On-Device -->
           <button class="dock-tab" type="button" data-dock-screen="3" title="Estructuración Small AI">
             <svg class="mono-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-            <span class="dock-label">Estructurar</span>
+            <span class="dock-label" data-i18n="dock_structure">Estructurar</span>
           </button>
 
           <!-- Botón Central Elevado: Agregar Pacientes / Dictado (+) -->
           <div class="dock-center-action">
-            <button id="dockFloatingActionBtn" class="dock-fab-btn" title="Agregar Paciente & Dictar Consulta" type="button" data-dock-screen="2">
+            <button id="dockFloatingActionBtn" class="dock-fab-btn" title="Agregar Paciente & Dictar Consulta" data-i18n-title="dock_fab_title" type="button" data-dock-screen="2">
               <svg class="mono-icon fab-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </button>
           </div>
@@ -598,13 +598,13 @@
           <!-- Elemento 3: Validación / Signos -->
           <button class="dock-tab" type="button" data-dock-screen="4" title="Signos Vitales y Validación">
             <svg class="mono-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            <span class="dock-label">Validación</span>
+            <span class="dock-label" data-i18n="dock_validate">Validación</span>
           </button>
 
           <!-- Elemento 4: Expediente -->
           <button class="dock-tab" type="button" data-dock-screen="5" title="Expediente Clínico & Historial">
             <svg class="mono-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            <span class="dock-label">Expediente</span>
+            <span class="dock-label" data-i18n="dock_record">Expediente</span>
           </button>
 
         </nav>
@@ -624,10 +624,10 @@
         <div class="console-header">
           <span class="console-tag">
             <svg class="mono-icon inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><path d="M10 9h4"/><path d="M12 7v4"/></svg>
-            Centro de Control y Telemetría Institucional
+            <span data-i18n="telemetry_tag">Centro de Control y Telemetría Institucional</span>
           </span>
-          <h2 class="console-title">Monitoreo de Datos y Sincronización</h2>
-          <p class="console-subtitle">Auditoría en tiempo real de procesamiento on-device, validación facultativa y conformidad con estándares de salud pública.</p>
+          <h2 class="console-title" data-i18n="telemetry_title">Monitoreo de Datos y Sincronización</h2>
+          <p class="console-subtitle" data-i18n="telemetry_subtitle">Auditoría en tiempo real de procesamiento on-device, validación facultativa y conformidad con estándares de salud pública.</p>
         </div>
 
         <!-- Cuadrícula de Métricas Técnicas -->
@@ -636,35 +636,35 @@
           <!-- Métrica 1: Cero Tráfico a Internet -->
           <div class="metric-card">
             <div class="metric-top">
-              <span class="metric-name">Tráfico Externo Durante Consulta</span>
-              <span class="pill-green">Confinamiento Local</span>
+              <span class="metric-name" data-i18n="telemetry_traffic_label">Tráfico Externo Durante Consulta</span>
+              <span class="pill-green" data-i18n="telemetry_traffic_badge">Confinamiento Local</span>
             </div>
             <div id="telemBytes" class="metric-huge">0.0 KB</div>
-            <p class="metric-explain">Total ausencia de peticiones externas durante la atención clínica.</p>
+            <p class="metric-explain" data-i18n="telemetry_traffic_desc">Total ausencia de peticiones externas durante la atención clínica.</p>
           </div>
 
           <!-- Métrica 2: Guardarraíl Ético -->
           <div class="metric-card">
             <div class="metric-top">
-              <span class="metric-name">Supervisión Clínica y Guardarraíles</span>
-              <span class="pill-green">Validado</span>
+              <span class="metric-name" data-i18n="telemetry_supervision_label">Supervisión Clínica y Guardarraíles</span>
+              <span class="pill-green" data-i18n="telemetry_supervision_badge">Validado</span>
             </div>
             <div id="telemSafety" class="metric-status-line">
-              <span class="dot-ok"></span> Protocolo de Transcripción Fiel Activo
+              <span class="dot-ok"></span> <span data-i18n="telemetry_supervision_text">Protocolo de Transcripción Fiel Activo</span>
             </div>
-            <p class="metric-explain">Prevención activa de inferencias diagnósticas no avaladas por el facultativo.</p>
+            <p class="metric-explain" data-i18n="telemetry_supervision_desc">Prevención activa de inferencias diagnósticas no avaladas por el facultativo.</p>
           </div>
 
           <!-- Métrica 3: Estado de Red -->
           <div class="metric-card full-width-metric">
             <div class="metric-top">
-              <span class="metric-name">Canal de Conectividad</span>
+              <span class="metric-name" data-i18n="telemetry_network_label">Canal de Conectividad</span>
               <span class="pill-neutral">Store &amp; Forward</span>
             </div>
-            <div id="telemNetwork" class="metric-network-state">
+            <div id="telemNetwork" class="metric-network-state" data-i18n="telemetry_network_state_offline">
               Modo Autónomo Local (Almacenamiento Seguro)
             </div>
-            <p class="metric-explain">Los expedientes se resguardan en base de datos local cifrada hasta restablecer enlace institucional.</p>
+            <p class="metric-explain" data-i18n="telemetry_network_desc">Los expedientes se resguardan en base de datos local cifrada hasta restablecer enlace institucional.</p>
           </div>
 
         </div>
@@ -675,17 +675,17 @@
             <div>
               <h3 class="console-card-title">
                 <svg class="mono-icon inline" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-                Cola Local de Expedientes Clínicos
+                <span data-i18n="telemetry_queue_title">Cola Local de Expedientes Clínicos</span>
               </h3>
-              <p class="console-card-desc">Registros almacenados localmente a la espera de enlace institucional:</p>
+              <p class="console-card-desc" data-i18n="telemetry_queue_desc">Registros almacenados localmente a la espera de enlace institucional:</p>
             </div>
             <button id="syncAllBtn" class="btn btn-sync-cloud">
               <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
-              <span>Sincronizar Lote con DHIS2</span>
+              <span data-i18n="telemetry_btn_sync">Sincronizar Lote con DHIS2</span>
             </button>
           </div>
 
-          <div id="syncStatusAlert" class="sync-info-banner">
+          <div id="syncStatusAlert" class="sync-info-banner" data-i18n="telemetry_sync_banner">
             Los expedientes se preservan íntegros en almacenamiento local ante cortes de energía o cobertura.
           </div>
 
@@ -698,14 +698,14 @@
             <div>
               <h3 class="console-card-title">
                 <svg class="mono-icon inline" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><path d="M10 9h4"/><path d="M12 7v4"/></svg>
-                Integración con Sistema de Salud (DHIS2)
+                <span data-i18n="telemetry_dhis2_title">Integración con Sistema de Salud (DHIS2)</span>
               </h3>
-              <p class="console-card-desc">Carga estructurada según estándar oficial DHIS2 Tracker / Event API:</p>
+              <p class="console-card-desc" data-i18n="telemetry_dhis2_desc">Carga estructurada según estándar oficial DHIS2 Tracker / Event API:</p>
             </div>
             <span class="standard-pill">DHIS2 Compliant</span>
           </div>
 
-          <pre id="dhis2JsonViewer" class="json-viewer-screen">// Al validar una consulta, aquí se generará el objeto estructurado en formato DHIS2</pre>
+          <pre id="dhis2JsonViewer" class="json-viewer-screen" data-i18n="telemetry_dhis2_empty">// Al validar una consulta, aquí se generará el objeto estructurado en formato DHIS2</pre>
         </div>
 
       </div>
@@ -723,13 +723,13 @@
       <div class="modal-card-top">
         <h3 class="modal-card-title">
           <svg class="mono-icon inline" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-          Ajustar Registro Clínico del Paciente
+          <span data-i18n="modal_title">Ajustar Registro Clínico del Paciente</span>
         </h3>
         <button id="btnCloseModal" class="btn-close-x" aria-label="Cerrar">&times;</button>
       </div>
 
       <div class="modal-card-content">
-        <p class="modal-card-intro">
+        <p class="modal-card-intro" data-i18n="modal_intro">
           El criterio facultativo prevalece sobre cualquier inferencia automatizada. Valide o modifique los valores antes del registro definitivo:
         </p>
 
@@ -738,70 +738,70 @@
 
         <!-- Nombre del Paciente (Obligatorio) -->
         <div class="form-item">
-          <label class="item-label" for="fieldName">Nombre del Paciente (Obligatorio):</label>
-          <input type="text" id="fieldName" class="clean-input" placeholder="Nombre completo">
+          <label class="item-label" for="fieldName" data-i18n="modal_patient_label">Nombre del Paciente (Obligatorio):</label>
+          <input type="text" id="fieldName" class="clean-input" data-i18n-placeholder="modal_patient_placeholder" placeholder="Nombre completo">
         </div>
 
         <div class="form-row-2">
           <div class="form-item">
-            <label class="item-label" for="fieldAge">Edad (años):</label>
+            <label class="item-label" for="fieldAge" data-i18n="modal_age_label">Edad (años):</label>
             <input type="number" id="fieldAge" class="clean-input" placeholder="Ej: 34">
           </div>
           <div class="form-item">
-            <label class="item-label" for="fieldGender">Género:</label>
+            <label class="item-label" for="fieldGender" data-i18n="modal_gender_label">Género:</label>
             <select id="fieldGender" class="clean-select">
-              <option value="">Seleccionar</option>
-              <option value="F">Femenino</option>
-              <option value="M">Masculino</option>
+              <option value="" data-i18n="modal_gender_select">Seleccionar</option>
+              <option value="F" data-i18n="modal_gender_female">Femenino</option>
+              <option value="M" data-i18n="modal_gender_male">Masculino</option>
             </select>
           </div>
         </div>
 
         <div class="form-row-3">
           <div class="form-item">
-            <label class="item-label" for="fieldBP">Presión Arterial:</label>
+            <label class="item-label" for="fieldBP" data-i18n="modal_bp_label">Presión Arterial:</label>
             <input type="text" id="fieldBP" class="clean-input" placeholder="120/80">
           </div>
           <div class="form-item">
-            <label class="item-label" for="fieldTemp">Temperatura (°C):</label>
+            <label class="item-label" for="fieldTemp" data-i18n="modal_temp_label">Temperatura (°C):</label>
             <input type="text" id="fieldTemp" class="clean-input" placeholder="38.5">
           </div>
           <div class="form-item">
-            <label class="item-label" for="fieldHR">Pulso (lpm):</label>
+            <label class="item-label" for="fieldHR" data-i18n="modal_hr_label">Pulso (lpm):</label>
             <input type="number" id="fieldHR" class="clean-input" placeholder="78">
           </div>
         </div>
 
         <div class="form-row-2">
           <div class="form-item">
-            <label class="item-label" for="fieldSpO2">Saturación O₂ (% SpO2):</label>
+            <label class="item-label" for="fieldSpO2" data-i18n="modal_spo2_label">Saturación O₂ (% SpO2):</label>
             <input type="number" id="fieldSpO2" class="clean-input" placeholder="Ej: 98">
           </div>
           <div class="form-item">
-            <label class="item-label" for="fieldAllergies">Alergias Medicamentosas:</label>
-            <input type="text" id="fieldAllergies" class="clean-input" placeholder="Ej: Penicilina (o dejar vacío)">
+            <label class="item-label" for="fieldAllergies" data-i18n="modal_allergies_label">Alergias Medicamentosas:</label>
+            <input type="text" id="fieldAllergies" class="clean-input" data-i18n-placeholder="modal_allergies_placeholder" placeholder="Ej: Penicilina (o dejar vacío)">
           </div>
         </div>
 
         <div class="form-item">
-          <label class="item-label" for="fieldSymptoms">Síntomas registrados (separados por coma):</label>
-          <input type="text" id="fieldSymptoms" class="clean-input" placeholder="Ej: fiebre, tos seca, dolor de cabeza">
+          <label class="item-label" for="fieldSymptoms" data-i18n="modal_symptoms_label">Síntomas registrados (separados por coma):</label>
+          <input type="text" id="fieldSymptoms" class="clean-input" data-i18n-placeholder="modal_symptoms_placeholder" placeholder="Ej: fiebre, tos seca, dolor de cabeza">
         </div>
 
         <div class="form-item">
-          <label class="item-label" for="fieldMeds">Medicamentos e indicaciones facultativas:</label>
-          <input type="text" id="fieldMeds" class="clean-input" placeholder="Ej: Paracetamol 500mg cada 8 horas">
+          <label class="item-label" for="fieldMeds" data-i18n="modal_meds_label">Medicamentos e indicaciones facultativas:</label>
+          <input type="text" id="fieldMeds" class="clean-input" data-i18n-placeholder="modal_meds_placeholder" placeholder="Ej: Paracetamol 500mg cada 8 horas">
         </div>
 
         <div class="form-item">
-          <label class="item-label" for="fieldNotes">Observaciones clínicas de respaldo:</label>
+          <label class="item-label" for="fieldNotes" data-i18n="modal_notes_label">Observaciones clínicas de respaldo:</label>
           <textarea id="fieldNotes" class="clean-textarea" rows="2"></textarea>
         </div>
       </div>
 
       <div class="modal-card-bottom">
-        <button id="btnCancelEdit" class="btn btn-secondary-clean">Cancelar</button>
-        <button id="btnSaveEdit" class="btn btn-action-main">Guardar Registro</button>
+        <button id="btnCancelEdit" class="btn btn-secondary-clean" data-i18n="modal_cancel">Cancelar</button>
+        <button id="btnSaveEdit" class="btn btn-action-main" data-i18n="modal_save">Guardar Registro</button>
       </div>
     </div>
   </div>

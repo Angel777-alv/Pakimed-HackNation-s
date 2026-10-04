@@ -32,8 +32,8 @@ class PakimedApp {
     this.initVoiceEngine();
     this.initModalController();
     this.bindEvents();
-    this.initLanguageCarousel();
     this.setupInitialState();
+    this.initLanguageCarousel();
     this.startClock();
     this.checkQwenAvailability();
   }
@@ -104,34 +104,12 @@ class PakimedApp {
   }
 
   setupInitialState() {
-    // 1. Selector de plantillas clínicas
-    if (this.scenarioSelect) {
-      this.scenarioSelect.innerHTML = '<option value="">-- Seleccionar plantilla de consulta (Opcional) --</option>';
-      const templates = window.Pakimed && window.Pakimed.VoiceRecorder 
-        ? window.Pakimed.VoiceRecorder.getTemplates() 
-        : [];
-
-      templates.forEach((t, idx) => {
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = t.title;
-        this.scenarioSelect.appendChild(opt);
-      });
-      this.scenarioSelect.value = '';
-    }
-
-    // 2. Área de dictado limpia
+    // 1. Área de dictado limpia
     if (this.dictationText) {
       this.dictationText.value = '';
-      this.dictationText.placeholder = 'Presiona el micrófono para iniciar el dictado clínico o redacta las notas de la consulta aquí...';
     }
 
-    // 3. Indicador de estado en espera activa
-    if (this.micStatusText) {
-      this.micStatusText.textContent = 'Listo para consulta médica · Micrófono en espera';
-    }
-
-    // 4. Verificación proactiva de disponibilidad de Qwen2.5 Local
+    // 2. Verificación proactiva de disponibilidad de Qwen2.5 Local
     this.checkQwenAvailability();
   }
 
@@ -147,6 +125,7 @@ class PakimedApp {
         onError: (err) => console.warn('Aviso de micrófono:', err),
         onStateChange: (state, payload) => this.handleVoiceState(state, payload)
       });
+      window.voiceRecorder = this.voiceEngine;
     }
   }
 
@@ -299,7 +278,7 @@ class PakimedApp {
     this.btnNextLang = document.getElementById('btnNextLang');
     const slides = document.querySelectorAll('.carousel-slide');
 
-    const updateCarouselUI = (index) => {
+    const updateCarouselUI = (index, triggerChange = true) => {
       this.carouselSlideIndex = index;
       if (this.carouselTrack) {
         this.carouselTrack.style.transform = `translateX(-${index * 100}%)`;
@@ -307,21 +286,26 @@ class PakimedApp {
       this.carouselDots.forEach((dot, i) => {
         dot.classList.toggle('active', i === index);
       });
+
+      if (triggerChange && slides[index]) {
+        const lang = slides[index].getAttribute('data-lang');
+        this.switchLanguage(lang, index);
+      }
     };
 
     if (this.btnPrevLang) {
       this.btnPrevLang.addEventListener('click', (e) => {
         e.stopPropagation();
-        const newIdx = (this.carouselSlideIndex - 1 + 3) % 3;
-        updateCarouselUI(newIdx);
+        const newIdx = (this.carouselSlideIndex - 1 + slides.length) % slides.length;
+        updateCarouselUI(newIdx, true);
       });
     }
 
     if (this.btnNextLang) {
       this.btnNextLang.addEventListener('click', (e) => {
         e.stopPropagation();
-        const newIdx = (this.carouselSlideIndex + 1) % 3;
-        updateCarouselUI(newIdx);
+        const newIdx = (this.carouselSlideIndex + 1) % slides.length;
+        updateCarouselUI(newIdx, true);
       });
     }
 
@@ -329,7 +313,7 @@ class PakimedApp {
       dot.addEventListener('click', (e) => {
         e.stopPropagation();
         const idx = parseInt(dot.getAttribute('data-slide-index'), 10);
-        updateCarouselUI(idx);
+        updateCarouselUI(idx, true);
       });
     });
 
@@ -349,7 +333,9 @@ class PakimedApp {
       }
     });
 
-    this.renderScenarios();
+    // Activar idioma inicial explícitamente sincronizando todas las vistas y data-i18n
+    const initialLang = window.I18nManager ? window.I18nManager.getCurrentLanguage() : 'es';
+    this.switchLanguage(initialLang, 0);
   }
 
   switchLanguage(lang, slideIndex) {
@@ -362,30 +348,36 @@ class PakimedApp {
       if (isCurrent) {
         slide.classList.add('active');
         const mainRow = slide.querySelector('.slide-main-row');
-        if (mainRow && !slide.querySelector('.slide-active-pill')) {
+        if (mainRow) {
           const oldBtn = slide.querySelector('.slide-select-btn');
           if (oldBtn) oldBtn.remove();
-          const activePill = document.createElement('span');
-          activePill.className = 'slide-active-pill';
-          activePill.textContent = 'Activo';
-          mainRow.appendChild(activePill);
+          let activePill = slide.querySelector('.slide-active-pill');
+          if (!activePill) {
+            activePill = document.createElement('span');
+            activePill.className = 'slide-active-pill';
+            mainRow.appendChild(activePill);
+          }
+          activePill.textContent = window.I18nManager.get('slide_active_pill');
         }
       } else {
         slide.classList.remove('active');
         const mainRow = slide.querySelector('.slide-main-row');
         const activePill = slide.querySelector('.slide-active-pill');
         if (activePill) activePill.remove();
-        if (mainRow && !slide.querySelector('.slide-select-btn')) {
-          const selectBtn = document.createElement('button');
-          selectBtn.className = 'slide-select-btn';
-          selectBtn.type = 'button';
-          selectBtn.setAttribute('data-switch-lang', slide.getAttribute('data-lang'));
-          selectBtn.textContent = 'Activar';
-          selectBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.switchLanguage(slide.getAttribute('data-lang'), idx);
-          });
-          mainRow.appendChild(selectBtn);
+        if (mainRow) {
+          let selectBtn = slide.querySelector('.slide-select-btn');
+          if (!selectBtn) {
+            selectBtn = document.createElement('button');
+            selectBtn.className = 'slide-select-btn';
+            selectBtn.type = 'button';
+            selectBtn.setAttribute('data-switch-lang', slide.getAttribute('data-lang'));
+            selectBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              this.switchLanguage(slide.getAttribute('data-lang'), idx);
+            });
+            mainRow.appendChild(selectBtn);
+          }
+          selectBtn.textContent = window.I18nManager.get('carousel_action_switch');
         }
       }
     });
@@ -404,6 +396,18 @@ class PakimedApp {
 
     if (this.voiceEngine) {
       this.voiceEngine.setLanguage(window.I18nManager.getSTTLocale());
+    }
+
+    if (this.micStatusText) {
+      this.micStatusText.textContent = window.I18nManager.get('mic_hint');
+    }
+    if (this.dictationText) {
+      this.dictationText.placeholder = window.I18nManager.get('dictation_placeholder');
+    }
+    if (this.aiEngineStatusBadge) {
+      this.aiEngineStatusBadge.textContent = this.activeEngine === 'hybrid' 
+        ? window.I18nManager.get('engine_status_hybrid') 
+        : window.I18nManager.get('engine_status_heuristic');
     }
 
     this.selectScenario(0);
