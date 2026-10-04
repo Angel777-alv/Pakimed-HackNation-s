@@ -359,11 +359,19 @@ class PakimedApp {
   renderPreview(data) {
     if (!data) return;
 
-    // 0. Distintivo del Motor de Extracción Utilizado
+    // 0. Distintivo del Motor de Extracción Realmente Utilizado
     if (this.prevEngineBadge) {
-      const isQwen = (data.patient?.engine && data.patient.engine.includes('Qwen')) || this.activeEngine === 'qwen';
-      this.prevEngineBadge.textContent = isQwen ? '🧠 Qwen2.5-0.5B (Small AI)' : '⚡ ConText Edge AI (25 KB)';
-      this.prevEngineBadge.classList.toggle('qwen', isQwen);
+      const actuallyRanQwen = Boolean(data.patient?.engine && data.patient.engine.includes('Qwen'));
+      if (actuallyRanQwen) {
+        this.prevEngineBadge.textContent = '🧠 Qwen2.5-0.5B (Small AI)';
+        this.prevEngineBadge.classList.add('qwen');
+      } else if (this.activeEngine === 'qwen') {
+        this.prevEngineBadge.textContent = '⚡ ConText (Fallback: Qwen SLM no detectado)';
+        this.prevEngineBadge.classList.remove('qwen');
+      } else {
+        this.prevEngineBadge.textContent = '⚡ ConText Edge AI (25 KB)';
+        this.prevEngineBadge.classList.remove('qwen');
+      }
     }
 
     // 1. Identificación y Demográficos del Paciente
