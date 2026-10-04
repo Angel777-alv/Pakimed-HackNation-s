@@ -1413,3 +1413,17 @@ body {
   border-top: 1px solid var(--border-hairline);
   padding-top: 1rem;
 }
+
+/* Validación y estados de error interactivos */
+.input-invalid {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+  color: #991b1b !important;
+}
+
+.input-invalid:focus {
+  outline: none !important;
+  border-color: #dc2626 !important;
+}
+

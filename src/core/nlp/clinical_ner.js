@@ -32,7 +32,7 @@ const ClinicalNER = {
       canonical: 'Vómitos y Náuseas',
       synonyms: [
         'vómitos', 'vomitos', 'vómito', 'vomito', 'náuseas', 'nauseas', 'asco', 
-        'ganas de devolver', 'devolvió el alimento', 'emesis', 'arcadas'
+        'ganas de devolver', 'devolvió el alimento', 'emesis', 'arcadas', 'poco de vómito', 'poco de vomito'
       ]
     },
     {
@@ -46,7 +46,8 @@ const ClinicalNER = {
       canonical: 'Cefalea / Dolor de cabeza',
       synonyms: [
         'dolor de cabeza', 'cefalea', 'jaqueca', 'dolor en la frente', 'pesadez de cabeza',
-        'migraña', 'dolor en la nuca', 'latidos en la cabeza'
+        'migraña', 'dolor en la nuca', 'latidos en la cabeza', 'me ha dolido la cabeza',
+        'dolido la cabeza', 'duele la cabeza', 'dolor de la cabeza'
       ]
     },
     {
@@ -67,7 +68,15 @@ const ClinicalNER = {
       canonical: 'Odinofagia / Dolor de garganta',
       synonyms: [
         'dolor de garganta', 'odinofagia', 'ardor de garganta', 'garganta irritada',
-        'dolor al tragar', 'carraspeo'
+        'dolor al tragar', 'carraspeo', 'la garganta', 'dolido la garganta', 'duele la garganta'
+      ]
+    },
+    {
+      canonical: 'Artralgias / Dolor articular y extremidades',
+      synonyms: [
+        'dolor de rodillas', 'doler las rodillas', 'doler las piernas', 'dolor en las rodillas',
+        'dolor en rodillas', 'dolor articular', 'dolor de articulaciones', 'artralgias',
+        'dolor de huesos', 'dolor de espalda', 'lumbalgia', 'dolor de brazos', 'dolor de piernas'
       ]
     },
     {
@@ -81,7 +90,7 @@ const ClinicalNER = {
       canonical: 'Malestar general y Mialgias',
       synonyms: [
         'malestar general', 'dolor de cuerpo', 'cuerpo cortado', 'decaimiento',
-        'fatiga', 'astenia', 'mialgias', 'dolor muscular', 'dolor en articulaciones', 'artralgias'
+        'fatiga', 'astenia', 'mialgias', 'dolor muscular', 'sentido muy mal'
       ]
     },
     {
@@ -92,8 +101,8 @@ const ClinicalNER = {
 
   // Lista Modelo de Medicamentos Esenciales
   ESSENTIAL_MEDS: [
-    'paracetamol', 'acetaminofén', 'acetaminofen', 'ibuprofeno', 'diclofenaco',
-    'metamizol', 'dipirona', 'aspirina', 'ácido acetilsalicílico',
+    'paracetamol', 'acetaminofén', 'acetaminofen', 'ibuprofeno', 'naproxeno', 'naproxen',
+    'diclofenaco', 'ketorolaco', 'metamizol', 'dipirona', 'aspirina', 'ácido acetilsalicílico',
     'amoxicilina', 'ampicilina', 'cefalexina', 'ciprofloxacino', 'azitromicina',
     'claritromicina', 'metronidazol', 'cotrimoxazol', 'trimetoprima',
     'losartán', 'losartan', 'enalapril', 'captopril', 'amlodipino', 'hidroclorotiazida',
@@ -101,7 +110,7 @@ const ClinicalNER = {
     'loperamida', 'metoclopramida', 'butilhioscina', 'dimenhidrinato',
     'salbutamol', 'budesonida', 'beclometasona', 'loratadina', 'cetirizina',
     'clorfenamina', 'ambroxol', 'dextrometorfano', 'metformina', 'glibenclamida',
-    'albendazol', 'mebendazol'
+    'albendazol', 'mebendazol', 'tramadol', 'prednisona', 'dexametasona', 'betametasona'
   ],
 
   /**
@@ -223,9 +232,9 @@ const ClinicalNER = {
     if (bpDualMatch) {
       result.vitals.bloodPressure = `${bpDualMatch[1]}/${bpDualMatch[2]}`;
     } else {
-      // 4.2 Formato coloquial aislado: "180 en la presión", "presión de 180", "180 de presión"
-      const bpSingleMatch = text.match(/(?:son de|es de|de)?\s*(\d{2,3})\s*(?:en la|de)?\s*(?:presi[oó]n|tensi[oó]n|presion|tension)/i)
-        || text.match(/(?:presi[oó]n|tensi[oó]n|presion|tension)\s*(?:de|es de|son de|arterial de)?\s*(\d{2,3})/i);
+      // 4.2 Formato coloquial aislado: "son 180 para la presión", "180 en la presión", "presión de 180", "180 de presión"
+      const bpSingleMatch = text.match(/(?:son de|es de|de|son|es)?\s*(\d{2,3})\s*(?:para la|en la|de|en|por la)?\s*(?:presi[oó]n|tensi[oó]n|presion|tension|pa)/i)
+        || text.match(/(?:presi[oó]n|tensi[oó]n|presion|tension|pa)\s*(?:arterial)?\s*(?:de|es de|son de|en|para|es)?\s*(\d{2,3})/i);
       
       if (bpSingleMatch) {
         const val = parseInt(bpSingleMatch[1], 10);
@@ -238,8 +247,8 @@ const ClinicalNER = {
     // ========================================================================
     // 5. EXTRACCIÓN DE TEMPERATURA CORPORAL
     // ========================================================================
-    // Formatos: "temperatura normal de 36°", "36.5 grados", "36 y medio", "38 de fiebre"
-    const tempMatch = text.match(/(?:temperatura(?:\s+normal)?|temp|febr[ií]cula|fiebre)\s*(?:de|es de|son de)?\s*(\d{2}(?:[.,]\d)?)\s*(?:grados|°c|°|c)?/i)
+    // Formatos: "temperatura global normal 36°", "temperatura normal de 36°", "36.5 grados", "36 y medio", "38 de fiebre"
+    const tempMatch = text.match(/(?:temperatura(?:\s+global)?(?:\s+normal)?|temp|febr[ií]cula|fiebre)\s*(?:de|es de|son de|en)?\s*(\d{2}(?:[.,]\d)?)\s*(?:grados|°c|°|c)?/i)
       || text.match(/(\d{2}[.,]\d)\s*(?:grados|°c|°)/i)
       || text.match(/(\d{2})\s*(?:grados|°)\s*(?:de temperatura)?/i)
       || text.match(/(?:temperatura|fiebre)\s*(?:de)?\s*(\d{2})\s*y\s*medio/i);
@@ -287,12 +296,12 @@ const ClinicalNER = {
           break;
         }
 
-        // Fuzzy matching si la frase tiene más de 6 letras
-        if (normSyn.length >= 6) {
+        // Fuzzy matching si la frase tiene más de 5 letras
+        if (normSyn.length >= 5) {
           const words = normalized.split(' ');
           for (let i = 0; i <= words.length - 2; i++) {
             const chunk = words.slice(i, i + syn.split(' ').length).join(' ');
-            if (this.similarityRatio(chunk, normSyn) >= 0.86) {
+            if (this.similarityRatio(chunk, normSyn) >= 0.82) {
               matched = true;
               break;
             }
@@ -313,7 +322,7 @@ const ClinicalNER = {
     // ========================================================================
     // 9. EXTRACCIÓN DE PRESCRIPCIONES Y FARMACOLOGÍA
     // ========================================================================
-    const medRegex = /(?:se indica|indico|receto|prescribo|se prescribe|administrar|medicaci[oó]n:?|tratamiento:?)\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\d,./-]+?)(?=(?:\.|\n|control en|volver en|cita en|$))/gi;
+    const medRegex = /(?:se indica|indico|receto|prescribo|se prescribe|administrar|recomendar|recomiendo|medicaci[oó]n:?|tratamiento:?)\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\d,./-]+?)(?=(?:\.|\n|control en|volver en|cita en|$))/gi;
     let mMatch;
     while ((mMatch = medRegex.exec(text)) !== null) {
       const medText = mMatch[1].trim();
@@ -323,7 +332,7 @@ const ClinicalNER = {
     }
 
     for (const med of this.ESSENTIAL_MEDS) {
-      const medRegexOntology = new RegExp(`\\b${med}\\b(?:\\s*\\d+\\s*(?:mg|g|ml|gotas|comprimidos|tabletas))?(?:\\s*(?:cada|por|durante)\\s*[^.\\n,]+)?`, 'i');
+      const medRegexOntology = new RegExp(`(?:\\b${med}\\b|\\b${med}s\\b)(?:\\s*\\d+\\s*(?:mg|g|ml|gotas|comprimidos|tabletas|miligramos|gramos))?(?:\\s*(?:cada|por|durante)\\s*[^.\\n,]+)?`, 'i');
       const found = text.match(medRegexOntology);
       if (found) {
         const foundStr = found[0].trim();

@@ -55,17 +55,22 @@ flowchart TD
    - **Regla de Completitud Clínica:** Detección de dictados vacíos o conversaciones casuales sin datos clínicos; bloquea el envío de expedientes corruptos a DHIS2 e invita a reanudar el dictado o completar manualmente.
 
 4. **Interfaz Móvil del Médico (`src/app/app.js`):**
-   - Controlador enfocado exclusivamente en la experiencia del facultativo: navegación táctil, captura de voz, estado inicial limpio (sin plantillas forzadas) y ventana modal de ajuste (HITL).
+   - Controlador enfocado exclusivamente en la experiencia del facultativo: navegación táctil, captura de voz y estado inicial limpio (sin plantillas forzadas).
    - Comunica cambios y expedientes aprobados a la base de datos local y al controlador de telemetría.
 
-5. **Base de Datos Local & Telemetría (`src/core/storage/clinical_db.js`):**
+5. **Modal HITL & Validación Reactiva (`src/app/modal_controller.js`):**
+   - Componente desacoplado para la edición supervisada (Human-in-the-Loop).
+   - Validación reactiva en tiempo real sobre constantes vitales (bloqueo interactivo y señalización visual de valores fuera de rangos biológicos plausibles).
+
+6. **Base de Datos Local & Telemetría (`src/core/storage/clinical_db.js`):**
    - Motor de persistencia local reactivo con patrón observador (`subscribe`).
    - Gestión estricta de estados de ciclo de vida: `PENDING_SYNC` (en sandbox local) y `SYNCED` (consolidado en DHIS2).
    - Generación de hashes de seguridad local y cálculo dinámico de estadísticas de telemetría institucional.
 
-6. **DHIS2 Standard Adapter (`src/integrations/dhis2/dhis2_adapter.js`):**
+7. **DHIS2 Standard Adapter (`src/integrations/dhis2/dhis2_adapter.js`):**
    - Serialización de datos clínicos estructurados conforme a la especificación oficial de DHIS2 Tracker / Event API.
 
-7. **Consola Institucional de Telemetría (`src/app/telemetry_controller.js`):**
+8. **Consola Institucional de Telemetría (`src/app/telemetry_controller.js`):**
    - Orquesta la columna derecha: visor de payloads DHIS2, métricas de confinamiento de tráfico, alternancia de conectividad móvil y sincronización por lotes.
    - Totalmente desacoplada de la interfaz del móvil; reacciona a eventos de `ClinicalDB`.
+

@@ -1,12 +1,14 @@
 /**
  * Pakimed - Controlador de la Aplicación Móvil del Médico
- * Responsabilidad exclusiva: Vista de smartphone táctil (columna izquierda).
- * Arquitectura modular y limpia: Consume servicios de window.Pakimed.*
- * - window.Pakimed.VoiceRecorder
- * - window.Pakimed.NER
- * - window.Pakimed.Guardrails
- * - window.Pakimed.DB
- * - window.Pakimed.DHIS2
+ * 
+ * Responsabilidad: Coordinación de vistas y eventos en la interfaz táctil móvil.
+ * Arquitectura modular y limpia: Consume servicios especializados de window.Pakimed.*
+ * - window.Pakimed.VoiceRecorder (Captura streaming dual-buffer)
+ * - window.Pakimed.NER (Extracción clínica híbrida)
+ * - window.Pakimed.Guardrails (Auditoría ética y rangos fisiológicos)
+ * - window.Pakimed.ModalController (Edición manual HITL reactiva)
+ * - window.Pakimed.DB (Persistencia local reactiva)
+ * - window.Pakimed.DHIS2 (Mapeo de estándar Tracker/Event)
  */
 
 class PakimedApp {
@@ -14,9 +16,11 @@ class PakimedApp {
     this.currentScreen = 1;
     this.extractedData = null;
     this.voiceEngine = null;
+    this.modalController = null;
 
     this.initElements();
     this.initVoiceEngine();
+    this.initModalController();
     this.bindEvents();
     this.setupInitialState();
     this.startClock();
@@ -65,21 +69,6 @@ class PakimedApp {
     this.btnOpenEdit = document.getElementById('btnOpenEdit');
     this.approveBtn = document.getElementById('approveBtn');
 
-    // Modal HITL
-    this.editModal = document.getElementById('editModal');
-    this.btnCloseModal = document.getElementById('btnCloseModal');
-    this.btnCancelEdit = document.getElementById('btnCancelEdit');
-    this.btnSaveEdit = document.getElementById('btnSaveEdit');
-    this.fieldAge = document.getElementById('fieldAge');
-    this.fieldGender = document.getElementById('fieldGender');
-    this.fieldBP = document.getElementById('fieldBP');
-    this.fieldTemp = document.getElementById('fieldTemp');
-    this.fieldHR = document.getElementById('fieldHR');
-    this.fieldSpO2 = document.getElementById('fieldSpO2');
-    this.fieldSymptoms = document.getElementById('fieldSymptoms');
-    this.fieldMeds = document.getElementById('fieldMeds');
-    this.fieldNotes = document.getElementById('fieldNotes');
-
     // Botón de Pitch Demo
     this.btnQuickDemo = document.getElementById('btnQuickDemo');
   }
@@ -114,10 +103,7 @@ class PakimedApp {
   }
 
   initVoiceEngine() {
-    const VoiceRecorderClass = window.Pakimed && window.Pakimed.VoiceRecorder 
-      ? window.Pakimed.VoiceRecorder 
-      : null;
-
+    const VoiceRecorderClass = window.Pakimed?.VoiceRecorder;
     if (VoiceRecorderClass) {
       this.voiceEngine = new VoiceRecorderClass({
         onResult: ({ fullTranscript }) => {
@@ -127,6 +113,15 @@ class PakimedApp {
         },
         onError: (err) => console.warn('Aviso de micrófono:', err),
         onStateChange: (state, payload) => this.handleVoiceState(state, payload)
+      });
+    }
+  }
+
+  initModalController() {
+    const ModalClass = window.Pakimed?.ModalController;
+    if (ModalClass) {
+      this.modalController = new ModalClass({
+        onSave: (updatedData) => this.handleDataUpdate(updatedData)
       });
     }
   }
@@ -143,7 +138,7 @@ class PakimedApp {
       if (this.audioProcessingIndicator) this.audioProcessingIndicator.classList.add('hidden');
       this.micStatusText.textContent = 'Grabando consulta... Toca para finalizar';
     } else if (state === 'TICK') {
-      if (this.recordTimerText && payload && payload.formatted) {
+      if (this.recordTimerText && payload?.formatted) {
         this.recordTimerText.textContent = payload.formatted;
       }
     } else if (state === 'PROCESSING') {
@@ -188,9 +183,7 @@ class PakimedApp {
           this.dictationText.value = '';
           return;
         }
-        const templates = window.Pakimed && window.Pakimed.VoiceRecorder 
-          ? window.Pakimed.VoiceRecorder.getTemplates() 
-          : [];
+        const templates = window.Pakimed?.VoiceRecorder?.getTemplates() || [];
         const idx = parseInt(val, 10);
         if (!isNaN(idx) && templates[idx]) {
           this.dictationText.value = templates[idx].transcript;
@@ -214,10 +207,9 @@ class PakimedApp {
       this.processBtn.addEventListener('click', () => this.processDictation());
     }
 
-    if (this.btnOpenEdit) this.btnOpenEdit.addEventListener('click', () => this.openEditModal());
-    if (this.btnCloseModal) this.btnCloseModal.addEventListener('click', () => this.closeEditModal());
-    if (this.btnCancelEdit) this.btnCancelEdit.addEventListener('click', () => this.closeEditModal());
-    if (this.btnSaveEdit) this.btnSaveEdit.addEventListener('click', () => this.saveModalEdit());
+    if (this.btnOpenEdit) {
+      this.btnOpenEdit.addEventListener('click', () => this.openEditModal());
+    }
 
     if (this.approveBtn) {
       this.approveBtn.addEventListener('click', () => this.approveRecord());
@@ -254,20 +246,20 @@ class PakimedApp {
 
     this.goToScreen(2);
 
-    // Animación visual del pipeline
+    // Animación visual del pipeline con Small AI (< 25 KB)
     this.setPipelineStep(1, 'Normalizando transcripción y preparando análisis lingüístico...');
-    await new Promise(r => setTimeout(r, 450));
+    await new Promise(r => setTimeout(r, 400));
 
-    this.setPipelineStep(2, 'Extrayendo entidades clínicas mediante ontología on-device (< 35 KB)...');
-    await new Promise(r => setTimeout(r, 550));
+    this.setPipelineStep(2, 'Extrayendo entidades clínicas mediante ontología on-device (< 25 KB)...');
+    await new Promise(r => setTimeout(r, 500));
 
-    const NER = window.Pakimed ? window.Pakimed.NER : null;
+    const NER = window.Pakimed?.NER;
     this.extractedData = NER ? NER.extract(text) : { rawTranscript: text, vitals: {}, symptoms: [], prescriptions: [] };
 
     this.setPipelineStep(3, 'Verificando guardarraíles éticos IEEE 7000 (Cero diagnóstico autónomo)...');
     await new Promise(r => setTimeout(r, 400));
 
-    this.setPipelineStep(4, 'Validando completitud clínica para protección de DHIS2...');
+    this.setPipelineStep(4, 'Auditando rangos fisiológicos y completitud clínica para DHIS2...');
     await new Promise(r => setTimeout(r, 350));
 
     this.renderPreview(this.extractedData);
@@ -296,6 +288,9 @@ class PakimedApp {
   }
 
   renderPreview(data) {
+    if (!data) return;
+
+    // 1. Demográficos
     this.prevAge.textContent = data.patient && data.patient.age !== null 
       ? `${data.patient.age} ${data.patient.ageUnit || 'años'}` 
       : 'No indicada';
@@ -304,6 +299,7 @@ class PakimedApp {
       ? 'Femenino' 
       : (data.patient && data.patient.gender === 'M' ? 'Masculino' : 'No indicado');
 
+    // 2. Constantes Vitales
     this.prevBP.textContent = data.vitals?.bloodPressure || '--';
     this.prevTemp.textContent = data.vitals?.temperature ? `${data.vitals.temperature} °C` : '--';
     this.prevHR.textContent = data.vitals?.heartRate ? `${data.vitals.heartRate} lpm` : '--';
@@ -311,12 +307,14 @@ class PakimedApp {
       this.prevSpO2.textContent = data.vitals?.oxygenSaturation ? `${data.vitals.oxygenSaturation}%` : '--';
     }
 
+    // 3. Síntomas
     if (data.symptoms?.length > 0) {
       this.prevSymptoms.innerHTML = data.symptoms.map(s => `<span class="tag-pill symptom">${s}</span>`).join('');
     } else {
       this.prevSymptoms.innerHTML = '<span class="text-muted">Ningún síntoma específico identificado</span>';
     }
 
+    // 4. Medicación y Prescripciones
     if (data.prescriptions?.length > 0) {
       this.prevMeds.innerHTML = data.prescriptions.map(p => `
         <div class="rx-row">
@@ -331,10 +329,17 @@ class PakimedApp {
       this.prevMeds.innerHTML = '<p class="text-muted">No se indicó medicación en este registro.</p>';
     }
 
+    // 5. Transcripción original
     this.prevNotes.textContent = `"${data.rawTranscript || 'Sin notas'}"`;
 
+    // 6. Actualización integral de Guardarraíles y Banners de Alerta
+    this.updateAlertsAndSafetyStatus(data);
+  }
+
+  updateAlertsAndSafetyStatus(data) {
     const telem = window.pakimedTelemetry;
 
+    // Caso A: Registro Incompleto (Cero datos clínicos)
     if (!data.isComplete) {
       if (this.incompleteAlert) {
         this.incompleteAlert.classList.remove('hidden');
@@ -347,70 +352,44 @@ class PakimedApp {
 
       this.approveBtn.disabled = true;
       this.approveBtn.style.opacity = '0.45';
-      this.approveBtn.title = 'Requiere al menos 1 signo vital, síntoma o prescripción para aprobar';
-    } else {
-      if (this.incompleteAlert) this.incompleteAlert.classList.add('hidden');
-      if (this.guardrailAlert) {
-        this.guardrailAlert.classList.remove('hidden');
-        if (data.guardrailAlerts?.length > 0) {
-          this.guardrailAlert.className = 'safety-banner warning';
-          this.guardrailAlert.innerHTML = `⚠️ <strong>Observación Médica:</strong> ${data.guardrailAlerts.join('<br>')}`;
-          if (telem) telem.setSafetyStatus('Advertencia: Requiere revisión médica', true);
-        } else {
-          this.guardrailAlert.className = 'safety-banner secure';
-          this.guardrailAlert.innerHTML = `🛡️ <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión y firma médica.`;
-          if (telem) telem.setSafetyStatus('Protocolo de Transcripción Fiel Activo', false);
-        }
-      }
-      this.approveBtn.disabled = false;
-      this.approveBtn.style.opacity = '1';
-      this.approveBtn.title = 'Validar y registrar en expediente';
+      this.approveBtn.title = 'Requiere al menos 1 signo vital, síntoma o prescripción para registrar';
+      return;
     }
+
+    // Caso B: Registro Completo
+    if (this.incompleteAlert) this.incompleteAlert.classList.add('hidden');
+    if (this.guardrailAlert) {
+      this.guardrailAlert.classList.remove('hidden');
+
+      if (data.guardrailAlerts && data.guardrailAlerts.length > 0) {
+        // Advertencia de seguridad clínica o rangos atípicos
+        this.guardrailAlert.className = 'safety-banner warning';
+        this.guardrailAlert.innerHTML = `⚠️ <strong>Observación Médica / Rangos:</strong><br>${data.guardrailAlerts.join('<br>')}`;
+        if (telem) telem.setSafetyStatus('Advertencia: Requiere revisión de constantes vitales', true);
+      } else {
+        // Protocolo seguro verificado
+        this.guardrailAlert.className = 'safety-banner secure';
+        this.guardrailAlert.innerHTML = `🛡️ <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión y firma médica.`;
+        if (telem) telem.setSafetyStatus('Protocolo de Transcripción Fiel Activo', false);
+      }
+    }
+
+    this.approveBtn.disabled = false;
+    this.approveBtn.style.opacity = '1';
+    this.approveBtn.title = 'Validar y registrar en expediente';
   }
 
   openEditModal() {
     if (!this.extractedData) return;
-    this.fieldAge.value = this.extractedData.patient.age || '';
-    this.fieldGender.value = this.extractedData.patient.gender || '';
-    this.fieldBP.value = this.extractedData.vitals.bloodPressure || '';
-    this.fieldTemp.value = this.extractedData.vitals.temperature || '';
-    this.fieldHR.value = this.extractedData.vitals.heartRate || '';
-    if (this.fieldSpO2) this.fieldSpO2.value = this.extractedData.vitals.oxygenSaturation || '';
-    this.fieldSymptoms.value = (this.extractedData.symptoms || []).join(', ');
-    this.fieldMeds.value = (this.extractedData.prescriptions || []).join('; ');
-    this.fieldNotes.value = this.extractedData.doctorNotes || '';
-
-    this.editModal.classList.add('open');
+    if (!this.modalController) this.initModalController();
+    if (this.modalController) {
+      this.modalController.open(this.extractedData, (updated) => this.handleDataUpdate(updated));
+    }
   }
 
-  closeEditModal() {
-    this.editModal.classList.remove('open');
-  }
-
-  saveModalEdit() {
-    if (!this.extractedData) return;
-
-    this.extractedData.patient.age = this.fieldAge.value ? parseInt(this.fieldAge.value, 10) : null;
-    this.extractedData.patient.gender = this.fieldGender.value;
-    this.extractedData.vitals.bloodPressure = this.fieldBP.value.trim();
-    this.extractedData.vitals.temperature = this.fieldTemp.value ? parseFloat(this.fieldTemp.value) : null;
-    this.extractedData.vitals.heartRate = this.fieldHR.value ? parseInt(this.fieldHR.value, 10) : null;
-    if (this.fieldSpO2) {
-      this.extractedData.vitals.oxygenSaturation = this.fieldSpO2.value ? parseInt(this.fieldSpO2.value, 10) : null;
-    }
-    this.extractedData.symptoms = this.fieldSymptoms.value.split(',').map(s => s.trim()).filter(Boolean);
-    this.extractedData.prescriptions = this.fieldMeds.value.split(';').map(m => m.trim()).filter(Boolean);
-    this.extractedData.doctorNotes = this.fieldNotes.value.trim();
-
-    const Guardrails = window.Pakimed?.Guardrails;
-    if (Guardrails) {
-      const check = Guardrails.validateClinicalCompleteness(this.extractedData);
-      this.extractedData.isComplete = check.isComplete;
-      this.extractedData.completenessMessage = check.reason;
-    }
-
+  handleDataUpdate(updatedData) {
+    this.extractedData = updatedData;
     this.renderPreview(this.extractedData);
-    this.closeEditModal();
   }
 
   approveRecord() {

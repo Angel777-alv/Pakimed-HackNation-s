@@ -414,6 +414,9 @@
           El criterio facultativo prevalece sobre cualquier inferencia automatizada. Valide o modifique los valores antes del registro definitivo:
         </p>
 
+        <!-- Alerta de Validación de Rangos Fisiológicos en el Modal -->
+        <div id="modalValidationAlert" class="safety-banner warning hidden" style="margin-bottom: 12px; font-size: 0.75rem; padding: 8px 12px;"></div>
+
         <div class="form-row-2">
           <div class="form-item">
             <label class="item-label" for="fieldAge">Edad (años):</label>
@@ -479,6 +482,7 @@
   <script src="./src/core/audio/voice_recorder.js"></script>
   <script src="./src/core/storage/clinical_db.js"></script>
   <script src="./src/integrations/dhis2/dhis2_adapter.js"></script>
+  <script src="./src/app/modal_controller.js"></script>
   <script src="./src/app/telemetry_controller.js"></script>
   <script src="./src/app/app.js"></script>
 </body>
