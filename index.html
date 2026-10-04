@@ -94,6 +94,19 @@
           <div class="phone-screen-view active" data-screen="1">
             
             <div class="phone-card">
+              <!-- Selector Táctico de Motor Small AI -->
+              <div class="ai-engine-selector-bar">
+                <div class="engine-toggle-group">
+                  <button type="button" id="btnEngineHeuristic" class="engine-toggle-btn active" title="Motor heurístico instantáneo (< 30 KB, 2 ms)">
+                    ⚡ ConText
+                  </button>
+                  <button type="button" id="btnEngineQwen" class="engine-toggle-btn" title="Modelo neuronal ligero multilingüe Qwen2.5-0.5B">
+                    🧠 Qwen2.5 SLM
+                  </button>
+                </div>
+                <span id="aiEngineStatusBadge" class="ai-engine-badge">⚡ ConText (2ms)</span>
+              </div>
+
               <label class="field-title" for="scenarioSelect">Plantillas de Consulta Rápida:</label>
               <select id="scenarioSelect" class="clean-select"></select>
 
@@ -211,7 +224,10 @@
 
             <div class="phone-card">
               <div class="card-title-row">
-                <h3 class="card-heading-clean">📋 Expediente Clínico Estructurado</h3>
+                <div>
+                  <h3 class="card-heading-clean">📋 Expediente Clínico Estructurado</h3>
+                  <span id="prevEngineBadge" class="ai-engine-badge-sub">⚡ ConText Edge AI</span>
+                </div>
                 <button id="btnOpenEdit" class="btn-edit-pill">✏️ Ajustar Registro</button>
               </div>
 
@@ -496,6 +512,7 @@
   <!-- Scripts Modulares Desacoplados (Clean Architecture - Compatibles con doble clic sin CORS) -->
   <script src="./src/core/guardrails/guardrails.js"></script>
   <script src="./src/core/nlp/clinical_ner.js"></script>
+  <script src="./src/core/nlp/qwen_adapter.js"></script>
   <script src="./src/core/audio/voice_recorder.js"></script>
   <script src="./src/core/storage/clinical_db.js"></script>
   <script src="./src/integrations/dhis2/dhis2_adapter.js"></script>

@@ -77,6 +77,13 @@ class PakimedApp {
 
     // Botón de Pitch Demo
     this.btnQuickDemo = document.getElementById('btnQuickDemo');
+
+    // Selector Táctico de Motor Small AI
+    this.btnEngineHeuristic = document.getElementById('btnEngineHeuristic');
+    this.btnEngineQwen = document.getElementById('btnEngineQwen');
+    this.aiEngineStatusBadge = document.getElementById('aiEngineStatusBadge');
+    this.prevEngineBadge = document.getElementById('prevEngineBadge');
+    this.activeEngine = 'heuristic';
   }
 
   setupInitialState() {
@@ -106,6 +113,9 @@ class PakimedApp {
     if (this.micStatusText) {
       this.micStatusText.textContent = 'Listo para consulta médica · Micrófono en espera';
     }
+
+    // 4. Verificación proactiva de disponibilidad de Qwen2.5 Local
+    this.checkQwenAvailability();
   }
 
   initVoiceEngine() {
@@ -224,6 +234,46 @@ class PakimedApp {
     if (this.btnQuickDemo) {
       this.btnQuickDemo.addEventListener('click', () => this.runQuickDemo());
     }
+
+    // Toggle de Motor Small AI
+    if (this.btnEngineHeuristic) {
+      this.btnEngineHeuristic.addEventListener('click', () => this.setEngine('heuristic'));
+    }
+    if (this.btnEngineQwen) {
+      this.btnEngineQwen.addEventListener('click', () => this.setEngine('qwen'));
+    }
+  }
+
+  setEngine(engine) {
+    this.activeEngine = engine;
+    if (this.btnEngineHeuristic) {
+      this.btnEngineHeuristic.classList.toggle('active', engine === 'heuristic');
+    }
+    if (this.btnEngineQwen) {
+      this.btnEngineQwen.classList.toggle('active', engine === 'qwen');
+    }
+    if (this.aiEngineStatusBadge) {
+      if (engine === 'qwen') {
+        this.aiEngineStatusBadge.textContent = '🧠 Qwen2.5 (SLM Edge)';
+        this.aiEngineStatusBadge.classList.add('qwen');
+      } else {
+        this.aiEngineStatusBadge.textContent = '⚡ ConText (2ms)';
+        this.aiEngineStatusBadge.classList.remove('qwen');
+      }
+    }
+  }
+
+  async checkQwenAvailability() {
+    const Qwen = window.Pakimed?.QwenAdapter;
+    if (Qwen) {
+      const isUp = await Qwen.checkAvailability();
+      if (isUp) {
+        console.log('[PakimedApp] Micro-servidor Qwen2.5 detectado en el dispositivo.');
+        if (this.aiEngineStatusBadge && this.activeEngine === 'qwen') {
+          this.aiEngineStatusBadge.textContent = '🧠 Qwen2.5 (Listo)';
+        }
+      }
+    }
   }
 
   toggleRecording() {
@@ -263,11 +313,17 @@ class PakimedApp {
     this.setPipelineStep(1, 'Normalizando transcripción e identificando paciente...');
     await new Promise(r => setTimeout(r, 400));
 
-    this.setPipelineStep(2, 'Extrayendo entidades clínicas mediante ontología on-device (< 25 KB)...');
-    await new Promise(r => setTimeout(r, 500));
-
+    const Qwen = window.Pakimed?.QwenAdapter;
     const NER = window.Pakimed?.NER;
-    this.extractedData = NER ? NER.extract(text) : { rawTranscript: text, patient: {}, vitals: {}, symptoms: [], prescriptions: [] };
+
+    if (this.activeEngine === 'qwen' && Qwen) {
+      this.setPipelineStep(2, 'Extrayendo entidades con modelo neuronal Qwen2.5-0.5B...');
+      this.extractedData = await Qwen.extract(text);
+    } else {
+      this.setPipelineStep(2, 'Extrayendo entidades mediante motor ConText on-device (< 25 KB)...');
+      await new Promise(r => setTimeout(r, 450));
+      this.extractedData = NER ? NER.extract(text) : { rawTranscript: text, patient: {}, vitals: {}, symptoms: [], prescriptions: [] };
+    }
 
     this.setPipelineStep(3, 'Verificando guardarraíles éticos IEEE 7000 (Cero diagnóstico autónomo)...');
     await new Promise(r => setTimeout(r, 400));
@@ -302,6 +358,13 @@ class PakimedApp {
 
   renderPreview(data) {
     if (!data) return;
+
+    // 0. Distintivo del Motor de Extracción Utilizado
+    if (this.prevEngineBadge) {
+      const isQwen = (data.patient?.engine && data.patient.engine.includes('Qwen')) || this.activeEngine === 'qwen';
+      this.prevEngineBadge.textContent = isQwen ? '🧠 Qwen2.5-0.5B (Small AI)' : '⚡ ConText Edge AI (25 KB)';
+      this.prevEngineBadge.classList.toggle('qwen', isQwen);
+    }
 
     // 1. Identificación y Demográficos del Paciente
     const p = data.patient || {};

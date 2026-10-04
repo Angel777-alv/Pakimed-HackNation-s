@@ -1432,3 +1432,80 @@ body {
   border-color: #dc2626 !important;
 }
 
+/* ====================================================================
+   Selector Táctico de Motor Small AI (ConText vs Qwen2.5)
+   ==================================================================== */
+.ai-engine-selector-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 0.3rem 0.45rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-hairline, #e2e8f0);
+}
+
+.engine-toggle-group {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.engine-toggle-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-muted, #64748b);
+  transition: all 0.15s ease-in-out;
+}
+
+.engine-toggle-btn:hover {
+  color: var(--text-main, #0f172a);
+  background: #f1f5f9;
+}
+
+.engine-toggle-btn.active {
+  background: #ffffff;
+  color: #0f766e;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.ai-engine-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #0d9488;
+  background: rgba(13, 148, 136, 0.1);
+  padding: 0.2rem 0.45rem;
+  border-radius: 12px;
+  letter-spacing: 0.02em;
+}
+
+.ai-engine-badge.qwen {
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.ai-engine-badge-sub {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #0f766e;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  margin-top: 0.2rem;
+}
+
+.ai-engine-badge-sub.qwen {
+  color: #7c3aed;
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+

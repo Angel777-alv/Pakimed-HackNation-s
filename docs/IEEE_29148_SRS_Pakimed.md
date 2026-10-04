@@ -107,6 +107,10 @@ flowchart TD
   * Detectar antecedentes de alergias a medicamentos (ej. "alérgico a la penicilina") y derivarlas estrictamente a `patient.allergies`, excluyéndolas del listado de prescripciones activas.
   * Detectar automedicación previa del paciente (ej. "me tomé un ibuprofeno") y clasificarla en `patient.priorMedications`, evitando que contamine las recetas activas del facultativo.
   * Aislamiento por límites léxicos (`\b`) para eliminar falsos positivos de síntomas por substrings (ej. subcadenas como "tos" dentro de "estos", "contactos", "puntos").
+* **RF-02.5 (Arquitectura Híbrida Small AI y Modelo Neuronal Ligero Qwen2.5-0.5B):** El sistema implementa una arquitectura en dos niveles (Tiered Small AI):
+  * *Nivel 1 (Ultraligero Heurístico ConText):* Motor de 25 KB con latencia < 5 ms para teléfonos de muy bajos recursos y fallback continuo sin dependencias.
+  * *Nivel 2 (Modelo Neuronal Ligero Qwen2.5-0.5B):* Modelo multilingüe optimizado on-device que extrae campos en JSON estructurado para razonamiento semántico complejo y modismos coloquiales.
+  * *Conmutación Transparente y Selector Táctico:* El usuario puede alternar de motor en la interfaz, con fallback automático instantáneo al motor heurístico si el SLM local no está disponible.
 
 #### RF-03: Guardarraíles de Seguridad y Ética (IEEE 7000)
 * **RF-03.1 (Regla Estricta de No-Diagnóstico):** El sistema **NUNCA** debe inferir, generar o sugerir diagnósticos médicos, pronósticos o tratamientos que no hayan sido expresamente dictados por el médico.
@@ -155,7 +159,7 @@ flowchart TD
 | ID Requisito | Descripción | Componente en Código | Estándar / Criterio Hackatón |
 | :--- | :--- | :--- | :--- |
 | **RF-01** | Captura de audio (Dual-Buffer Streaming ASR) | `src/core/audio/voice_recorder.js` | Edge AI / Inclusión local |
-| **RF-02** | Extracción Híbrida Semántica, ConText/NegEx y Alergias | `src/core/nlp/clinical_ner.js` | Small AI on-device (< 25 KB) |
+| **RF-02** | Extracción Híbrida Semántica (ConText + Qwen2.5-0.5B SLM) | `src/core/nlp/clinical_ner.js` & `src/core/nlp/qwen_adapter.js` | Small AI On-Device (< 350 MB) |
 | **RF-03** | Guardarraíles éticos, No-diagnóstico y Rangos Fisiológicos | `src/core/guardrails/guardrails.js` | IEEE 7000 / IA Responsable (Pass/Fail) |
 | **RF-04** | Previsualización y Ventana de Modificación | `src/app/app.js` & `index.html` | Supervisión médica obligatoria (HITL) |
 | **RF-05** | Base de Datos Reactiva & Store-and-Forward | `src/core/storage/clinical_db.js` | Resiliencia Offline |
@@ -165,10 +169,9 @@ flowchart TD
 
 ## 6. Criterios de Aceptación del MVP para el Hackatón
 1. **Flujo Demostrable Completo (User Journey de 4 Pantallas en Teléfono Simulado):**
-   * Pantalla 1: Captura con Moonshine Voice / Selección de caso de prueba + Botón Demo 1-Click.
-   * Pantalla 2: Inferencia Edge AI offline sin tráfico de red.
-   * Pantalla 3: Previsualización de ficha clínica y ventana modal de ajuste con guardarraíles éticos y visto bueno médico.
-   * Pantalla 4: Vista de cola Store-and-Forward y visualización del payload JSON oficial listo para DHIS2.
-2. **Cumplimiento Ético Estricto:** Evidencia explícita en código y UI de que la herramienta actúa únicamente como asistente de documentación y no como prescriptor o diagnosticador autónomo.
-N oficial listo para DHIS2.
-2. **Cumplimiento Ético Estricto:** Evidencia explícita en código y UI de que la herramienta actúa únicamente como asistente de documentación y no como prescriptor o diagnosticador autónomo.
+   * Pantalla 1: Captura con Moonshine Voice / Selección de caso de prueba + Selector Táctico de Motor IA + Botón Demo 1-Click.
+   * Pantalla 2: Inferencia Edge AI offline sin tráfico de red externa.
+   * Pantalla 3: Previsualización de ficha clínica con distintivo de motor IA, ventana modal de ajuste con guardarraíles éticos y visto bueno facultativo.
+   * Pantalla 4: Vista de cola Store-and-Forward y visualización del payload JSON oficial listo para DHIS2 Tracker / Event API.
+2. **Cumplimiento Ético Estricto:** Evidencia explícita en código y UI de que la herramienta actúa únicamente como asistente de documentación estructurada y no como prescriptor o diagnosticador autónomo.
+
