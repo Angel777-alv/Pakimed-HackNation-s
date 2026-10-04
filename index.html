@@ -88,67 +88,95 @@
               </span>
             </div>
 
-            <!-- Resumen de Actividad / Estado del Nodo Local -->
-            <div class="home-stat-card">
-              <div class="stat-card-row">
-                <div class="stat-item">
-                  <span class="stat-number">100%</span>
-                  <span class="stat-label">Autónomo Offline</span>
+            <!-- Carrusel Interactivo de Idiomas de Consulta (ES / EN / DE) -->
+            <div class="language-carousel-card" id="languageCarousel">
+              <div class="carousel-header">
+                <div class="carousel-title-group">
+                  <svg class="mono-icon inline" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <span class="carousel-tag" data-i18n="carousel_badge_main">Idioma de Consulta</span>
                 </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                  <span class="stat-number">&lt; 35 KB</span>
-                  <span class="stat-label">Ontología On-Device</span>
+                <div class="carousel-nav-arrows">
+                  <button class="carousel-arrow-btn" id="btnPrevLang" type="button" aria-label="Idioma anterior">&larr;</button>
+                  <button class="carousel-arrow-btn" id="btnNextLang" type="button" aria-label="Siguiente idioma">&rarr;</button>
                 </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                  <span class="stat-number">IEEE 7000</span>
-                  <span class="stat-label">Cero Diagnóstico IA</span>
+              </div>
+
+              <div class="carousel-viewport">
+                <div class="carousel-track" id="carouselTrack">
+                  <!-- Slide 1: Español -->
+                  <div class="carousel-slide active" data-lang="es">
+                    <div class="slide-main-row">
+                      <div class="slide-lang-badge">
+                        <span class="lang-flag">🇲🇽</span>
+                        <div>
+                          <strong class="lang-name">Español</strong>
+                          <span class="lang-role">Atención Comunitaria</span>
+                        </div>
+                      </div>
+                      <span class="slide-active-pill" id="badgeLangActive">Activo</span>
+                    </div>
+                    <p class="slide-desc">Dictado por voz y diálogo clínico natural en español. Estructuración médica on-device.</p>
+                  </div>
+
+                  <!-- Slide 2: English -->
+                  <div class="carousel-slide" data-lang="en">
+                    <div class="slide-main-row">
+                      <div class="slide-lang-badge">
+                        <span class="lang-flag">🇺🇸</span>
+                        <div>
+                          <strong class="lang-name">English</strong>
+                          <span class="lang-role">Global Telemedicine</span>
+                        </div>
+                      </div>
+                      <button class="slide-select-btn" type="button" data-switch-lang="en">Activar</button>
+                    </div>
+                    <p class="slide-desc">Natural voice dictation and clinical dialogue in English. On-device local structuring.</p>
+                  </div>
+
+                  <!-- Slide 3: Deutsch -->
+                  <div class="carousel-slide" data-lang="de">
+                    <div class="slide-main-row">
+                      <div class="slide-lang-badge">
+                        <span class="lang-flag">🇩🇪</span>
+                        <div>
+                          <strong class="lang-name">Deutsch</strong>
+                          <span class="lang-role">Humanitärer Einsatz</span>
+                        </div>
+                      </div>
+                      <button class="slide-select-btn" type="button" data-switch-lang="de">Activar</button>
+                    </div>
+                    <p class="slide-desc">Natürliches Sprachendiktat und Patientendialog auf Deutsch. Sichere Offline-Erfassung.</p>
+                  </div>
                 </div>
+              </div>
+
+              <!-- Indicadores de Posición del Carrusel -->
+              <div class="carousel-indicators" id="carouselIndicators">
+                <button class="carousel-dot active" type="button" data-slide-index="0" aria-label="Español"></button>
+                <button class="carousel-dot" type="button" data-slide-index="1" aria-label="English"></button>
+                <button class="carousel-dot" type="button" data-slide-index="2" aria-label="Deutsch"></button>
               </div>
             </div>
 
             <!-- Sugerencias de Casos Clínicos Rápidos -->
             <div class="quick-prompts-container">
               <div class="prompts-header-row">
-                <span class="prompts-title">Plantillas de Consulta Frecuente</span>
-                <span class="prompts-date">Toca para cargar</span>
+                <span class="prompts-title" data-i18n="quick_prompts_header">Plantillas de Consulta Frecuente</span>
+                <span class="prompts-date" data-i18n="quick_prompts_hint">Toca para cargar</span>
               </div>
 
               <!-- Selector nativo oculto para sincronización -->
               <select id="scenarioSelect" class="clean-select visually-hidden" aria-label="Plantilla clínica"></select>
 
-              <div class="prompt-pills-list">
-                <button class="quick-prompt-pill active" type="button" data-case-index="0">
-                  <span class="prompt-hash-icon">#</span>
-                  <div class="prompt-pill-content">
-                    <span class="prompt-pill-text">Caso 1 (Laura Gómez): Disuria, hematuria, cistitis</span>
-                    <span class="prompt-pill-sub">Paciente femenina de 34 años &middot; PA 110/70</span>
-                  </div>
-                </button>
-
-                <button class="quick-prompt-pill" type="button" data-case-index="1">
-                  <span class="prompt-hash-icon">#</span>
-                  <div class="prompt-pill-content">
-                    <span class="prompt-pill-text">Caso 2 (Javier Ruiz): Lumbalgia aguda con radiculopatía</span>
-                    <span class="prompt-pill-sub">Paciente masculino de 50 años &middot; PA 120/80</span>
-                  </div>
-                </button>
-
-                <button class="quick-prompt-pill" type="button" data-case-index="2">
-                  <span class="prompt-hash-icon">#</span>
-                  <div class="prompt-pill-content">
-                    <span class="prompt-pill-text">Caso 3 (Don Roberto): Tos productiva verdosa, EPOC</span>
-                    <span class="prompt-pill-sub">Paciente masculino de 55 años &middot; PA 130/85</span>
-                  </div>
-                </button>
+              <div class="prompt-pills-list" id="promptPillsList">
+                <!-- Se poblarán dinámicamente con I18nManager -->
               </div>
             </div>
 
             <!-- Botón de Acción Rápida para Iniciar Consulta -->
             <button class="btn btn-action-main full-width" onclick="window.pakimedApp.goToScreen(2)">
               <svg class="mono-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-              <span>Iniciar Dictado de Consulta</span>
+              <span data-i18n="btn_start_dictation">Iniciar Dictado de Consulta</span>
             </button>
 
           </div>
@@ -779,6 +807,7 @@
   </div>
 
   <!-- Scripts Modulares Desacoplados (Clean Architecture - Compatibles con doble clic sin CORS) -->
+  <script src="./src/core/i18n/i18n_manager.js"></script>
   <script src="./src/core/guardrails/guardrails.js"></script>
   <script src="./src/core/nlp/clinical_ner.js"></script>
   <script src="./src/core/nlp/qwen_adapter.js"></script>

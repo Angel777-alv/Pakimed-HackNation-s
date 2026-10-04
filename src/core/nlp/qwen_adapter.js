@@ -27,7 +27,53 @@
     /**
      * System Prompt Clínico Especializado para Small AI (Qwen2.5)
      */
-    getSystemPrompt() {
+    getSystemPrompt(lang = 'es') {
+      if (lang === 'en') {
+        return `You are an offline clinical medical AI assistant specialized in clinical semantic understanding in English. Your task is to extract with high precision prescribed medications, patient history, allergies, and symptoms from medical encounters.
+
+RULES:
+1. Respond EXCLUSIVELY with a valid JSON object without markdown or extra text.
+2. ACTIVE PRESCRIPTIONS: Extract ONLY medications prescribed by the physician with their dosage, frequency, and duration. NEVER include lab orders, casual conversation, or prior home remedies.
+3. ALLERGIES: If the patient denies allergies, the "allergies" array MUST be EMPTY [].
+4. PRIOR MEDICATIONS: Note prior medications, but EXCLUDE home remedies (cranberry juice, tea, water).
+5. SYMPTOMS: List reported symptoms and time of evolution.
+
+EXACT JSON STRUCTURE:
+{
+  "patient": {
+    "allergies": [],
+    "priorMedications": [],
+    "chronicConditions": []
+  },
+  "symptoms": ["symptom 1", "symptom 2"],
+  "timeEvolution": "3 days or null",
+  "prescriptions": ["Medication dosage frequency duration"]
+}`;
+      }
+
+      if (lang === 'de') {
+        return `Du bist ein offline klinischer medizinischer KI-Assistent, spezialisiert auf das semantische Verständnis von Arzt-Patienten-Gesprächen auf Deutsch. Deine Aufgabe ist es, ärztliche Verordnungen, Allergien, Vorgeschichte und Symptome präzise zu extrahieren.
+
+REGELN:
+1. Antworte AUSSCHLIESSLICH mit einem gültigen JSON-Objekt ohne zusätzlichen Text.
+2. VERORDNUNGEN: Erfasse NUR vom Arzt verordnete Medikamente mit Dosis und Häufigkeit. Keine Hausmittel (wie Preiselbeersaft, Tee, Wasser) oder Laboraufträge aufnehmen.
+3. ALLERGIEN: Wenn keine Allergien vorliegen, MUSS das Array "allergies" LEER sein [].
+4. VORMEDIKATION: Zuvor eingenommene Medikamente erfassen, Hausmittel ausschließen.
+5. SYMPTOME: Klinische Symptome und Dauer erfassen.
+
+EXAKTE JSON-STRUKTUR:
+{
+  "patient": {
+    "allergies": [],
+    "priorMedications": [],
+    "chronicConditions": []
+  },
+  "symptoms": ["Symptom 1", "Symptom 2"],
+  "timeEvolution": "3 Tage oder null",
+  "prescriptions": ["Medikament Dosis Einnahme"]
+}`;
+      }
+
       return `Eres un asistente de inteligencia artificial médica offline especializado en comprensión semántica clínica en español. Tu función es extraer con alta precisión semántica prescripciones, antecedentes, alergias y síntomas de consultas médicas.
 
 REGLAS DE PRECISIÓN SEMÁNTICA:
@@ -138,10 +184,11 @@ ESTRUCTURA JSON EXACTA:
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), this.config.timeoutMs);
 
+          const lang = options.lang || (typeof window !== 'undefined' && window.I18nManager ? window.I18nManager.getCurrentLanguage() : 'es');
           const payload = {
             model: this.config.modelName,
-            system: this.getSystemPrompt(),
-            prompt: `TRANSCRIPCIÓN CLÍNICA A ESTRUCTURAR:\n"${text}"\n\nJSON:`,
+            system: this.getSystemPrompt(lang),
+            prompt: `CLINICAL TRANSCRIPT TO STRUCTURE:\n"${text}"\n\nJSON:`,
             stream: false,
             format: 'json',
             options: {

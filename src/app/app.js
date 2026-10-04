@@ -32,6 +32,7 @@ class PakimedApp {
     this.initVoiceEngine();
     this.initModalController();
     this.bindEvents();
+    this.initLanguageCarousel();
     this.setupInitialState();
     this.startClock();
     this.checkQwenAvailability();
@@ -290,19 +291,178 @@ class PakimedApp {
     }
   }
 
+  initLanguageCarousel() {
+    this.carouselSlideIndex = 0;
+    this.carouselTrack = document.getElementById('carouselTrack');
+    this.carouselDots = document.querySelectorAll('.carousel-dot');
+    this.btnPrevLang = document.getElementById('btnPrevLang');
+    this.btnNextLang = document.getElementById('btnNextLang');
+    const slides = document.querySelectorAll('.carousel-slide');
+
+    const updateCarouselUI = (index) => {
+      this.carouselSlideIndex = index;
+      if (this.carouselTrack) {
+        this.carouselTrack.style.transform = `translateX(-${index * 100}%)`;
+      }
+      this.carouselDots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    };
+
+    if (this.btnPrevLang) {
+      this.btnPrevLang.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const newIdx = (this.carouselSlideIndex - 1 + 3) % 3;
+        updateCarouselUI(newIdx);
+      });
+    }
+
+    if (this.btnNextLang) {
+      this.btnNextLang.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const newIdx = (this.carouselSlideIndex + 1) % 3;
+        updateCarouselUI(newIdx);
+      });
+    }
+
+    this.carouselDots.forEach(dot => {
+      dot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(dot.getAttribute('data-slide-index'), 10);
+        updateCarouselUI(idx);
+      });
+    });
+
+    slides.forEach((slide, idx) => {
+      slide.addEventListener('click', () => {
+        const lang = slide.getAttribute('data-lang');
+        this.switchLanguage(lang, idx);
+      });
+
+      const btn = slide.querySelector('.slide-select-btn');
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const lang = btn.getAttribute('data-switch-lang');
+          this.switchLanguage(lang, idx);
+        });
+      }
+    });
+
+    this.renderScenarios();
+  }
+
+  switchLanguage(lang, slideIndex) {
+    if (!window.I18nManager) return;
+    window.I18nManager.setLanguage(lang);
+
+    const slides = document.querySelectorAll('.carousel-slide');
+    slides.forEach((slide, idx) => {
+      const isCurrent = slide.getAttribute('data-lang') === lang;
+      if (isCurrent) {
+        slide.classList.add('active');
+        const mainRow = slide.querySelector('.slide-main-row');
+        if (mainRow && !slide.querySelector('.slide-active-pill')) {
+          const oldBtn = slide.querySelector('.slide-select-btn');
+          if (oldBtn) oldBtn.remove();
+          const activePill = document.createElement('span');
+          activePill.className = 'slide-active-pill';
+          activePill.textContent = 'Activo';
+          mainRow.appendChild(activePill);
+        }
+      } else {
+        slide.classList.remove('active');
+        const mainRow = slide.querySelector('.slide-main-row');
+        const activePill = slide.querySelector('.slide-active-pill');
+        if (activePill) activePill.remove();
+        if (mainRow && !slide.querySelector('.slide-select-btn')) {
+          const selectBtn = document.createElement('button');
+          selectBtn.className = 'slide-select-btn';
+          selectBtn.type = 'button';
+          selectBtn.setAttribute('data-switch-lang', slide.getAttribute('data-lang'));
+          selectBtn.textContent = 'Activar';
+          selectBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.switchLanguage(slide.getAttribute('data-lang'), idx);
+          });
+          mainRow.appendChild(selectBtn);
+        }
+      }
+    });
+
+    if (typeof slideIndex === 'number') {
+      this.carouselSlideIndex = slideIndex;
+      if (this.carouselTrack) {
+        this.carouselTrack.style.transform = `translateX(-${slideIndex * 100}%)`;
+      }
+      this.carouselDots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === slideIndex);
+      });
+    }
+
+    this.renderScenarios();
+
+    if (this.voiceEngine) {
+      this.voiceEngine.setLanguage(window.I18nManager.getSTTLocale());
+    }
+
+    this.selectScenario(0);
+  }
+
+  renderScenarios() {
+    const listEl = document.getElementById('promptPillsList');
+    if (!listEl) return;
+    const scenarios = window.I18nManager ? window.I18nManager.getScenarios() : [];
+    listEl.innerHTML = '';
+
+    if (this.scenarioSelect) {
+      this.scenarioSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+    }
+
+    scenarios.forEach((sc, idx) => {
+      if (this.scenarioSelect) {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${sc.title}: ${sc.subtitle}`;
+        this.scenarioSelect.appendChild(opt);
+      }
+
+      const btn = document.createElement('button');
+      btn.className = `quick-prompt-pill ${idx === 0 ? 'active' : ''}`;
+      btn.type = 'button';
+      btn.setAttribute('data-case-index', idx);
+      btn.innerHTML = `
+        <span class="prompt-hash-icon">#</span>
+        <div class="prompt-pill-content">
+          <span class="prompt-pill-text">${sc.title}</span>
+          <span class="prompt-pill-sub">${sc.subtitle}</span>
+        </div>
+      `;
+      btn.addEventListener('click', () => {
+        this.selectScenario(idx);
+        this.goToScreen(2);
+      });
+      listEl.appendChild(btn);
+    });
+  }
+
   selectScenario(idx) {
-    const templates = window.Pakimed?.VoiceRecorder?.getTemplates() || [];
-    if (templates[idx]) {
+    const scenarios = window.I18nManager ? window.I18nManager.getScenarios() : [];
+    if (scenarios[idx]) {
       if (this.dictationText) {
-        this.dictationText.value = templates[idx].transcript;
+        this.dictationText.value = scenarios[idx].text;
       }
       if (this.scenarioSelect) {
         this.scenarioSelect.value = idx;
       }
+      const pills = document.querySelectorAll('.quick-prompt-pill');
+      pills.forEach((p, pIdx) => {
+        p.classList.toggle('active', pIdx === idx);
+      });
+      if (this.voiceEngine) {
+        this.voiceEngine.setBaseTranscript(scenarios[idx].text);
+      }
     }
-    this.promptPills.forEach((p, pIdx) => {
-      p.classList.toggle('active', pIdx === idx);
-    });
   }
 
   async setEngine(engine) {
@@ -408,7 +568,8 @@ class PakimedApp {
       this.setPipelineStep(2, 'Refinando semántica y desambiguando prescripciones con Qwen2.5...');
       let slmResult = null;
       try {
-        slmResult = await Qwen.extract(text);
+        const lang = window.I18nManager ? window.I18nManager.getCurrentLanguage() : 'es';
+        slmResult = await Qwen.extract(text, { lang });
       } catch (err) {
         console.warn('[PakimedApp] Qwen no respondió, continuando con ancla ConText:', err);
       }

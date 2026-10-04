@@ -129,13 +129,30 @@
       const isNoiseOrPrior = (text) => {
         const lower = text.toLowerCase().trim();
         const hasReliefOrPriorPhrase = (
+          // Español
           lower.includes('alivio parcial') ||
           lower.includes('sin mejoría') ||
           lower.includes('sin mejoria') ||
           lower.includes('me tomé') ||
           lower.includes('me tome') ||
           lower.includes('me inyectaron') ||
-          lower.includes('un compañero')
+          lower.includes('un compañero') ||
+          lower.includes('jugo de arándano') ||
+          lower.includes('jugo de arandano') ||
+          // English
+          lower.includes('mild relief') ||
+          lower.includes('temporary relief') ||
+          lower.includes('no improvement') ||
+          lower.includes('a coworker') ||
+          lower.includes('cranberry juice') ||
+          lower.includes('only drinking') ||
+          // Deutsch
+          lower.includes('leichte besserung') ||
+          lower.includes('vorübergehende linderung') ||
+          lower.includes('keine besserung') ||
+          lower.includes('ein kollege') ||
+          lower.includes('preiselbeersaft') ||
+          lower.includes('nur getrunken')
         );
 
         if (hasReliefOrPriorPhrase) return true;

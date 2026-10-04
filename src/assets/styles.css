@@ -452,47 +452,184 @@ body {
   white-space: nowrap;
 }
 
-/* Tarjeta de Métricas Rápidas del Turno */
-.home-stat-card {
+/* ==========================================================================
+   CARRUSEL INTERACTIVO DE IDIOMAS DE CONSULTA (ES / EN / DE)
+   ========================================================================== */
+.language-carousel-card {
   background: #ffffff;
   border-radius: var(--radius-lg);
-  padding: 0.85rem 1rem;
   border: 1px solid var(--border-hairline);
+  padding: 0.85rem;
   box-shadow: var(--shadow-subtle);
   margin-bottom: 0.85rem;
+  overflow: hidden;
+  position: relative;
 }
 
-.stat-card-row {
+.carousel-header {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.65rem;
+  padding: 0 0.25rem;
 }
 
-.stat-item {
+.carousel-title-group {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 0.95rem;
-  font-weight: 800;
-  font-family: var(--font-heading);
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--teal-primary);
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
-.stat-label {
-  font-size: 0.62rem;
-  font-weight: 600;
+.carousel-nav-arrows {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.carousel-arrow-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border-hairline);
+  background: #f8fafc;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.carousel-arrow-btn:hover {
+  background: #e2e8f0;
+  color: var(--text-main);
+  transform: scale(1.08);
+}
+
+.carousel-viewport {
+  overflow: hidden;
+  width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+.carousel-slide {
+  min-width: 100%;
+  box-sizing: border-box;
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+  background: #f8fafd;
+  border: 1.5px solid transparent;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.carousel-slide.active {
+  background: #f0fdfa;
+  border-color: var(--teal-border);
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
+}
+
+.slide-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.slide-lang-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.lang-flag {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.lang-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  display: block;
+}
+
+.lang-role {
+  font-size: 0.64rem;
   color: var(--text-muted);
-  margin-top: 0.15rem;
+  font-weight: 600;
 }
 
-.stat-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--border-hairline);
+.slide-active-pill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: var(--teal-primary);
+  color: #ffffff;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.3);
+}
+
+.slide-select-btn {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #ffffff;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-hairline);
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.slide-select-btn:hover {
+  background: var(--teal-primary);
+  color: #ffffff;
+  border-color: var(--teal-primary);
+}
+
+.slide-desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  border: none;
+  background: #cbd5e1;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.carousel-dot.active {
+  width: 22px;
+  background: var(--teal-primary);
 }
 
 /* Sugerencias de Casos Frecuentes ("Ask like this") */
@@ -1056,6 +1193,20 @@ body {
   height: 6px;
   border-radius: 50%;
   background: var(--teal-primary);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.85;
+    box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.4);
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 1;
+    box-shadow: 0 0 0 4px rgba(13, 148, 136, 0);
+  }
 }
 
 .dash-value-row {
@@ -1092,6 +1243,41 @@ body {
   height: 28px;
 }
 
+.sparkline-wave path {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 0;
+  animation: waveDraw 4s ease-in-out infinite;
+}
+
+@keyframes waveDraw {
+  0% { stroke-dashoffset: 180; }
+  50% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.sparkline-wave circle {
+  animation: circlePulse 2s ease-in-out infinite;
+}
+
+@keyframes circlePulse {
+  0%, 100% { r: 3; opacity: 0.9; }
+  50% { r: 4.5; opacity: 1; filter: drop-shadow(0 0 2px var(--teal-primary)); }
+}
+
+.sparkline-bars rect {
+  transform-origin: bottom;
+  animation: barRhythm 2.4s ease-in-out infinite alternate;
+}
+.sparkline-bars rect:nth-child(2) { animation-delay: 0.2s; }
+.sparkline-bars rect:nth-child(3) { animation-delay: 0.4s; }
+.sparkline-bars rect:nth-child(4) { animation-delay: 0.6s; }
+.sparkline-bars rect:nth-child(5) { animation-delay: 0.8s; }
+
+@keyframes barRhythm {
+  0% { transform: scaleY(0.85); }
+  100% { transform: scaleY(1.15); }
+}
+
 .temp-gauge-bar {
   width: 100%;
   height: 7px;
@@ -1104,6 +1290,12 @@ body {
   height: 100%;
   background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%);
   border-radius: 4px;
+  animation: tempShimmer 3s ease-in-out infinite alternate;
+}
+
+@keyframes tempShimmer {
+  0% { filter: brightness(0.95); }
+  100% { filter: brightness(1.15) drop-shadow(0 0 2px rgba(239, 68, 68, 0.4)); }
 }
 
 .patient-gender-badge {

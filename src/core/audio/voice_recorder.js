@@ -160,6 +160,13 @@ class VoiceRecorder {
     return `${m}:${s}`;
   }
 
+  setLanguage(langCode) {
+    if (this.recognition) {
+      this.recognition.lang = langCode;
+      console.log(`[VoiceRecorder] STT language set to: ${langCode}`);
+    }
+  }
+
   /**
    * Plantillas de consulta rápida (Opcionales)
    */

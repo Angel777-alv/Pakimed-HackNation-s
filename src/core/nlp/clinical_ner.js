@@ -317,20 +317,22 @@ const ClinicalNER = {
     let age = null;
     let gender = null;
 
-    // 1. Extracción de Nombre por patrones de auto-presentación o saludo
+    // 1. Extracción de Nombre por patrones de auto-presentación o saludo (Multilingüe: ES, EN, DE)
     const nameRegexes = [
       /(?:me llamo|mi nombre es|soy)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)(?=[,.\n]|\s+(?:nac[ií]|tengo|con|de\s+edad|y\s+tengo|$))/i,
-      /(?:perfecto|de acuerdo|bienvenido|hola)\s*,?\s*([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)\s*,?\s*\d{1,3}\s*años/i,
-      /(?:señor|sr\.|don|caballero)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)(?=[,.\n]|$)/i,
-      /(?:señora|sra\.|doña|dama|señorita)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)(?=[,.\n]|$)/i,
-      /(?:paciente|nombre del paciente:?)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+){1,3}?)(?=[,.\n]|$)/i
+      /(?:my name is|i am)\s+([a-zA-Z]+(?:\s+[a-zA-Z]+){1,3}?)(?=[,.\n]|\s+(?:and\s+i\s+am|i\s+am|\d{1,3}|$))/i,
+      /(?:mein name ist|ich heiße|ich heisse)\s+([a-zA-ZäöüÄÖÜß]+(?:\s+[a-zA-ZäöüÄÖÜß]+){1,3}?)(?=[,.\n]|\s+(?:und\s+ich\s+bin|ich\s+bin|\d{1,3}|$))/i,
+      /(?:perfecto|de acuerdo|bienvenido|hola|hello|guten tag)\s*,?\s*([a-záéíóúÁÉÍÓÚñÑa-zA-ZäöüÄÖÜß]+(?:\s+[a-záéíóúÁÉÍÓÚñÑa-zA-ZäöüÄÖÜß]+){1,3}?)\s*,?\s*\d{1,3}\s*(?:años|years|jahre)/i,
+      /(?:señor|sr\.|don|mr\.|herr)\s+([a-záéíóúÁÉÍÓÚñÑa-zA-ZäöüÄÖÜß]+(?:\s+[a-záéíóúÁÉÍÓÚñÑa-zA-ZäöüÄÖÜß]+){1,3}?)(?=[,.\n]|$)/i,
+      /(?:señora|sra\.|doña|ms\.|mrs\.|frau)\s+([a-záéíóúÁÉÍÓÚñÑa-zA-ZäöüÄÖÜß]+(?:\s+[a-záéíóúÁÉÍÓÚñÑa-zA-ZäöüÄÖÜß]+){1,3}?)(?=[,.\n]|$)/i,
+      /(?:paciente|patient|patient name:?)\s+([a-záéíóúÁÉÍÓÚñÑa-zA-ZäöüÄÖÜß]+(?:\s+[a-záéíóúÁÉÍÓÚñÑa-zA-ZäöüÄÖÜß]+){1,3}?)(?=[,.\n]|$)/i
     ];
 
     for (const regex of nameRegexes) {
       const match = fullText.match(regex);
       if (match && match[1]) {
         const candidate = match[1].trim();
-        const forbidden = ['doctor', 'médico', 'medico', 'enfermera', 'femenina', 'femenino', 'masculino', 'varon', 'adulto', 'un', 'una', 'este', 'bueno'];
+        const forbidden = ['doctor', 'médico', 'medico', 'enfermera', 'femenina', 'femenino', 'masculino', 'varon', 'adulto', 'un', 'una', 'este', 'bueno', 'hello', 'guten', 'herr', 'frau', 'here', 'very'];
         if (!forbidden.includes(candidate.toLowerCase()) && candidate.length > 2) {
           name = candidate.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
           break;
@@ -338,14 +340,18 @@ const ClinicalNER = {
       }
     }
 
-    // 2. Extracción de Edad o Deducción por Fecha de Nacimiento
+    // 2. Extracción de Edad o Deducción por Fecha de Nacimiento (Multilingüe: ES, EN, DE)
     const ageMatch = fullText.match(/(?:tengo|edad(?:\s*:\s*|\s+de\s+)|\bde\s+)(\d{1,3})\s*(?:años|meses|a\b)/i)
-      || fullText.match(/(\d{1,3})\s*(?:años|meses)\s*(?:de edad)?/i);
+      || fullText.match(/(\d{1,3})\s*(?:años|meses)\s*(?:de edad)?/i)
+      || fullText.match(/(?:i am|am)\s*(\d{1,3})\s*(?:years old|years of age|yo\b)/i)
+      || fullText.match(/(\d{1,3})\s*(?:years old|years of age)/i)
+      || fullText.match(/(?:ich bin|bin)\s*(\d{1,3})\s*(?:jahre alt|jahre)/i)
+      || fullText.match(/(\d{1,3})\s*(?:jahre alt|jahre)/i);
 
     if (ageMatch) {
       age = parseInt(ageMatch[1], 10);
     } else {
-      const birthMatch = fullText.match(/(?:nac[ií](?:\s+el)?|fecha de nacimiento(?:\s*:\s*|\s+es\s+)?)\s*(?:\d{1,2}\s+de\s+[a-záéíóú]+\s+de\s+)?(19\d{2}|20\d{2})/i);
+      const birthMatch = fullText.match(/(?:nac[ií](?:\s+el)?|fecha de nacimiento(?:\s*:\s*|\s+es\s+)?|born in)\s*(?:\d{1,2}\s+de\s+[a-záéíóú]+\s+de\s+)?(19\d{2}|20\d{2})/i);
       if (birthMatch) {
         const birthYear = parseInt(birthMatch[1], 10);
         const currentYear = 2026;
@@ -355,18 +361,18 @@ const ClinicalNER = {
       }
     }
 
-    // 3. Extracción de Género
+    // 3. Extracción de Género (ES, EN, DE)
     const norm = this.normalizeText(fullText);
-    if (/\b(femenina|femenino|mujer|niña|señora|dama|doña|senorita|señorita)\b/.test(norm)) {
+    if (/\b(femenina|femenino|mujer|niña|señora|dama|doña|senorita|señorita|female|woman|weiblich|frau)\b/i.test(norm)) {
       gender = 'F';
-    } else if (/\b(masculino|varon|hombre|niño|señor|caballero|don)\b/.test(norm)) {
+    } else if (/\b(masculino|varon|hombre|niño|señor|caballero|don|male|man|männlich|herr)\b/i.test(norm)) {
       gender = 'M';
     } else if (name) {
-      // Inferencia por terminación tradicional del primer nombre si no está explícito
+      // Inferencia por primer nombre si no está explícito
       const firstName = name.split(' ')[0].toLowerCase();
-      if (firstName.endsWith('a') && !['carlos', 'josé', 'jose', 'luca'].includes(firstName)) {
+      if (['laura', 'maria', 'ana', 'elena', 'sarah', 'emma', 'julia'].includes(firstName)) {
         gender = 'F';
-      } else if (firstName.endsWith('o') || firstName.endsWith('s') || firstName.endsWith('r') || firstName.endsWith('l')) {
+      } else if (['javier', 'roberto', 'carlos', 'juan', 'robert', 'john', 'michael'].includes(firstName)) {
         gender = 'M';
       }
     }
@@ -375,7 +381,7 @@ const ClinicalNER = {
   },
 
   /**
-   * Extrae constantes vitales desacopladas con gramática de patrones
+   * Extrae constantes vitales desacopladas con gramática de patrones (ES, EN, DE)
    */
   extractVitals(fullText = '') {
     const vitals = {
@@ -385,10 +391,10 @@ const ClinicalNER = {
       oxygenSaturation: null
     };
 
-    // 1. Presión Arterial (Dual o Simple)
-    // Patrón clásico: "150 sobre 95", "120/80", "140 con 90"
-    const bpDual = fullText.match(/\b(\d{2,3})\s*(?:sobre|\/|con)\s*(\d{2,3})\b/i)
-      || fullText.match(/(?:presi[oó]n|tensi[oó]n|pa)\D{1,30}?(\d{2,3})\s*(?:sobre|\/|con)\s*(\d{2,3})\b/i);
+    // 1. Presión Arterial (Dual o Simple - ES / EN / DE)
+    // "110 sobre 70", "110/70", "110 over 70", "110 zu 70", "BP: 120/80"
+    const bpDual = fullText.match(/\b(\d{2,3})\s*(?:sobre|\/|con|over|zu)\s*(\d{2,3})\b/i)
+      || fullText.match(/(?:presi[oó]n|tensi[oó]n|pa|bp|blood pressure|blutdruck|rr)\D{1,30}?(\d{2,3})\s*(?:sobre|\/|con|over|zu)\s*(\d{2,3})\b/i);
 
     if (bpDual) {
       const sys = parseInt(bpDual[1], 10);
@@ -397,9 +403,7 @@ const ClinicalNER = {
         vitals.bloodPressure = `${sys}/${dia}`;
       }
     } else {
-      // Formato simple aislado
-      const bpSingle = fullText.match(/(?:presi[oó]n|tensi[oó]n)\D{1,20}?(\d{2,3})\b/i)
-        || fullText.match(/(\d{2,3})\s*(?:en la presi[oó]n|para la presi[oó]n|de presi[oó]n)/i);
+      const bpSingle = fullText.match(/(?:presi[oó]n|tensi[oó]n|blood pressure|blutdruck)\D{1,20}?(\d{2,3})\b/i);
       if (bpSingle) {
         const val = parseInt(bpSingle[1], 10);
         if (val >= 50 && val <= 260) {
@@ -408,10 +412,10 @@ const ClinicalNER = {
       }
     }
 
-    // 2. Temperatura
-    const tempMatch = fullText.match(/(?:temperatura|temp)\D{0,15}?(\d{2}(?:[.,]\d)?)\s*(?:grados|°c|°|c)?\b/i)
-      || fullText.match(/(\d{2}[.,]\d)\s*(?:grados|°c|°)\b/i)
-      || fullText.match(/(?:fiebre|calentura)\D{0,10}?(\d{2}(?:[.,]\d)?)\b/i);
+    // 2. Temperatura (ES, EN, DE)
+    const tempMatch = fullText.match(/(?:temperatura|temperature|temp|fieber)\D{0,15}?(\d{2}(?:[.,]\d)?)\s*(?:grados|degrees|grad|°c|°|c)?\b/i)
+      || fullText.match(/(\d{2}[.,]\d)\s*(?:grados|degrees|grad|°c|°)\b/i)
+      || fullText.match(/(?:fiebre|fever|calentura)\D{0,10}?(\d{2}(?:[.,]\d)?)\b/i);
 
     if (tempMatch) {
       const rawNum = tempMatch[1].replace(',', '.');
@@ -421,9 +425,9 @@ const ClinicalNER = {
       }
     }
 
-    // 3. Frecuencia Cardíaca (Pulso)
-    const hrMatch = fullText.match(/(?:frecuencia card[ií]aca|pulso|fc|latidos)\D{0,15}?(\d{2,3})\s*(?:latidos por minuto|latidos|lpm|x\s*min)?\b/i)
-      || fullText.match(/(\d{2,3})\s*(?:latidos por minuto|latidos|lpm)\b/i);
+    // 3. Frecuencia Cardíaca (Pulso - ES, EN, DE)
+    const hrMatch = fullText.match(/(?:frecuencia card[ií]aca|pulso|fc|heart rate|hr|puls|schläge)\D{0,15}?(\d{2,3})\s*(?:latidos por minuto|latidos|lpm|bpm|x\s*min|schläge pro minute)?\b/i)
+      || fullText.match(/(\d{2,3})\s*(?:latidos por minuto|latidos|lpm|bpm|schläge pro minute)\b/i);
 
     if (hrMatch) {
       const val = parseInt(hrMatch[1], 10);
@@ -432,9 +436,9 @@ const ClinicalNER = {
       }
     }
 
-    // 4. Saturación de Oxígeno (SpO2)
-    const o2Match = fullText.match(/(?:saturaci[oó]n(?:\s+de\s+ox[ií]geno)?|saturando|sat|spo2|ox[ií]geno|oxigenaci[oó]n)\D{0,35}?(\d{2,3})\s*(?:%|por ciento)?\b/i)
-      || fullText.match(/(\d{2,3})\s*(?:%|por ciento)\s*(?:de\s+)?(?:saturaci[oó]n|spo2|ox[ií]geno|oxigenaci[oó]n)/i);
+    // 4. Saturación de Oxígeno (SpO2 - ES, EN, DE)
+    const o2Match = fullText.match(/(?:saturaci[oó]n(?:\s+de\s+ox[ií]geno)?|oxygen saturation|sauerstoffsättigung|saturando|sat|spo2|o2)\D{0,35}?(\d{2,3})\s*(?:%|por ciento|percent|prozent)?\b/i)
+      || fullText.match(/(\d{2,3})\s*(?:%|por ciento|percent|prozent)\s*(?:de\s+)?(?:saturaci[oó]n|oxygen|spo2)/i);
 
     if (o2Match) {
       const val = parseInt(o2Match[1], 10);
