@@ -15,7 +15,7 @@
       endpoint: 'http://localhost:11434/api/generate',
       tagsEndpoint: 'http://localhost:11434/api/tags',
       modelName: 'qwen2.5:0.5b',
-      timeoutMs: 8000,
+      timeoutMs: 15000,
       temperature: 0.1,
       isEnabled: true,
       isAvailable: false
@@ -58,7 +58,7 @@ ESTRUCTURA JSON EXACTA REQUERIDA:
     "oxygenSaturation": 98 o null
   },
   "symptoms": ["síntoma 1", "síntoma 2"],
-  "timeEvolution": "tiempo o null",
+  "timeEvolution": "3 días o null",
   "prescriptions": ["fármaco dosis frecuencia"]
 }`;
     },
@@ -70,7 +70,7 @@ ESTRUCTURA JSON EXACTA REQUERIDA:
     async checkAvailability() {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1200);
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
 
         const response = await fetch(this.config.tagsEndpoint, {
           method: 'GET',
@@ -84,8 +84,8 @@ ESTRUCTURA JSON EXACTA REQUERIDA:
           const hasQwen = Array.isArray(data.models) && data.models.some(m => 
             m.name.toLowerCase().includes('qwen') || m.name.toLowerCase().includes('0.5b') || m.name.toLowerCase().includes('1.5b')
           );
-          this.config.isAvailable = true;
-          return true;
+          this.config.isAvailable = hasQwen;
+          return hasQwen;
         }
       } catch (e) {
         // Servidor no disponible o modo offline sin micro-servidor
@@ -158,7 +158,8 @@ ESTRUCTURA JSON EXACTA REQUERIDA:
             format: 'json',
             options: {
               temperature: this.config.temperature,
-              num_predict: 512
+              repeat_penalty: 1.25,
+              num_predict: 350
             }
           };
 
@@ -196,6 +197,40 @@ ESTRUCTURA JSON EXACTA REQUERIDA:
     },
 
     /**
+     * Utilidad para normalizar listas a arrays de strings limpios
+     */
+    _normalizeArray(val) {
+      if (!val) return [];
+      if (Array.isArray(val)) {
+        return val.map(item => {
+          if (typeof item === 'object' && item !== null) {
+            return item.medication || item.name || item.description || JSON.stringify(item);
+          }
+          return String(item).trim();
+        }).filter(Boolean);
+      }
+      if (typeof val === 'object') {
+        return Object.keys(val).map(k => val[k] ? `${k}: ${val[k]}` : k).filter(Boolean);
+      }
+      if (typeof val === 'string') {
+        return val.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    },
+
+    /**
+     * Utilidad para normalizar números fisiológicos
+     */
+    _parseNum(val) {
+      if (typeof val === 'number') return isNaN(val) ? null : val;
+      if (typeof val === 'string') {
+        const m = val.match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : null;
+      }
+      return null;
+    },
+
+    /**
      * Integra la salida del modelo con los guardarraíles de seguridad (IEEE 7000)
      * @param {Object} slmOutput
      * @param {string} rawTranscript
@@ -203,30 +238,32 @@ ESTRUCTURA JSON EXACTA REQUERIDA:
      */
     integrateAndAudit(slmOutput, rawTranscript) {
       const Guardrails = global.Pakimed?.Guardrails;
+      const p = slmOutput.patient || {};
+      const v = slmOutput.vitals || {};
 
       // Estructura canónica segura
       const result = {
         rawTranscript: rawTranscript,
         patient: {
-          name: slmOutput.patient?.name || null,
-          age: typeof slmOutput.patient?.age === 'number' ? slmOutput.patient.age : null,
+          name: p.name && typeof p.name === 'string' && p.name !== 'null' ? p.name.trim() : null,
+          age: typeof p.age === 'number' ? p.age : this._parseNum(p.age),
           ageUnit: 'años',
-          gender: slmOutput.patient?.gender === 'F' || slmOutput.patient?.gender === 'M' ? slmOutput.patient.gender : null,
-          allergies: Array.isArray(slmOutput.patient?.allergies) ? slmOutput.patient.allergies : [],
-          priorMedications: Array.isArray(slmOutput.patient?.priorMedications) ? slmOutput.patient.priorMedications : [],
-          chronicConditions: Array.isArray(slmOutput.patient?.chronicConditions) ? slmOutput.patient.chronicConditions : [],
+          gender: p.gender === 'F' || p.gender === 'M' ? p.gender : null,
+          allergies: this._normalizeArray(p.allergies),
+          priorMedications: this._normalizeArray(p.priorMedications),
+          chronicConditions: this._normalizeArray(p.chronicConditions),
           confidence: 0.98,
           engine: 'Qwen2.5-0.5B (Small AI)'
         },
         vitals: {
-          bloodPressure: slmOutput.vitals?.bloodPressure || null,
-          temperature: typeof slmOutput.vitals?.temperature === 'number' ? slmOutput.vitals.temperature : null,
-          heartRate: typeof slmOutput.vitals?.heartRate === 'number' ? slmOutput.vitals.heartRate : null,
-          oxygenSaturation: typeof slmOutput.vitals?.oxygenSaturation === 'number' ? slmOutput.vitals.oxygenSaturation : null
+          bloodPressure: v.bloodPressure && typeof v.bloodPressure === 'string' && v.bloodPressure !== 'null' ? v.bloodPressure : null,
+          temperature: this._parseNum(v.temperature),
+          heartRate: this._parseNum(v.heartRate),
+          oxygenSaturation: this._parseNum(v.oxygenSaturation)
         },
-        symptoms: Array.isArray(slmOutput.symptoms) ? slmOutput.symptoms : [],
+        symptoms: this._normalizeArray(slmOutput.symptoms),
         timeEvolution: slmOutput.timeEvolution || null,
-        prescriptions: Array.isArray(slmOutput.prescriptions) ? slmOutput.prescriptions : [],
+        prescriptions: this._normalizeArray(slmOutput.prescriptions),
         doctorNotes: rawTranscript,
         guardrailAlerts: [],
         rangeWarnings: [],

@@ -25,6 +25,7 @@ class PakimedApp {
     this.bindEvents();
     this.setupInitialState();
     this.startClock();
+    this.checkQwenAvailability();
   }
 
   initElements() {
@@ -244,7 +245,7 @@ class PakimedApp {
     }
   }
 
-  setEngine(engine) {
+  async setEngine(engine) {
     this.activeEngine = engine;
     if (this.btnEngineHeuristic) {
       this.btnEngineHeuristic.classList.toggle('active', engine === 'heuristic');
@@ -254,8 +255,9 @@ class PakimedApp {
     }
     if (this.aiEngineStatusBadge) {
       if (engine === 'qwen') {
-        this.aiEngineStatusBadge.textContent = '🧠 Qwen2.5 (SLM Edge)';
+        this.aiEngineStatusBadge.textContent = '🧠 Qwen2.5 (Comprobando...)';
         this.aiEngineStatusBadge.classList.add('qwen');
+        await this.checkQwenAvailability();
       } else {
         this.aiEngineStatusBadge.textContent = '⚡ ConText (2ms)';
         this.aiEngineStatusBadge.classList.remove('qwen');
@@ -268,9 +270,16 @@ class PakimedApp {
     if (Qwen) {
       const isUp = await Qwen.checkAvailability();
       if (isUp) {
-        console.log('[PakimedApp] Micro-servidor Qwen2.5 detectado en el dispositivo.');
+        console.log('[PakimedApp] Micro-servidor Qwen2.5 detectado y listo en el dispositivo.');
         if (this.aiEngineStatusBadge && this.activeEngine === 'qwen') {
-          this.aiEngineStatusBadge.textContent = '🧠 Qwen2.5 (Listo)';
+          this.aiEngineStatusBadge.textContent = '🧠 Qwen2.5 (En línea)';
+          this.aiEngineStatusBadge.classList.add('qwen');
+        }
+      } else {
+        console.log('[PakimedApp] Micro-servidor Qwen2.5 no detectado (Fallback activo).');
+        if (this.aiEngineStatusBadge && this.activeEngine === 'qwen') {
+          this.aiEngineStatusBadge.textContent = '⚡ ConText (Qwen offline)';
+          this.aiEngineStatusBadge.classList.remove('qwen');
         }
       }
     }
