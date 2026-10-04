@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pakimed - Asistente de Registro Clínico Sin Conexión</title>
-  <meta name="description" content="Asistente de registro clínico por voz para médicos rurales. Funciona sin internet y guarda consultas de forma segura hasta encontrar señal.">
+  <meta name="description" content="Asistente de registro clínico por voz para médicos rurales. Funciona sin internet mediante Small AI on-device y sincronización Store-and-Forward con DHIS2.">
   
   <!-- Tipografía Limpia y Legible -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,10 +24,12 @@
       </div>
       <div class="pitch-actions">
         <button id="btnQuickDemo" class="btn btn-pitch-demo" title="Demostración guiada del flujo de consulta clínica">
-          ⚡ Demostración de Flujo Clínico
+          <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Demostración de Flujo Clínico</span>
         </button>
         <button id="networkToggle" class="btn btn-network-toggle">
-          Conectividad: Simular Red Móvil (3G)
+          <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h2"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V4"/></svg>
+          <span>Conectividad: Simular Red Móvil (3G)</span>
         </button>
       </div>
     </div>
@@ -38,71 +40,137 @@
 
     <!-- ====================================================================
          LADO IZQUIERDO: Teléfono del Médico en la Clínica Rural
+         (Sin cabecera superior, navegación 100% controlada por la barra inferior)
          ==================================================================== -->
     <section class="phone-column" aria-label="Pantalla del Médico">
       
       <div class="phone-device-card">
         
-        <!-- Barra de Estado del Teléfono -->
+        <!-- Barra de Estado Minimalista del Dispositivo (Sin títulos ni steppers) -->
         <div class="phone-top-bar">
           <span id="phoneClock" class="clock-display">10:42</span>
           <div class="phone-speaker-notch"></div>
           <div class="phone-status-pills">
             <span id="phoneBadge" class="status-pill offline">Modo Local (Sin red)</span>
-            <span class="battery-readout">🔋 94%</span>
+            <span class="battery-readout">
+              <svg class="mono-icon inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="22" y1="11" x2="22" y2="13"/><rect x="4" y="9" width="10" height="6" fill="currentColor" rx="1"/></svg>
+              94%
+            </span>
           </div>
         </div>
 
-        <!-- Encabezado de la App Móvil -->
-        <div class="mobile-app-header">
-          <div class="mobile-brand">
-            <span class="mobile-logo-circle">🎙️</span>
-            <div>
-              <h2 class="mobile-app-title">Pakimed</h2>
-              <p class="mobile-app-subtitle">📍 Centro de Salud Comunitario</p>
-            </div>
-          </div>
-          <span class="offline-mode-chip">Almacenamiento Local Seguro</span>
-        </div>
-
-        <!-- Pestañas de Paso a Paso -->
-        <nav class="mobile-stepper" aria-label="Progreso de la Consulta">
-          <button class="step-tab active" data-step="1">
-            <span class="step-num">1</span>
-            <span class="step-text">Dictado</span>
-          </button>
-          <button class="step-tab" data-step="2">
-            <span class="step-num">2</span>
-            <span class="step-text">Estructuración</span>
-          </button>
-          <button class="step-tab" data-step="3">
-            <span class="step-num">3</span>
-            <span class="step-text">Validación</span>
-          </button>
-          <button class="step-tab" data-step="4">
-            <span class="step-num">4</span>
-            <span class="step-text">Expediente</span>
-          </button>
-        </nav>
-
-        <!-- Contenido de las Pantallas del Teléfono -->
+        <!-- Contenedor de Vistas del Dispositivo (Scroll táctil) -->
         <div class="phone-body-viewport">
 
           <!-- ----------------------------------------------------
-               PANTALLA 1: Dictado por Voz
+               PANTALLA 1: Homepage / Inicio (Inspirada en las imágenes de referencia)
                ---------------------------------------------------- -->
           <div class="phone-screen-view active" data-screen="1">
             
-            <div class="phone-card">
-              <label class="field-title" for="scenarioSelect">Plantillas de Consulta Rápida:</label>
-              <select id="scenarioSelect" class="clean-select"></select>
+            <!-- Saludo Minimalista al Facultativo -->
+            <div class="assistant-welcome-card">
+              <div class="welcome-copy">
+                <div class="greeting-row">
+                  <h3 class="welcome-heading">Hola, Dr. Morales</h3>
+                  <svg class="mono-icon spark-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                </div>
+                <p class="welcome-sub">Centro de Salud Comunitario &middot; Sala 04</p>
+              </div>
+              <span class="ai-badge-chip">
+                <svg class="mono-icon inline" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 14 14"/></svg>
+                Edge AI Activo
+              </span>
+            </div>
+
+            <!-- Resumen de Actividad / Estado del Nodo Local -->
+            <div class="home-stat-card">
+              <div class="stat-card-row">
+                <div class="stat-item">
+                  <span class="stat-number">100%</span>
+                  <span class="stat-label">Autónomo Offline</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-number">&lt; 35 KB</span>
+                  <span class="stat-label">Ontología On-Device</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-number">IEEE 7000</span>
+                  <span class="stat-label">Cero Diagnóstico IA</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sugerencias de Casos Clínicos Rápidos ("Ask like this") -->
+            <div class="quick-prompts-container">
+              <div class="prompts-header-row">
+                <span class="prompts-title">Plantillas de Consulta Frecuente</span>
+                <span class="prompts-date">Toca para cargar</span>
+              </div>
+
+              <!-- Selector nativo oculto para sincronización -->
+              <select id="scenarioSelect" class="clean-select visually-hidden" aria-label="Plantilla clínica"></select>
+
+              <div class="prompt-pills-list">
+                <button class="quick-prompt-pill active" type="button" data-case-index="0">
+                  <span class="prompt-hash-icon">#</span>
+                  <div class="prompt-pill-content">
+                    <span class="prompt-pill-text">IRA Adulto: Fiebre 38.5°C, tos seca, Paracetamol</span>
+                    <span class="prompt-pill-sub">Paciente femenina de 34 años &middot; PA 120/80</span>
+                  </div>
+                </button>
+
+                <button class="quick-prompt-pill" type="button" data-case-index="1">
+                  <span class="prompt-hash-icon">#</span>
+                  <div class="prompt-pill-content">
+                    <span class="prompt-pill-text">GEA Pediátrico: Vómitos, diarrea, sales SRO</span>
+                    <span class="prompt-pill-sub">Paciente masculino de 6 años &middot; T 37.8°C</span>
+                  </div>
+                </button>
+
+                <button class="quick-prompt-pill" type="button" data-case-index="2">
+                  <span class="prompt-hash-icon">#</span>
+                  <div class="prompt-pill-content">
+                    <span class="prompt-pill-text">Control HTA: Asintomático, Losartán 50mg</span>
+                    <span class="prompt-pill-sub">Paciente masculino de 68 años &middot; PA 145/95</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Botón de Acción Rápida para Iniciar Consulta -->
+            <button class="btn btn-action-main full-width" onclick="window.pakimedApp.goToScreen(2)">
+              <svg class="mono-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+              <span>Iniciar Dictado de Consulta</span>
+            </button>
+
+          </div>
+
+          <!-- ----------------------------------------------------
+               PANTALLA 2: Dictado por Voz & Nuevo Paciente (Centro +)
+               ---------------------------------------------------- -->
+          <div class="phone-screen-view" data-screen="2">
+            
+            <div class="phone-card voice-capture-card">
+              
+              <div class="capture-card-header">
+                <span class="capture-badge-title">
+                  <svg class="mono-icon inline" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Captura de Consulta Facultativa
+                </span>
+                <span class="privacy-label">
+                  <svg class="mono-icon inline" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  On-Device
+                </span>
+              </div>
 
               <!-- Indicadores de Audio y Onda -->
               <div class="audio-feedback-container">
                 <div id="recordTimerBadge" class="record-timer-badge hidden">
                   <span class="recording-dot"></span>
                   <span id="recordTimerText">00:00</span>
-                  <span class="record-timer-label">&middot; Grabando consulta</span>
+                  <span class="record-timer-label">&middot; Grabando</span>
                 </div>
 
                 <div id="waveVisualizer" class="wave-visualizer dormant">
@@ -116,10 +184,12 @@
                 </div>
               </div>
 
-              <!-- Botón Principal del Micrófono -->
+              <!-- Botón Principal del Micrófono (Monocromático Minimalista) -->
               <div class="mic-trigger-wrap">
                 <button id="micBtn" class="big-mic-button" aria-label="Iniciar captura de audio clínico">
-                  <span id="micIcon" class="mic-icon">🎤</span>
+                  <span id="micIcon" class="mic-icon">
+                    <svg class="mono-icon-mic" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+                  </span>
                 </button>
                 <p id="micStatusText" class="mic-helper-text">Toca para iniciar captura de audio</p>
                 
@@ -130,114 +200,204 @@
                 </div>
               </div>
 
-              <!-- Texto Dictado -->
+              <!-- Área de Dictado / Transcripción -->
               <div class="transcript-card">
                 <div class="transcript-header-row">
-                  <span class="transcript-label">Transcripción del Dictado Médico:</span>
-                  <span class="privacy-label">🔒 Confidencialidad On-Device</span>
+                  <span class="transcript-label">Dictado del Facultativo:</span>
                 </div>
                 <textarea id="dictationText" class="transcript-box" placeholder="El dictado clínico estructurado aparecerá aquí..."></textarea>
               </div>
 
               <button id="processBtn" class="btn btn-action-main full-width">
-                Estructurar Datos Clínicos &rarr;
+                <span>Estructurar Datos Clínicos</span>
+                <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             </div>
 
           </div>
 
           <!-- ----------------------------------------------------
-               PANTALLA 2: Procesamiento en el Teléfono
+               PANTALLA 3: Estructuración On-Device (Pipeline)
                ---------------------------------------------------- -->
-          <div class="phone-screen-view" data-screen="2">
+          <div class="phone-screen-view" data-screen="3">
             <div class="phone-card text-center padding-lg">
               <div class="loading-spinner"></div>
-              <h3 class="step-heading">Estructuración Clínica Local</h3>
+              <h3 class="step-heading">Estructuración On-Device</h3>
               <p id="processingStepText" class="step-desc">
                 Extrayendo signos vitales y entidades clínicas en el dispositivo...
               </p>
 
-              <!-- Pasos del Pipeline On-Device en Vivo -->
+              <!-- Pasos del Pipeline con Símbolos Monocromáticos (Sin números) -->
               <div class="pipeline-progress-list" id="pipelineProgressList">
                 <div class="pipeline-progress-item done" id="pipeStep1">
-                  <span class="pipe-check">✓</span>
-                  <span class="pipe-text">Normalización de audio y texto</span>
+                  <span class="pipe-check">
+                    <svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                  <span class="pipe-text">Normalización de audio y texto clínico</span>
                 </div>
                 <div class="pipeline-progress-item active" id="pipeStep2">
-                  <span class="pipe-check">●</span>
-                  <span class="pipe-text">Análisis ontológico on-device (&lt; 35 KB)</span>
+                  <span class="pipe-check">
+                    <svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>
+                  </span>
+                  <span class="pipe-text">Extracción de entidades Small AI (&lt; 35 KB)</span>
                 </div>
                 <div class="pipeline-progress-item pending" id="pipeStep3">
-                  <span class="pipe-check">○</span>
-                  <span class="pipe-text">Verificación de guardarraíl ético (IEEE 7000)</span>
+                  <span class="pipe-check">
+                    <svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+                  </span>
+                  <span class="pipe-text">Guardarraíles éticos IEEE 7000 (Cero diagnóstico IA)</span>
                 </div>
                 <div class="pipeline-progress-item pending" id="pipeStep4">
-                  <span class="pipe-check">○</span>
-                  <span class="pipe-text">Validación de completitud clínica</span>
+                  <span class="pipe-check">
+                    <svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+                  </span>
+                  <span class="pipe-text">Validación de compatibilidad con DHIS2</span>
                 </div>
               </div>
 
               <div class="local-guarantee-box">
-                <p>⚙️ <strong>Privacidad del Paciente:</strong> El procesamiento del lenguaje y audio se ejecuta en la memoria local, sin transmisión externa de datos sensibles.</p>
+                <p>
+                  <svg class="mono-icon inline" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <strong>Privacidad Garantizada:</strong> Procesamiento 100% on-device sin transmisión externa.
+                </p>
               </div>
             </div>
           </div>
 
           <!-- ----------------------------------------------------
-               PANTALLA 3: Revisión Médica (El médico aprueba)
+               PANTALLA 4: Validación Médica & Tablero de Signos 2x2
                ---------------------------------------------------- -->
-          <div class="phone-screen-view" data-screen="3">
+          <div class="phone-screen-view" data-screen="4">
             
-            <!-- Banner de Alerta de Completitud Clínica (Visible si no hay datos) -->
+            <!-- Banner de Alerta de Completitud Clínica -->
             <div id="incompleteAlert" class="safety-banner error hidden">
               <div class="alert-content">
-                <strong>⚠️ Registro Clínico Incompleto</strong>
-                <p id="incompleteAlertMsg">No se identificaron signos vitales, sintomatología ni prescripciones en el audio dictado. No es posible generar un expediente oficial para DHIS2 sin datos clínicos.</p>
+                <strong>
+                  <svg class="mono-icon inline" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Registro Clínico Incompleto
+                </strong>
+                <p id="incompleteAlertMsg">No se identificaron signos vitales ni síntomas en el audio. Se requiere revisión facultativa.</p>
               </div>
               <div class="incomplete-actions">
-                <button class="btn btn-secondary-clean btn-sm" onclick="window.pakimedApp.goToScreen(1)">
-                  🎙️ Reanudar dictado clínico
+                <button class="btn btn-secondary-clean btn-sm" onclick="window.pakimedApp.goToScreen(2)">
+                  Dictar nuevamente
                 </button>
                 <button class="btn btn-action-main btn-sm" onclick="window.pakimedApp.openEditModal()">
-                  ✏️ Completar manualmente
+                  Completar manual
                 </button>
               </div>
             </div>
 
-            <!-- Banner de Protocolo Clínico -->
+            <!-- Banner de Protocolo Clínico con Símbolo Monocromático -->
             <div id="guardrailAlert" class="safety-banner secure">
-              🛡️ <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión y firma médica.
+              <svg class="mono-icon banner-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              <div>
+                <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión facultativa.
+              </div>
             </div>
 
             <div class="phone-card">
               <div class="card-title-row">
-                <h3 class="card-heading-clean">📋 Expediente Clínico Estructurado</h3>
-                <button id="btnOpenEdit" class="btn-edit-pill">✏️ Ajustar Registro</button>
+                <div class="card-title-group">
+                  <h3 class="card-heading-clean">Signos Vitales & Validación</h3>
+                  <span class="card-subtitle-clean">Revisión facultativa obligatoria</span>
+                </div>
+                <button id="btnOpenEdit" class="btn-edit-pill">
+                  <svg class="mono-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                  <span>Ajustar</span>
+                </button>
               </div>
 
-              <!-- Signos Vitales (Directos y Claros) -->
-              <div class="vitals-simple-grid">
-                <div class="vital-box">
-                  <span class="vital-lbl">Presión Arterial</span>
-                  <span id="prevBP" class="vital-val">120/80</span>
+              <!-- Cuadrícula 2x2 de Signos Vitales con Mini-Gráficas -->
+              <div class="vitals-dashboard-grid">
+                
+                <!-- Presión Arterial -->
+                <div class="vital-dash-card">
+                  <div class="dash-card-header">
+                    <span class="dash-card-label">Presión Arterial</span>
+                    <span class="dash-status-dot"></span>
+                  </div>
+                  <div class="dash-value-row">
+                    <span id="prevBP" class="dash-vital-val">120/80</span>
+                    <span class="dash-unit">mmHg</span>
+                  </div>
+                  <div class="dash-chart-container">
+                    <svg class="sparkline-wave" viewBox="0 0 120 30" preserveAspectRatio="none">
+                      <path d="M 0 20 Q 30 5, 60 20 T 120 15" fill="none" stroke="var(--teal-primary)" stroke-width="2.2" stroke-linecap="round"/>
+                      <circle cx="60" cy="20" r="3" fill="var(--teal-primary)"/>
+                    </svg>
+                  </div>
+                  <div class="dash-card-footer">
+                    <span>Sistólica / Diastólica</span>
+                  </div>
                 </div>
-                <div class="vital-box">
-                  <span class="vital-lbl">Temperatura</span>
-                  <span id="prevTemp" class="vital-val">38.5 °C</span>
+
+                <!-- Frecuencia Cardíaca -->
+                <div class="vital-dash-card">
+                  <div class="dash-card-header">
+                    <span class="dash-card-label">Frecuencia Cardíaca</span>
+                    <span class="dash-status-dot"></span>
+                  </div>
+                  <div class="dash-value-row">
+                    <span id="prevHR" class="dash-vital-val">78</span>
+                    <span class="dash-unit">lpm</span>
+                  </div>
+                  <div class="dash-chart-container">
+                    <svg class="sparkline-bars" viewBox="0 0 100 30">
+                      <rect x="5" y="16" width="7" height="14" rx="2" fill="#c7d2fe"/>
+                      <rect x="18" y="10" width="7" height="20" rx="2" fill="#a5b4fc"/>
+                      <rect x="31" y="6" width="7" height="24" rx="2" fill="var(--teal-primary)"/>
+                      <rect x="44" y="12" width="7" height="18" rx="2" fill="#a5b4fc"/>
+                      <rect x="57" y="8" width="7" height="22" rx="2" fill="var(--teal-primary)"/>
+                      <rect x="70" y="15" width="7" height="15" rx="2" fill="#c7d2fe"/>
+                      <rect x="83" y="18" width="7" height="12" rx="2" fill="#e0e7ff"/>
+                    </svg>
+                  </div>
+                  <div class="dash-card-footer">
+                    <span>Ritmo sinusal regular</span>
+                  </div>
                 </div>
-                <div class="vital-box">
-                  <span class="vital-lbl">Pulso</span>
-                  <span id="prevHR" class="vital-val">78 lpm</span>
+
+                <!-- Temperatura -->
+                <div class="vital-dash-card">
+                  <div class="dash-card-header">
+                    <span class="dash-card-label">Temperatura</span>
+                    <span class="dash-status-dot"></span>
+                  </div>
+                  <div class="dash-value-row">
+                    <span id="prevTemp" class="dash-vital-val">38.5</span>
+                    <span class="dash-unit">°C</span>
+                  </div>
+                  <div class="dash-chart-container">
+                    <div class="temp-gauge-bar">
+                      <div class="temp-gauge-fill" style="width: 78%;"></div>
+                    </div>
+                  </div>
+                  <div class="dash-card-footer">
+                    <span class="alert-indicator-text">Estado febril</span>
+                  </div>
                 </div>
-                <div class="vital-box">
-                  <span class="vital-lbl">Sat. O₂ (SpO2)</span>
-                  <span id="prevSpO2" class="vital-val">97%</span>
+
+                <!-- Sat O2 / Paciente -->
+                <div class="vital-dash-card">
+                  <div class="dash-card-header">
+                    <span class="dash-card-label">Sat. Oxígeno (SpO2)</span>
+                    <span class="dash-status-dot"></span>
+                  </div>
+                  <div class="dash-value-row">
+                    <span id="prevSpO2" class="dash-vital-val">97</span>
+                    <span class="dash-unit">%</span>
+                  </div>
+                  <div class="dash-chart-container">
+                    <div class="patient-gender-badge">
+                      <span id="prevAge">34</span> &middot; <span id="prevGender">Femenino</span>
+                    </div>
+                  </div>
+                  <div class="dash-card-footer">
+                    <span>Normoxemia ambulatoria</span>
+                  </div>
                 </div>
-                <div class="vital-box full-span">
-                  <span class="vital-lbl">Paciente</span>
-                  <span id="prevAge" class="vital-val">34 años</span>
-                  <span id="prevGender" class="vital-sub">Femenino</span>
-                </div>
+
               </div>
 
               <!-- Síntomas -->
@@ -254,7 +414,10 @@
                 <span class="block-title">Esquema terapéutico indicado:</span>
                 <div id="prevMeds" class="rx-stack">
                   <div class="rx-row">
-                    <span class="rx-badge">💊 Receta</span>
+                    <span class="rx-badge">
+                      <svg class="mono-icon rx-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+                      Receta
+                    </span>
                     <div>
                       <strong>Paracetamol 500mg</strong>
                       <p class="rx-sub">Cada 8 horas por 5 días</p>
@@ -271,11 +434,12 @@
 
               <!-- Botones de Visto Bueno -->
               <div class="approval-buttons">
-                <button class="btn btn-secondary-clean" onclick="window.pakimedApp.goToScreen(1)">
-                  Reanudar dictado
+                <button class="btn btn-secondary-clean" onclick="window.pakimedApp.goToScreen(2)">
+                  Dictar nuevamente
                 </button>
                 <button id="approveBtn" class="btn btn-approve-main">
-                  ✓ Validar y Registrar en Expediente
+                  <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Validar y Registrar</span>
                 </button>
               </div>
             </div>
@@ -283,25 +447,109 @@
           </div>
 
           <!-- ----------------------------------------------------
-               PANTALLA 4: Confirmación en el Teléfono
+               PANTALLA 5: Expediente Clínico & Cola DHIS2
                ---------------------------------------------------- -->
-          <div class="phone-screen-view" data-screen="4">
+          <div class="phone-screen-view" data-screen="5">
             <div class="phone-card text-center padding-lg">
-              <div class="success-icon-badge">✓</div>
-              <h3 class="step-heading">Expediente Clínico Registrado</h3>
-              <p class="step-desc">
-                La consulta se ha almacenado de forma segura e inmutable en el almacenamiento local del dispositivo.
-              </p>
-              <div class="offline-notice-box">
-                <p>⏳ <strong>Sincronización Store-and-Forward:</strong> En cuanto se detecte conectividad institucional (3G / Wi-Fi), el expediente se integrará automáticamente al sistema central de salud.</p>
+              
+              <!-- Gráfico de Documento Clínico Escaneado con Láser -->
+              <div class="doc-scanner-preview">
+                <div class="scanner-card">
+                  <div class="scanner-sheet">
+                    <div class="sheet-line wide"></div>
+                    <div class="sheet-title-text">Expediente Clínico Digital</div>
+                    <div class="sheet-line"></div>
+                    <div class="sheet-line short"></div>
+                    <div class="scanner-barcode"></div>
+                  </div>
+                  <div class="scanner-laser-line"></div>
+                </div>
               </div>
-              <button class="btn btn-action-main full-width margin-top-md" onclick="window.pakimedApp.goToScreen(1)">
-                + Iniciar Nueva Consulta
+
+              <!-- Flujo de 3 Pasos con Símbolos Monocromáticos -->
+              <div class="pipeline-flow-steps">
+                <div class="flow-step-item">
+                  <div class="flow-icon-circle">
+                    <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                  </div>
+                  <span class="flow-label">Captura Dictada</span>
+                </div>
+                <div class="flow-arrow">&rarr;</div>
+                <div class="flow-step-item">
+                  <div class="flow-icon-circle">
+                    <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                  </div>
+                  <span class="flow-label">Small AI NER</span>
+                </div>
+                <div class="flow-arrow">&rarr;</div>
+                <div class="flow-step-item active">
+                  <div class="flow-icon-circle active">
+                    <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <span class="flow-label">Validado</span>
+                </div>
+              </div>
+
+              <h3 class="step-heading">Expediente Clínico Resguardado</h3>
+              <p class="step-desc">
+                La consulta ha sido encriptada e incorporada a la cola local inmutable del dispositivo.
+              </p>
+
+              <div class="offline-notice-box">
+                <p>
+                  <svg class="mono-icon inline" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <strong>Sincronización Store-and-Forward:</strong> En cuanto se detecte enlace 3G o institucional, el lote se consolidará automáticamente en DHIS2.
+                </p>
+              </div>
+
+              <button class="btn btn-action-main full-width margin-top-md" onclick="window.pakimedApp.goToScreen(2)">
+                <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Nueva Consulta</span>
               </button>
             </div>
           </div>
 
         </div>
+
+        <!-- ====================================================================
+             BARRA DE NAVEGACIÓN INFERIOR (Bottom Dock)
+             4 Elementos + Botón Central Elevado (+)
+             Toda la navegación y control se realiza desde aquí
+             ==================================================================== -->
+        <nav class="phone-bottom-dock" aria-label="Navegación Principal">
+          
+          <!-- Elemento 1: Homepage / Inicio -->
+          <button class="dock-tab active" type="button" data-dock-screen="1" title="Inicio / Dashboard">
+            <svg class="mono-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="dock-label">Inicio</span>
+          </button>
+
+          <!-- Elemento 2: Estructuración On-Device -->
+          <button class="dock-tab" type="button" data-dock-screen="3" title="Estructuración Small AI">
+            <svg class="mono-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            <span class="dock-label">Estructurar</span>
+          </button>
+
+          <!-- Botón Central Elevado: Agregar Pacientes / Dictado (+) -->
+          <div class="dock-center-action">
+            <button id="dockFloatingActionBtn" class="dock-fab-btn" title="Agregar Paciente & Dictar Consulta" type="button" data-dock-screen="2">
+              <svg class="mono-icon fab-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+
+          <!-- Elemento 3: Validación / Signos -->
+          <button class="dock-tab" type="button" data-dock-screen="4" title="Signos Vitales y Validación">
+            <svg class="mono-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span class="dock-label">Validación</span>
+          </button>
+
+          <!-- Elemento 4: Expediente -->
+          <button class="dock-tab" type="button" data-dock-screen="5" title="Expediente Clínico & Historial">
+            <svg class="mono-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span class="dock-label">Expediente</span>
+          </button>
+
+        </nav>
 
       </div>
 
@@ -316,9 +564,12 @@
       <div class="console-wrapper">
         
         <div class="console-header">
-          <span class="console-tag">Centro de Control y Telemetría Institucional</span>
+          <span class="console-tag">
+            <svg class="mono-icon inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><path d="M10 9h4"/><path d="M12 7v4"/></svg>
+            Centro de Control y Telemetría Institucional
+          </span>
           <h2 class="console-title">Monitoreo de Datos y Sincronización</h2>
-          <p class="console-subtitle">Auditoría en tiempo real de procesamiento on-device, validación médica y conformidad con estándares de salud pública.</p>
+          <p class="console-subtitle">Auditoría en tiempo real de procesamiento on-device, validación facultativa y conformidad con estándares de salud pública.</p>
         </div>
 
         <!-- Cuadrícula de Métricas Técnicas -->
@@ -364,11 +615,15 @@
         <div class="console-card">
           <div class="card-header-actions">
             <div>
-              <h3 class="console-card-title">📦 Cola Local de Expedientes Clínicos</h3>
+              <h3 class="console-card-title">
+                <svg class="mono-icon inline" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                Cola Local de Expedientes Clínicos
+              </h3>
               <p class="console-card-desc">Registros almacenados localmente a la espera de enlace institucional:</p>
             </div>
             <button id="syncAllBtn" class="btn btn-sync-cloud">
-              Sincronizar Lote con DHIS2
+              <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+              <span>Sincronizar Lote con DHIS2</span>
             </button>
           </div>
 
@@ -383,7 +638,10 @@
         <div class="console-card">
           <div class="card-header-actions">
             <div>
-              <h3 class="console-card-title">🏥 Integración con Sistema de Salud (DHIS2)</h3>
+              <h3 class="console-card-title">
+                <svg class="mono-icon inline" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><path d="M10 9h4"/><path d="M12 7v4"/></svg>
+                Integración con Sistema de Salud (DHIS2)
+              </h3>
               <p class="console-card-desc">Carga estructurada según estándar oficial DHIS2 Tracker / Event API:</p>
             </div>
             <span class="standard-pill">DHIS2 Compliant</span>
@@ -405,7 +663,10 @@
   <div id="editModal" class="clean-modal-backdrop" aria-hidden="true" role="dialog">
     <div class="clean-modal-card">
       <div class="modal-card-top">
-        <h3 class="modal-card-title">✏️ Ajustar Registro Clínico del Paciente</h3>
+        <h3 class="modal-card-title">
+          <svg class="mono-icon inline" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          Ajustar Registro Clínico del Paciente
+        </h3>
         <button id="btnCloseModal" class="btn-close-x" aria-label="Cerrar">&times;</button>
       </div>
 
@@ -473,7 +734,7 @@
     </div>
   </div>
 
-  <!-- Scripts Modulares Desacoplados (Clean Architecture - Compatibles con doble clic sin CORS) -->
+  <!-- Scripts Modulares Desacoplados (Clean Architecture) -->
   <script src="./src/core/guardrails/guardrails.js"></script>
   <script src="./src/core/nlp/clinical_ner.js"></script>
   <script src="./src/core/audio/voice_recorder.js"></script>
