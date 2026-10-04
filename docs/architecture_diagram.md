@@ -52,14 +52,18 @@ flowchart TD
    - **Regla de Completitud Clínica:** Detección de dictados vacíos o conversaciones casuales sin datos clínicos; bloquea el envío de expedientes corruptos a DHIS2 e invita a reanudar el dictado o completar manualmente.
    - **Manejo de Baja Confianza:** Marcado de advertencia para términos ambiguos o con confianza < 75%.
 
-4. **Interfaz Human-in-the-Loop & Mobile Frame (`src/app/app.js` & `index.html`):**
-   - Desacoplado: orquesta los módulos a través de `window.Pakimed.*` sin dependencias de empaquetadores ni problemas de CORS en `file:///`.
-   - Previsualización clínica estructurada con ventana modal para ajustes manuales rápidos.
-   - Evidencia visual en tiempo real de los pasos de estructuración on-device.
+4. **Interfaz Móvil del Médico (`src/app/app.js`):**
+   - Controlador enfocado exclusivamente en la experiencia del facultativo: navegación táctil, captura de voz, estado inicial limpio (sin plantillas forzadas) y ventana modal de ajuste (HITL).
+   - Comunica cambios y expedientes aprobados a la base de datos local y al controlador de telemetría.
 
-5. **Store-and-Forward Queue (`src/core/storage/offline_queue.js`):**
-   - Persistencia local segura y resiliente (LocalStorage / IndexedDB).
+5. **Base de Datos Local & Telemetría (`src/core/storage/clinical_db.js`):**
+   - Motor de persistencia local reactivo con patrón observador (`subscribe`).
    - Gestión estricta de estados de ciclo de vida: `PENDING_SYNC` (en sandbox local) y `SYNCED` (consolidado en DHIS2).
+   - Generación de hashes de seguridad local y cálculo dinámico de estadísticas de telemetría institucional.
 
 6. **DHIS2 Standard Adapter (`src/integrations/dhis2/dhis2_adapter.js`):**
    - Serialización de datos clínicos estructurados conforme a la especificación oficial de DHIS2 Tracker / Event API.
+
+7. **Consola Institucional de Telemetría (`src/app/telemetry_controller.js`):**
+   - Orquesta la columna derecha: visor de payloads DHIS2, métricas de confinamiento de tráfico, alternancia de conectividad móvil y sincronización por lotes.
+   - Totalmente desacoplada de la interfaz del móvil; reacciona a eventos de `ClinicalDB`.
