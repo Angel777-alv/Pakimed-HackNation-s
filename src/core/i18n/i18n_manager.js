@@ -251,7 +251,7 @@ const I18nManager = {
       // Screen 5 - Confirmed Record
       screen5_title: 'Expediente Clínico Resguardado',
       screen5_desc: 'La consulta ha sido encriptada e incorporada a la base de datos local inmutable del dispositivo.',
-      store_forward_notice: 'Sincronización Store-and-Forward: En cuanto se detecte enlace 3G o institucional, el lote se consolidará automáticamente en DHIS2.',
+      store_forward_notice: 'Sincronización Store-and-Forward: En cuanto se detecte enlace 3G o institucional, el lote se consolidará automáticamente.',
       btn_new_consult: 'Nueva Consulta',
       doc_scanner_sheet: 'Expediente Clínico Digital',
       pipeline_step_capture: 'Captura Dictada',
@@ -275,11 +275,11 @@ const I18nManager = {
       telemetry_network_desc: 'Records remain in encrypted local database until institutional link is restored.',
       telemetry_queue_title: 'Local Clinical Record Queue',
       telemetry_queue_desc: 'Records stored locally awaiting institutional network link:',
-      telemetry_btn_sync: 'Sync Batch with DHIS2',
+      telemetry_btn_sync: 'Sync Batch',
       telemetry_sync_banner: 'Records remain preserved intact in local storage against power outages or coverage loss.',
-      telemetry_dhis2_title: 'Public Health Integration (DHIS2)',
-      telemetry_dhis2_desc: 'Structured payload mapped to official DHIS2 Tracker / Event API:',
-      telemetry_dhis2_empty: '// Once validated, the structured DHIS2 JSON payload will appear here',
+      telemetry_dhis2_title: 'Public Health Integration',
+      telemetry_dhis2_desc: 'Structured clinical payload ready for institutional sync:',
+      telemetry_dhis2_empty: '// Once validated, the structured clinical payload will appear here',
       
       // Modal HITL
       modal_title: 'Ajustar Registro Clínico del Paciente',
@@ -453,7 +453,7 @@ const I18nManager = {
       // Screen 5 - Confirmed Record
       screen5_title: 'Encounter Record Secured',
       screen5_desc: 'The consultation has been encrypted and saved into the immutable local device storage.',
-      store_forward_notice: 'Store-and-Forward: Batch will be automatically synchronized with DHIS2 upon 3G connection.',
+      store_forward_notice: 'Store-and-Forward: Batch will be automatically synchronized upon 3G connection.',
       btn_new_consult: 'Next Patient',
       doc_scanner_sheet: 'Digital Medical Record',
       pipeline_step_capture: 'Dictated Audio',
@@ -477,11 +477,11 @@ const I18nManager = {
       telemetry_network_desc: 'Records remain in encrypted local database until institutional link is restored.',
       telemetry_queue_title: 'Local Clinical Record Queue',
       telemetry_queue_desc: 'Records stored locally awaiting institutional network link:',
-      telemetry_btn_sync: 'Sync Batch with DHIS2',
+      telemetry_btn_sync: 'Sync Batch',
       telemetry_sync_banner: 'Records remain preserved intact in local storage against power outages or coverage loss.',
-      telemetry_dhis2_title: 'Public Health Integration (DHIS2)',
-      telemetry_dhis2_desc: 'Structured payload mapped to official DHIS2 Tracker / Event API:',
-      telemetry_dhis2_empty: '// Once validated, the structured DHIS2 JSON payload will appear here',
+      telemetry_dhis2_title: 'Public Health Integration',
+      telemetry_dhis2_desc: 'Structured clinical payload ready for institutional sync:',
+      telemetry_dhis2_empty: '// Once validated, the structured clinical payload will appear here',
       
       // Modal HITL
       modal_title: 'Adjust Patient Clinical Record',
@@ -655,7 +655,7 @@ const I18nManager = {
       // Screen 5 - Confirmed Record
       screen5_title: 'Patientenakte lokal gesichert',
       screen5_desc: 'Die Konsultation wurde verschlüsselt im unveränderlichen lokalen Gerätespeicher abgelegt.',
-      store_forward_notice: 'Store-and-Forward: Automatische DHIS2-Übertragung, sobald Mobilfunkempfang besteht.',
+      store_forward_notice: 'Store-and-Forward: Automatische Übertragung, sobald Mobilfunkempfang besteht.',
       btn_new_consult: 'Nächster Patient',
       doc_scanner_sheet: 'Digitale Patientenakte',
       pipeline_step_capture: 'Sprachdiktat',
@@ -679,11 +679,11 @@ const I18nManager = {
       telemetry_network_desc: 'Records remain in encrypted local database until institutional link is restored.',
       telemetry_queue_title: 'Local Clinical Record Queue',
       telemetry_queue_desc: 'Records stored locally awaiting institutional network link:',
-      telemetry_btn_sync: 'Sync Batch with DHIS2',
+      telemetry_btn_sync: 'Sync Batch',
       telemetry_sync_banner: 'Records remain preserved intact in local storage against power outages or coverage loss.',
-      telemetry_dhis2_title: 'Public Health Integration (DHIS2)',
-      telemetry_dhis2_desc: 'Structured payload mapped to official DHIS2 Tracker / Event API:',
-      telemetry_dhis2_empty: '// Once validated, the structured DHIS2 JSON payload will appear here',
+      telemetry_dhis2_title: 'Public Health Integration',
+      telemetry_dhis2_desc: 'Structured clinical payload ready for institutional sync:',
+      telemetry_dhis2_empty: '// Once validated, the structured clinical payload will appear here',
       
       // Modal HITL
       modal_title: 'Patientenakte anpassen',

@@ -144,11 +144,11 @@ class TelemetryController {
       },
       5: {
         stepBadge: 'STEP 5 ACTIVE',
-        title: 'Institutional Public Health Sync (DHIS2)',
+        title: 'Institutional Public Health Sync',
         latencyBadge: '🚀 One-Click Cloud Sync',
-        punchline: 'When 3G/Wi-Fi link is detected, encrypted batches are validated and synchronized directly into national DHIS2 servers.',
-        statusText: 'Synchronizing Batch · Official DHIS2 Tracker API',
-        safetyText: 'DHIS2 Compliant Payload'
+        punchline: 'When 3G/Wi-Fi link is detected, encrypted batches are validated and synchronized directly into national health cloud.',
+        statusText: 'Synchronizing Batch · Public Health Integration API',
+        safetyText: 'Standard Compliant Payload'
       }
     };
 
@@ -268,7 +268,7 @@ class TelemetryController {
           <div class="queue-card-desc">Recorded: ${new Date(r.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | ${r.data.symptoms?.slice(0, 2).join(', ') || 'General consultation'}</div>
         </div>
         <span class="queue-tag ${r.status === 'SYNCED' ? 'synced' : 'pending'}">
-          ${r.status === 'SYNCED' ? '✓ Synced with DHIS2' : '⏳ In Local Queue (Store & Forward)'}
+          ${r.status === 'SYNCED' ? '✓ Synced with Public Health' : '⏳ In Local Queue (Store & Forward)'}
         </span>
       </div>
     `).join('');
@@ -289,12 +289,12 @@ class TelemetryController {
     if (this.db) {
       const count = this.db.markAllSynced();
       if (this.syncStatusAlert) {
-        this.syncStatusAlert.textContent = `✓ ${count} record(s) transmitted and consolidated successfully into DHIS2.`;
+        this.syncStatusAlert.textContent = `✓ ${count} record(s) transmitted and consolidated successfully.`;
       }
     }
 
     this.syncAllBtn.disabled = false;
-    this.syncAllBtn.textContent = 'Sync Batch with DHIS2';
+    this.syncAllBtn.textContent = 'Sync Batch';
     this.render();
   }
 

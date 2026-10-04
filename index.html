@@ -357,8 +357,8 @@
 
               <!-- Tarjeta de Identificación del Paciente -->
               <div class="patient-id-card">
-                <div id="prevName" class="patient-id-name">Laura Gómez</div>
-                <div class="patient-id-meta"><span id="prevAge">34 años</span> &middot; <span id="prevGender">Femenino</span></div>
+                <div id="prevName" class="patient-id-name">--</div>
+                <div class="patient-id-meta"><span id="prevAge">--</span> &middot; <span id="prevGender">--</span></div>
               </div>
 
               <!-- Cuadrícula 2x2 de Signos Vitales con Mini-Gráficas -->
@@ -371,7 +371,7 @@
                     <span class="dash-status-dot"></span>
                   </div>
                   <div class="dash-value-row">
-                    <span id="prevBP" class="dash-vital-val">110/70</span>
+                    <span id="prevBP" class="dash-vital-val">--</span>
                     <span class="dash-unit">mmHg</span>
                   </div>
                   <div class="dash-chart-container">
@@ -392,7 +392,7 @@
                     <span class="dash-status-dot"></span>
                   </div>
                   <div class="dash-value-row">
-                    <span id="prevHR" class="dash-vital-val">80</span>
+                    <span id="prevHR" class="dash-vital-val">--</span>
                     <span class="dash-unit">lpm</span>
                   </div>
                   <div class="dash-chart-container">
@@ -418,7 +418,7 @@
                     <span class="dash-status-dot"></span>
                   </div>
                   <div class="dash-value-row">
-                    <span id="prevTemp" class="dash-vital-val">37.8</span>
+                    <span id="prevTemp" class="dash-vital-val">--</span>
                     <span class="dash-unit">°C</span>
                   </div>
                   <div class="dash-chart-container">
@@ -467,7 +467,7 @@
               <div class="summary-block">
                 <span class="block-title" data-i18n="field_symptoms">Síntomas registrados:</span>
                 <div id="prevSymptoms" class="tag-row">
-                  <span class="tag-pill symptom">Disuria</span>
+                  <span class="tag-pill">--</span>
                 </div>
               </div>
 
@@ -475,20 +475,14 @@
               <div class="summary-block">
                 <span class="block-title" data-i18n="field_meds">Esquema terapéutico indicado:</span>
                 <div id="prevMeds" class="rx-stack">
-                  <div class="rx-row">
-                    <span class="rx-badge">💊 Receta</span>
-                    <div>
-                      <strong>Nitrofurantoína 100mg</strong>
-                      <p class="rx-sub">Cada 12 horas por 7 días</p>
-                    </div>
-                  </div>
+                  <p class="quote-text">--</p>
                 </div>
               </div>
 
               <!-- Respaldo del Audio Dictado -->
               <div class="summary-block">
                 <span class="block-title" data-i18n="field_notes">Transcripción original de referencia:</span>
-                <p id="prevNotes" class="quote-text">"Notas originales..."</p>
+                <p id="prevNotes" class="quote-text">--</p>
               </div>
 
               <!-- Botones de Visto Bueno -->
@@ -706,45 +700,15 @@
               <div class="connector-glow-beam"></div>
             </div>
 
-            <!-- Node 5: DHIS2 Cloud (Batch Sync) -->
-            <button type="button" class="pipeline-flow-node idle" id="nodeCloud" data-step="5" title="Step 5: Institutional Health Sync (DHIS2 Cloud)">
+            <!-- Node 5: Cloud Sync (Batch Sync) -->
+            <button type="button" class="pipeline-flow-node idle" id="nodeCloud" data-step="5" title="Step 5: Institutional Health Sync (Cloud)">
               <div class="node-badge-number">5</div>
               <div class="node-icon-circle">
                 <svg class="mono-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
               </div>
-              <span class="node-main-label">DHIS2 Cloud</span>
+              <span class="node-main-label">Cloud Sync</span>
               <span class="node-sub-label">One-Click Sync</span>
             </button>
-          </div>
-        </div>
-
-        <!-- Real-Time Active Step Spotlight Card -->
-        <div id="activeStepInspector" class="active-step-inspector-card">
-          <div class="inspector-header">
-            <div class="inspector-title-row">
-              <span id="inspectorStepBadge" class="step-pill-badge">READY · STANDBY</span>
-              <h3 id="inspectorTitle" class="inspector-heading">Edge System Ready for Encounter</h3>
-            </div>
-            <span id="inspectorLatencyBadge" class="inspector-metric-pill">⚡ 0ms Latency</span>
-          </div>
-
-          <p id="inspectorDescription" class="inspector-punchline">
-            System waiting for clinical consultation dictation. All processing runs completely on-device without internet.
-          </p>
-
-          <div class="inspector-metrics-strip">
-            <div class="strip-metric-item">
-              <span class="strip-metric-label">External Traffic</span>
-              <strong id="telemBytes" class="strip-metric-val">0.0 KB</strong>
-            </div>
-            <div class="strip-metric-item">
-              <span class="strip-metric-label">Clinical Safety</span>
-              <strong id="telemSafetyText" class="strip-metric-val text-emerald">Zero AI Diagnosis</strong>
-            </div>
-            <div class="strip-metric-item">
-              <span class="strip-metric-label">Network Channel</span>
-              <strong id="telemNetworkText" class="strip-metric-val">Offline Autonomous</strong>
-            </div>
           </div>
         </div>
 
@@ -760,7 +724,7 @@
             </div>
             <button id="syncAllBtn" class="btn btn-sync-cloud">
               <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
-              <span>Sync Batch with DHIS2</span>
+              <span>Sync Batch</span>
             </button>
           </div>
 
@@ -771,20 +735,20 @@
           <div id="queueList" class="queue-list-items"></div>
         </div>
 
-        <!-- Section: Official Public Health Format (DHIS2) -->
+        <!-- Section: Public Health Integration -->
         <div class="console-card">
           <div class="card-header-actions">
             <div>
               <h3 class="console-card-title">
                 <svg class="mono-icon inline" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><path d="M10 9h4"/><path d="M12 7v4"/></svg>
-                <span>Public Health Integration (DHIS2)</span>
+                <span>Public Health Integration</span>
               </h3>
-              <p class="console-card-desc">Structured payload mapped to official DHIS2 Tracker / Event API standard:</p>
+              <p class="console-card-desc">Structured clinical payload ready for institutional sync:</p>
             </div>
-            <span class="standard-pill">DHIS2 Compliant</span>
+            <span class="standard-pill">Standard Compliant</span>
           </div>
 
-          <pre id="dhis2JsonViewer" class="json-viewer-screen">// Once validated, the structured DHIS2 JSON payload will appear here</pre>
+          <pre id="dhis2JsonViewer" class="json-viewer-screen">// Once validated, the structured clinical payload will appear here</pre>
         </div>
 
       </div>

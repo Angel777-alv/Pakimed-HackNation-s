@@ -104,13 +104,52 @@ class PakimedApp {
   }
 
   setupInitialState() {
-    // 1. Área de dictado limpia
+    // 1. Área de dictado y escenario completamente vacíos
     if (this.dictationText) {
       this.dictationText.value = '';
     }
+    if (this.scenarioSelect) {
+      this.scenarioSelect.value = '';
+    }
+    const pills = document.querySelectorAll('.quick-prompt-pill');
+    pills.forEach(p => p.classList.remove('active'));
 
-    // 2. Verificación proactiva de disponibilidad de Qwen2.5 Local
+    // 2. Inicializar estado de datos clínicos en vacío
+    this.extractedData = null;
+    this.clearPreview();
+
+    // 3. Verificación proactiva de disponibilidad de Qwen2.5 Local
     this.checkQwenAvailability();
+  }
+
+  clearPreview() {
+    if (this.prevName) {
+      this.prevName.textContent = '--';
+      this.prevName.style.color = '';
+    }
+    if (this.prevAge) this.prevAge.textContent = '--';
+    if (this.prevGender) this.prevGender.textContent = '--';
+    if (this.prevBP) this.prevBP.textContent = '--';
+    if (this.prevTemp) this.prevTemp.textContent = '--';
+    if (this.prevHR) this.prevHR.textContent = '--';
+    if (this.prevSpO2) this.prevSpO2.textContent = '--';
+    if (this.prevSymptoms) {
+      this.prevSymptoms.innerHTML = '<span class="tag-pill">--</span>';
+    }
+    if (this.prevMeds) {
+      this.prevMeds.innerHTML = '<p class="quote-text">--</p>';
+    }
+    if (this.prevNotes) {
+      this.prevNotes.textContent = '--';
+    }
+    if (this.allergiesBox) {
+      this.allergiesBox.classList.add('hidden');
+      this.allergiesBox.style.display = 'none';
+      if (this.allergiesText) this.allergiesText.textContent = '';
+    }
+    if (this.unmeasuredFieldsBox) {
+      this.unmeasuredFieldsBox.classList.add('hidden');
+    }
   }
 
   initVoiceEngine() {
@@ -404,8 +443,6 @@ class PakimedApp {
         : window.I18nManager.get('engine_status_heuristic');
     }
 
-    this.selectScenario(0);
-
     if (this.extractedData) {
       this.renderPreview(this.extractedData);
     }
@@ -430,7 +467,7 @@ class PakimedApp {
       }
 
       const btn = document.createElement('button');
-      btn.className = `quick-prompt-pill ${idx === 0 ? 'active' : ''}`;
+      btn.className = 'quick-prompt-pill';
       btn.type = 'button';
       btn.setAttribute('data-case-index', idx);
       btn.innerHTML = `
