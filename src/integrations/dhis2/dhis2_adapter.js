@@ -16,6 +16,7 @@ const DHIS2Adapter = {
     PATIENT_NAME: 'DE_NOMBRE_PACIENTE',
     PATIENT_AGE: 'DE_EDAD_ANOS',
     PATIENT_GENDER: 'DE_GENERO',
+    PATIENT_ALLERGIES: 'DE_ALERGIAS_MEDICAMENTOSAS',
     BP_SYS: 'DE_PRESION_SISTOLICA',
     BP_DIA: 'DE_PRESION_DIASTOLICA',
     TEMPERATURE: 'DE_TEMP_CELSIUS',
@@ -55,6 +56,13 @@ const DHIS2Adapter = {
       dataValues.push({
         dataElement: this.DATA_ELEMENTS.PATIENT_GENDER,
         value: patient.gender === 'F' ? 'FEMENINO' : 'MASCULINO'
+      });
+    }
+
+    if (Array.isArray(patient.allergies) && patient.allergies.length > 0) {
+      dataValues.push({
+        dataElement: this.DATA_ELEMENTS.PATIENT_ALLERGIES,
+        value: patient.allergies.join(', ')
       });
     }
 

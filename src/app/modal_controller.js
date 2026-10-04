@@ -97,7 +97,9 @@ class ModalController {
         name: nameVal,
         age: ageVal ? parseInt(ageVal, 10) : null,
         ageUnit: 'años',
-        gender: this.fieldGender?.value || null
+        gender: this.fieldGender?.value || null,
+        allergies: this.currentData?.patient?.allergies || [],
+        priorMedications: this.currentData?.patient?.priorMedications || []
       },
       vitals: {
         bloodPressure: this.fieldBP?.value?.trim() || null,

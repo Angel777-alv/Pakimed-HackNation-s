@@ -103,6 +103,10 @@ flowchart TD
   * *Prescripciones:* Nombre de fármacos, dosis y frecuencia dictadas explícitamente por el médico.
 * **RF-02.2:** El motor debe utilizar escaneo de ventanas de contexto dinámicas (N-gramas ±4 tokens) para asociar magnitudes numéricas aisladas con su correspondiente signo vital aun en presencia de ruido o muletillas conversacionales.
 * **RF-02.3:** La extracción debe completarse en un tiempo no mayor a 50 milisegundos en el dispositivo móvil (< 25 KB footprint, cero dependencias de red o modelos pesados).
+* **RF-02.4 (Segmentación de Discurso y Modificadores ConText / NegEx):** El pipeline procesa el diálogo clínico estructurándolo en cláusulas y segmentos discursivos (`IDENTITY`, `CHIEF_COMPLAINT`, `ALLERGY_HISTORY`, `EXAMINATION_VITALS`, `PLAN_PRESCRIPTION`), aplicando análisis de ámbito (ConText / NegEx) para:
+  * Detectar antecedentes de alergias a medicamentos (ej. "alérgico a la penicilina") y derivarlas estrictamente a `patient.allergies`, excluyéndolas del listado de prescripciones activas.
+  * Detectar automedicación previa del paciente (ej. "me tomé un ibuprofeno") y clasificarla en `patient.priorMedications`, evitando que contamine las recetas activas del facultativo.
+  * Aislamiento por límites léxicos (`\b`) para eliminar falsos positivos de síntomas por substrings (ej. subcadenas como "tos" dentro de "estos", "contactos", "puntos").
 
 #### RF-03: Guardarraíles de Seguridad y Ética (IEEE 7000)
 * **RF-03.1 (Regla Estricta de No-Diagnóstico):** El sistema **NUNCA** debe inferir, generar o sugerir diagnósticos médicos, pronósticos o tratamientos que no hayan sido expresamente dictados por el médico.
@@ -126,6 +130,7 @@ flowchart TD
 #### RF-06: Serialización e Integración con DHIS2
 * **RF-06.1 (Sanitización de Datos):** El sistema debe convertir el registro clínico aprobado en un payload JSON conforme a la especificación estándar de DHIS2 Event / Tracker API, empaquetando únicamente constantes vitales medidas y válidas (omitiendo valores nulos para proteger la integridad institucional).
 * **RF-06.2:** Al detectar conectividad, el sistema debe permitir la sincronización en lotes de los registros pendientes.
+* **RF-06.3 (Serialización de Alergias Medicamentosas en DHIS2):** Si el registro contiene alergias confirmadas por el facultativo, el adaptador de DHIS2 debe serializarlas dentro del data element institucional correspondiente (`DE_ALERGIAS_MEDICAMENTOSAS`), garantizando su disponibilidad para la seguridad del paciente en el sistema de salud pública.
 
 ---
 
@@ -150,11 +155,11 @@ flowchart TD
 | ID Requisito | Descripción | Componente en Código | Estándar / Criterio Hackatón |
 | :--- | :--- | :--- | :--- |
 | **RF-01** | Captura de audio (Dual-Buffer Streaming ASR) | `src/core/audio/voice_recorder.js` | Edge AI / Inclusión local |
-| **RF-02** | Extracción Híbrida Semántica & Heurística | `src/core/nlp/clinical_ner.js` | Small AI on-device (< 25 KB) |
+| **RF-02** | Extracción Híbrida Semántica, ConText/NegEx y Alergias | `src/core/nlp/clinical_ner.js` | Small AI on-device (< 25 KB) |
 | **RF-03** | Guardarraíles éticos, No-diagnóstico y Rangos Fisiológicos | `src/core/guardrails/guardrails.js` | IEEE 7000 / IA Responsable (Pass/Fail) |
 | **RF-04** | Previsualización y Ventana de Modificación | `src/app/app.js` & `index.html` | Supervisión médica obligatoria (HITL) |
 | **RF-05** | Base de Datos Reactiva & Store-and-Forward | `src/core/storage/clinical_db.js` | Resiliencia Offline |
-| **RF-06** | Mapeo y serialización DHIS2 | `src/integrations/dhis2/dhis2_adapter.js` | Estándar global de salud pública |
+| **RF-06** | Mapeo y serialización DHIS2 (Event API + Alergias) | `src/integrations/dhis2/dhis2_adapter.js` | Estándar global de salud pública |
 
 ---
 

@@ -67,6 +67,8 @@ class PakimedApp {
     this.prevNotes = document.getElementById('prevNotes');
     this.unmeasuredFieldsBox = document.getElementById('unmeasuredFieldsBox');
     this.unmeasuredFieldsText = document.getElementById('unmeasuredFieldsText');
+    this.allergiesBox = document.getElementById('allergiesBox');
+    this.allergiesText = document.getElementById('allergiesText');
     this.guardrailAlert = document.getElementById('guardrailAlert');
     this.incompleteAlert = document.getElementById('incompleteAlert');
     this.incompleteAlertMsg = document.getElementById('incompleteAlertMsg');
@@ -341,6 +343,16 @@ class PakimedApp {
         this.unmeasuredFieldsText.textContent = missing.join(', ');
       } else {
         this.unmeasuredFieldsBox.classList.add('hidden');
+      }
+    }
+
+    // 3.1 Aviso de Alergias Medicamentosas Detectadas
+    if (this.allergiesBox && this.allergiesText) {
+      if (data.patient?.allergies?.length > 0) {
+        this.allergiesBox.classList.remove('hidden');
+        this.allergiesText.textContent = data.patient.allergies.join(', ');
+      } else {
+        this.allergiesBox.classList.add('hidden');
       }
     }
 
