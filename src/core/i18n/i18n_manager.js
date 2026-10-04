@@ -111,9 +111,9 @@ const I18nManager = {
 
   translations: {
     es: {
-      app_brand_tag: 'GLOBAL AI HACKATHON 2026 · SMALL AI SALUD',
-      app_main_title: 'Pakimed — Asistente Clínico Rural On-Device',
-      app_subtitle: 'Inferencia Edge AI multilingüe para estructuración médica offline y sincronización con DHIS2.',
+      app_brand_tag: 'GLOBAL AI HACKATHON 2026 · SMALL AI HEALTH',
+      app_main_title: 'Pakimed — On-Device Rural Clinical Assistant',
+      app_subtitle: 'Multilingual Edge AI inference for offline medical structuring and resilient cloud synchronization.',
       btn_demo: 'Demostración de Consulta',
       btn_network_sim: 'Conectividad: Simular Red Móvil (3G)',
       btn_network_offline: 'Modo Local (Sin red)',
@@ -315,7 +315,7 @@ const I18nManager = {
     en: {
       app_brand_tag: 'GLOBAL AI HACKATHON 2026 · SMALL AI HEALTH',
       app_main_title: 'Pakimed — On-Device Rural Clinical Assistant',
-      app_subtitle: 'Multilingual Edge AI inference for offline medical structuring and DHIS2 sync.',
+      app_subtitle: 'Multilingual Edge AI inference for offline medical structuring and resilient cloud synchronization.',
       btn_demo: 'Clinical Consultation Demo',
       btn_network_sim: 'Connectivity: Simulate Mobile Network (3G)',
       btn_network_offline: 'Local Mode (Offline)',
@@ -515,9 +515,9 @@ const I18nManager = {
     },
 
     de: {
-      app_brand_tag: 'GLOBAL AI HACKATHON 2026 · SMALL AI GESUNDHEIT',
-      app_main_title: 'Pakimed — On-Device Klinischer Assistent',
-      app_subtitle: 'Mehrsprachige Edge-KI für Offline-Strukturierung und DHIS2-Synchronisation.',
+      app_brand_tag: 'GLOBAL AI HACKATHON 2026 · SMALL AI HEALTH',
+      app_main_title: 'Pakimed — On-Device Rural Clinical Assistant',
+      app_subtitle: 'Multilingual Edge AI inference for offline medical structuring and resilient cloud synchronization.',
       btn_demo: 'Sprechstunden-Demo',
       btn_network_sim: 'Konnektivität: Mobilfunk simulieren (3G)',
       btn_network_offline: 'Lokaler Modus (Offline)',
