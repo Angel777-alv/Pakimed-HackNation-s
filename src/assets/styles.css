@@ -111,7 +111,8 @@ body {
 /* ==========================================================================
    Barra Superior de Control (Pitch Header)
    ========================================================================== */
-.pitch-header {
+.pitch-header,
+.pitch-banner {
   background: var(--surface-card);
   border-bottom: 1px solid var(--border-hairline);
   position: sticky;
@@ -120,20 +121,23 @@ body {
   box-shadow: var(--shadow-subtle);
 }
 
-.pitch-header-content {
-  max-width: 1400px;
+.pitch-header-content,
+.pitch-banner-content {
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0.85rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-wrap: nowrap;
+  gap: 1.5rem;
 }
 
-.brand-group {
+.brand-group,
+.pitch-brand-block {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .hackathon-tag,
@@ -153,18 +157,33 @@ body {
   font-family: var(--font-heading);
   color: var(--text-main);
   letter-spacing: -0.3px;
+  margin: 0.1rem 0;
 }
 
 .pitch-subtitle {
   font-size: 0.78rem;
   color: var(--text-secondary);
-  margin-top: 0.15rem;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pitch-actions {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .pitch-header-content,
+  .pitch-banner-content {
+    flex-wrap: wrap;
+  }
+  .pitch-subtitle {
+    white-space: normal;
+  }
 }
 
 /* Botones */
