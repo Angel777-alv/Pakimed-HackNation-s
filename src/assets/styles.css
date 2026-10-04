@@ -732,6 +732,59 @@ body {
   text-align: left;
 }
 
+/* Lista de Pasos del Pipeline On-Device */
+.pipeline-progress-list {
+  margin: 1.15rem 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  background: #ffffff;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.95rem;
+}
+
+.pipeline-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.pipe-check {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  width: 14px;
+  display: inline-block;
+}
+
+.pipeline-progress-item.done {
+  color: var(--emerald-text);
+}
+
+.pipeline-progress-item.done .pipe-check {
+  color: var(--emerald-solid);
+  font-weight: 800;
+}
+
+.pipeline-progress-item.active {
+  color: var(--teal-primary);
+  font-weight: 700;
+}
+
+.pipeline-progress-item.active .pipe-check {
+  color: var(--teal-primary);
+  animation: blinkDot 0.8s infinite;
+}
+
+.pipeline-progress-item.pending {
+  color: var(--text-dim);
+}
+
 /* Pantalla 3: Resumen y Aprobación Médica */
 .safety-banner {
   padding: 0.75rem 0.95rem;
@@ -755,6 +808,35 @@ body {
   color: var(--amber-text);
   border: 1px solid var(--amber-border);
   border-left-width: 4px;
+}
+
+.safety-banner.error {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-left-width: 4px;
+}
+
+.safety-banner.hidden {
+  display: none !important;
+}
+
+.incomplete-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.72rem !important;
+  min-height: 32px !important;
+}
+
+.vital-box.full-span {
+  grid-column: 1 / -1;
 }
 
 .card-title-row {

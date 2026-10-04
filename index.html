@@ -156,6 +156,27 @@
               <p id="processingStepText" class="step-desc">
                 Extrayendo signos vitales y entidades clínicas en el dispositivo...
               </p>
+
+              <!-- Pasos del Pipeline On-Device en Vivo -->
+              <div class="pipeline-progress-list" id="pipelineProgressList">
+                <div class="pipeline-progress-item done" id="pipeStep1">
+                  <span class="pipe-check">✓</span>
+                  <span class="pipe-text">Normalización de audio y texto</span>
+                </div>
+                <div class="pipeline-progress-item active" id="pipeStep2">
+                  <span class="pipe-check">●</span>
+                  <span class="pipe-text">Análisis ontológico on-device (&lt; 35 KB)</span>
+                </div>
+                <div class="pipeline-progress-item pending" id="pipeStep3">
+                  <span class="pipe-check">○</span>
+                  <span class="pipe-text">Verificación de guardarraíl ético (IEEE 7000)</span>
+                </div>
+                <div class="pipeline-progress-item pending" id="pipeStep4">
+                  <span class="pipe-check">○</span>
+                  <span class="pipe-text">Validación de completitud clínica</span>
+                </div>
+              </div>
+
               <div class="local-guarantee-box">
                 <p>⚙️ <strong>Privacidad del Paciente:</strong> El procesamiento del lenguaje y audio se ejecuta en la memoria local, sin transmisión externa de datos sensibles.</p>
               </div>
@@ -167,6 +188,22 @@
                ---------------------------------------------------- -->
           <div class="phone-screen-view" data-screen="3">
             
+            <!-- Banner de Alerta de Completitud Clínica (Visible si no hay datos) -->
+            <div id="incompleteAlert" class="safety-banner error hidden">
+              <div class="alert-content">
+                <strong>⚠️ Registro Clínico Incompleto</strong>
+                <p id="incompleteAlertMsg">No se identificaron signos vitales, sintomatología ni prescripciones en el audio dictado. No es posible generar un expediente oficial para DHIS2 sin datos clínicos.</p>
+              </div>
+              <div class="incomplete-actions">
+                <button class="btn btn-secondary-clean btn-sm" onclick="window.pakimedApp.goToScreen(1)">
+                  🎙️ Reanudar dictado clínico
+                </button>
+                <button class="btn btn-action-main btn-sm" onclick="window.pakimedApp.openEditModal()">
+                  ✏️ Completar manualmente
+                </button>
+              </div>
+            </div>
+
             <!-- Banner de Protocolo Clínico -->
             <div id="guardrailAlert" class="safety-banner secure">
               🛡️ <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión y firma médica.
@@ -193,6 +230,10 @@
                   <span id="prevHR" class="vital-val">78 lpm</span>
                 </div>
                 <div class="vital-box">
+                  <span class="vital-lbl">Sat. O₂ (SpO2)</span>
+                  <span id="prevSpO2" class="vital-val">97%</span>
+                </div>
+                <div class="vital-box full-span">
                   <span class="vital-lbl">Paciente</span>
                   <span id="prevAge" class="vital-val">34 años</span>
                   <span id="prevGender" class="vital-sub">Femenino</span>
@@ -403,9 +444,15 @@
           </div>
         </div>
 
-        <div class="form-item">
-          <label class="item-label" for="fieldSymptoms">Síntomas registrados (separados por coma):</label>
-          <input type="text" id="fieldSymptoms" class="clean-input" placeholder="Ej: fiebre, tos seca, dolor de cabeza">
+        <div class="form-row-2">
+          <div class="form-item">
+            <label class="item-label" for="fieldSpO2">Saturación O₂ (% SpO2):</label>
+            <input type="number" id="fieldSpO2" class="clean-input" placeholder="Ej: 98">
+          </div>
+          <div class="form-item">
+            <label class="item-label" for="fieldSymptoms">Síntomas registrados (coma):</label>
+            <input type="text" id="fieldSymptoms" class="clean-input" placeholder="Ej: fiebre, tos seca, dolor de cabeza">
+          </div>
         </div>
 
         <div class="form-item">
@@ -426,7 +473,12 @@
     </div>
   </div>
 
-  <!-- Script Autónomo (Funciona inmediatamente al hacer doble clic) -->
+  <!-- Scripts Modulares Desacoplados (Clean Architecture - Compatibles con doble clic sin CORS) -->
+  <script src="./src/core/guardrails/guardrails.js"></script>
+  <script src="./src/core/nlp/clinical_ner.js"></script>
+  <script src="./src/core/audio/voice_recorder.js"></script>
+  <script src="./src/core/storage/offline_queue.js"></script>
+  <script src="./src/integrations/dhis2/dhis2_adapter.js"></script>
   <script src="./src/app/app.js"></script>
 </body>
 </html>

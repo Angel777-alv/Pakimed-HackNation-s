@@ -1,13 +1,14 @@
 /**
  * Pakimed Voice Recorder & Edge ASR Bridge (Moonshine Voice Architecture)
  * 
- * Implementa la captura y reconocimiento acústico on-device diseñado para
- * procesadores de recursos limitados (Small AI / Edge Computing).
- * Incluye fallback fluido a Web Speech API y escenarios clínicos precargados
- * para demostraciones sin latencia ni fallos en vivo.
+ * Captura acústica on-device diseñada para hardware de recursos limitados.
+ * Integra Web Speech API nativa con control preciso de estados:
+ * - IDLE
+ * - RECORDING
+ * - PROCESSING
  */
 
-export class VoiceRecorder {
+class VoiceRecorder {
   constructor(options = {}) {
     this.engineName = 'Moonshine Voice (Edge ASR)';
     this.onResult = options.onResult || (() => {});
@@ -15,12 +16,17 @@ export class VoiceRecorder {
     this.onStateChange = options.onStateChange || (() => {});
     this.isRecording = false;
     this.recognition = null;
+    this.timerInterval = null;
+    this.seconds = 0;
 
     this.initRecognition();
   }
 
   initRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = typeof window !== 'undefined' 
+      ? (window.SpeechRecognition || window.webkitSpeechRecognition)
+      : null;
+
     if (SpeechRecognition) {
       this.recognition = new SpeechRecognition();
       this.recognition.continuous = true;
@@ -29,18 +35,20 @@ export class VoiceRecorder {
 
       this.recognition.onstart = () => {
         this.isRecording = true;
+        this.startTimer();
         this.onStateChange('RECORDING');
       };
 
       this.recognition.onresult = (event) => {
-        let interimTranscript = '';
         let finalTranscript = '';
+        let interimTranscript = '';
 
         for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
+          const item = event.results[i];
+          if (item.isFinal) {
+            finalTranscript += item[0].transcript;
           } else {
-            interimTranscript += event.results[i][0].transcript;
+            interimTranscript += item[0].transcript;
           }
         }
 
@@ -48,62 +56,105 @@ export class VoiceRecorder {
       };
 
       this.recognition.onerror = (event) => {
-        console.warn('Speech recognition warning/error:', event.error);
+        console.warn('SpeechRecognition warning:', event.error);
         this.onError(event.error);
       };
 
       this.recognition.onend = () => {
-        this.isRecording = false;
-        this.onStateChange('IDLE');
+        if (this.isRecording) {
+          this.stopTimer();
+          this.isRecording = false;
+          this.onStateChange('IDLE');
+        }
       };
     }
   }
 
   start() {
-    if (this.recognition && !this.isRecording) {
+    if (this.isRecording) return;
+    this.seconds = 0;
+
+    if (this.recognition) {
       try {
         this.recognition.start();
+        return;
       } catch (e) {
-        console.warn('Recognition start exception:', e);
+        console.warn('SpeechRecognition start fallback:', e);
       }
-    } else {
-      this.isRecording = true;
-      this.onStateChange('RECORDING');
     }
+
+    // Fallback simulado para entornos donde el navegador bloquea permisos de mic sin SSL
+    this.isRecording = true;
+    this.startTimer();
+    this.onStateChange('RECORDING');
   }
 
   stop() {
-    if (this.recognition && this.isRecording) {
+    this.stopTimer();
+    this.isRecording = false;
+
+    if (this.recognition) {
       try {
         this.recognition.stop();
       } catch (e) {
-        console.warn('Recognition stop exception:', e);
+        // silencioso
       }
     }
-    this.isRecording = false;
-    this.onStateChange('IDLE');
+
+    this.onStateChange('PROCESSING');
+  }
+
+  startTimer() {
+    this.stopTimer();
+    this.seconds = 0;
+    this.timerInterval = setInterval(() => {
+      this.seconds++;
+      this.onStateChange('TICK', { seconds: this.seconds, formatted: this.getFormattedTime() });
+    }, 1000);
+  }
+
+  stopTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  getFormattedTime() {
+    const m = String(Math.floor(this.seconds / 60)).padStart(2, '0');
+    const s = String(this.seconds % 60).padStart(2, '0');
+    return `${m}:${s}`;
   }
 
   /**
-   * Casos de dictado clínico precargados para demostración ágil del Pitch
+   * Plantillas de consulta rápida (únicamente como demostración opcional)
    */
-  static getDemoScenarios() {
+  static getTemplates() {
     return [
       {
-        id: "caso_1",
-        title: "Caso 1: Consulta General - Infección Respiratoria Aguda",
-        transcript: "Paciente femenina de 34 años con fiebre de 38.5 grados, tos seca y dolor de cabeza desde hace 3 días. Presión arterial de 120 sobre 80, pulso de 78 latidos por minuto. Se indica Paracetamol 500mg cada 8 horas por 5 días y abundante hidratación oral."
+        id: "plantilla_1",
+        title: "Plantilla 1: Infección Respiratoria Aguda (Adulto)",
+        transcript: "Paciente femenina de 34 años con fiebre de 38.5 grados, tos seca y dolor de cabeza desde hace 3 días. Presión arterial de 120 sobre 80, pulso de 78 latidos por minuto, saturación de oxígeno 97%. Se indica Paracetamol 500mg cada 8 horas por 5 días y abundante hidratación oral."
       },
       {
-        id: "caso_2",
-        title: "Caso 2: Paciente Pediátrico - Cuadro Gastrointestinal",
-        transcript: "Paciente masculino de 6 años de edad presenta dolor abdominal, diarrea y vómitos de 24 horas de evolución. Temperatura de 37.8 grados, frecuencia cardíaca de 95 lpm. Indico sales de rehidratación oral y dieta blanda fraccionada. Control en 48 horas."
+        id: "plantilla_2",
+        title: "Plantilla 2: Cuadro Gastrointestinal Pediátrico",
+        transcript: "Paciente masculino de 6 años de edad presenta dolor abdominal, diarrea y vómitos de 24 horas de evolución. Temperatura de 37.8 grados, pulso de 95 latidos por minuto. Indico sales de rehidratación oral y dieta blanda fraccionada. Control en 48 horas."
       },
       {
-        id: "caso_3",
-        title: "Caso 3: Control Adulto Mayor - Hipertensión Arterial",
-        transcript: "Paciente masculino de 68 años acude a control de rutina. Asintomático. Presión arterial de 145 sobre 95, frecuencia cardíaca de 72 lpm. Se mantiene medicación de Losartán 50mg cada 24 horas y se indica reducción en consumo de sodio."
+        id: "plantilla_3",
+        title: "Plantilla 3: Control Hipertensión Arterial (Adulto Mayor)",
+        transcript: "Paciente masculino de 68 años acude a control de rutina. Asintomático. Presión arterial de 145 sobre 95, pulso de 72 latidos por minuto. Se mantiene medicación de Losartán 50mg cada 24 horas y reducción estricta de sal."
       }
     ];
   }
+}
+
+// Exportación Universal
+if (typeof window !== 'undefined') {
+  window.Pakimed = window.Pakimed || {};
+  window.Pakimed.VoiceRecorder = VoiceRecorder;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { VoiceRecorder };
 }

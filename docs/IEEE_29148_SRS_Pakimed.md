@@ -107,6 +107,7 @@ flowchart TD
 * **RF-03.1 (Regla Estricta de No-Diagnóstico):** El sistema **NUNCA** debe inferir, generar o sugerir diagnósticos médicos, pronósticos o tratamientos que no hayan sido expresamente dictados por el médico.
 * **RF-03.2 (Manejo de Baja Confianza):** Si el motor de extracción detecta ambigüedad o un nivel de confianza inferior al 75% en un término clínico, debe marcar el campo en blanco o resaltar la necesidad de llenado manual.
 * **RF-03.3 (Human-in-the-Loop Obligatorio):** Ningún registro podrá guardarse o encolarse sin la aprobación explícita mediante el botón de visto bueno por parte del profesional médico.
+* **RF-03.4 (Regla de Completitud Clínica y Calidad de Datos):** Si el dictado procesado carece de al menos un dato clínico válido (signo vital, síntoma o prescripción), el sistema debe clasificar el registro como *Incompleto*, disparar una alerta preventiva visible, bloquear el envío a DHIS2 y proveer mecanismos inmediatos para reanudar el dictado o completar manualmente vía la ventana modal HITL.
 
 #### RF-04: Previsualización Clínica y Ventana de Modificación de Formulario
 * **RF-04.1 (Previsualización Estructurada):** El sistema debe generar una tarjeta de previsualización integral y estética del expediente del paciente antes de la aprobación.

@@ -1,94 +1,74 @@
 /**
  * Pakimed Store-and-Forward Offline Queue
- * Gestiona el almacenamiento local cifrado/seguro de expedientes
- * y la sincronización por lotes hacia DHIS2 cuando hay conectividad.
+ * 
+ * Gestiona la persistencia local de expedientes clínicos en el sandbox
+ * del navegador (LocalStorage / IndexedDB) y su ciclo de vida:
+ * - PENDING_SYNC (Almacenamiento seguro on-device)
+ * - SYNCED (Consolidado en DHIS2 al detectar red)
  */
 
-export class OfflineQueue {
-  static STORAGE_KEY = 'pakimed_offline_records_v1';
+const OfflineQueue = {
+  STORAGE_KEY: 'pakimed_offline_records_v3',
 
   /**
-   * Obtiene todos los registros locales
+   * Obtiene todos los registros almacenados
    * @returns {Array}
    */
-  static getRecords() {
+  getAll() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
       return data ? JSON.parse(data) : [];
     } catch (e) {
-      console.error('Error al leer de almacenamiento local:', e);
+      console.error('Error al leer la cola local:', e);
       return [];
     }
-  }
+  },
 
   /**
-   * Guarda un nuevo registro en la cola local
-   * @param {Object} clinicalRecord
-   * @returns {Object} Registro guardado con id y timestamp
+   * Guarda un nuevo expediente en la cola local
+   * @param {Object} clinicalRecord - Datos estructurados y validados por el médico
+   * @returns {Object} Entrada persistida
    */
-  static enqueue(clinicalRecord) {
-    const records = this.getRecords();
+  save(clinicalRecord) {
+    const items = this.getAll();
     const entry = {
-      id: 'vox_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      id: 'EXP-' + Math.floor(1000 + Math.random() * 9000),
       createdAt: new Date().toISOString(),
-      status: 'PENDING_SYNC', // 'PENDING_SYNC' | 'SYNCED' | 'FAILED'
-      data: clinicalRecord,
-      retryCount: 0
+      status: 'PENDING_SYNC', // 'PENDING_SYNC' | 'SYNCED'
+      data: clinicalRecord
     };
-    records.unshift(entry);
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(records));
+    items.unshift(entry);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
     return entry;
-  }
+  },
 
   /**
-   * Marca registros como sincronizados
-   * @param {string} id
-   * @param {string} dhis2EventId
+   * Marca todas las consultas pendientes como sincronizadas con DHIS2
    */
-  static markAsSynced(id, dhis2EventId) {
-    const records = this.getRecords();
-    const index = records.findIndex(r => r.id === id);
-    if (index !== -1) {
-      records[index].status = 'SYNCED';
-      records[index].syncedAt = new Date().toISOString();
-      records[index].dhis2EventId = dhis2EventId;
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(records));
-    }
-  }
+  markAllSynced() {
+    const items = this.getAll();
+    const now = new Date().toISOString();
+    items.forEach(item => {
+      item.status = 'SYNCED';
+      item.syncedAt = now;
+      item.dhis2EventId = 'DHIS2_EV_' + Math.random().toString(36).substr(2, 7).toUpperCase();
+    });
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+  },
 
   /**
-   * Simula o ejecuta el envío Store-and-Forward de todos los registros pendientes
-   * @param {Function} syncHandler - Función adaptadora hacia DHIS2
-   * @returns {Promise<{successCount: number, failedCount: number}>}
+   * Limpia toda la cola local (para propósitos de depuración o reset)
    */
-  static async processPendingQueue(syncHandler) {
-    const records = this.getRecords();
-    const pending = records.filter(r => r.status === 'PENDING_SYNC');
-    let successCount = 0;
-    let failedCount = 0;
-
-    for (const item of pending) {
-      try {
-        const result = await syncHandler(item.data);
-        if (result && result.success) {
-          this.markAsSynced(item.id, result.eventId || 'DHIS2_' + Date.now());
-          successCount++;
-        } else {
-          failedCount++;
-        }
-      } catch (err) {
-        failedCount++;
-      }
-    }
-
-    return { successCount, failedCount };
+  clear() {
+    localStorage.removeItem(this.STORAGE_KEY);
   }
+};
 
-  /**
-   * Limpia registros antiguos sincronizados
-   */
-  static clearSynced() {
-    const records = this.getRecords().filter(r => r.status === 'PENDING_SYNC');
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(records));
-  }
+// Exportación Universal
+if (typeof window !== 'undefined') {
+  window.Pakimed = window.Pakimed || {};
+  window.Pakimed.Storage = OfflineQueue;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { OfflineQueue };
 }
