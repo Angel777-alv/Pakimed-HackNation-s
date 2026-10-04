@@ -3,6 +3,9 @@
  * 
  * Convierte el registro clínico estructurado y validado por el médico
  * en el formato oficial de intercambio JSON de la API de Eventos/Tracker de DHIS2.
+ * 
+ * Principio de Sanitización: Solo empaqueta datos medidos y válidos en dataValues
+ * (omite campos nulos o no dictados para no corromper la base institucional).
  */
 
 const DHIS2Adapter = {
@@ -10,6 +13,7 @@ const DHIS2Adapter = {
   DEFAULT_ORG_UNIT: 'CLINICA_COMUNITARIA_04',
 
   DATA_ELEMENTS: {
+    PATIENT_NAME: 'DE_NOMBRE_PACIENTE',
     PATIENT_AGE: 'DE_EDAD_ANOS',
     PATIENT_GENDER: 'DE_GENERO',
     BP_SYS: 'DE_PRESION_SISTOLICA',
@@ -23,56 +27,73 @@ const DHIS2Adapter = {
   },
 
   /**
-   * Formatea un registro clínico en payload compatible con DHIS2
+   * Formatea un registro clínico en payload compatible con DHIS2 Tracker / Event API
    * @param {Object} record - Datos del paciente aprobados
    * @returns {Object} JSON DHIS2 Event
    */
-  format(record) {
+  format(record = {}) {
     const dataValues = [];
+    const patient = record.patient || {};
+    const vitals = record.vitals || {};
 
-    if (record.patient) {
-      if (record.patient.age !== null && record.patient.age !== undefined) {
-        dataValues.push({
-          dataElement: this.DATA_ELEMENTS.PATIENT_AGE,
-          value: String(record.patient.age)
-        });
+    // 1. Identificación y Demográficos del Paciente
+    if (patient.name && String(patient.name).trim().length > 0) {
+      dataValues.push({
+        dataElement: this.DATA_ELEMENTS.PATIENT_NAME,
+        value: String(patient.name).trim()
+      });
+    }
+
+    if (patient.age !== null && patient.age !== undefined && !isNaN(patient.age)) {
+      dataValues.push({
+        dataElement: this.DATA_ELEMENTS.PATIENT_AGE,
+        value: String(patient.age)
+      });
+    }
+
+    if (patient.gender && (patient.gender === 'F' || patient.gender === 'M')) {
+      dataValues.push({
+        dataElement: this.DATA_ELEMENTS.PATIENT_GENDER,
+        value: patient.gender === 'F' ? 'FEMENINO' : 'MASCULINO'
+      });
+    }
+
+    // 2. Constantes Vitales Sanitizadas (Solo empaqueta valores reales medidos)
+    if (vitals.bloodPressure) {
+      const parts = String(vitals.bloodPressure).split('/');
+      const sys = parts[0] ? parts[0].trim() : null;
+      const dia = parts[1] ? parts[1].trim() : null;
+
+      if (sys && sys !== '--' && !isNaN(parseInt(sys, 10))) {
+        dataValues.push({ dataElement: this.DATA_ELEMENTS.BP_SYS, value: sys });
       }
-      if (record.patient.gender) {
-        dataValues.push({
-          dataElement: this.DATA_ELEMENTS.PATIENT_GENDER,
-          value: record.patient.gender
-        });
+      if (dia && dia !== '--' && !isNaN(parseInt(dia, 10))) {
+        dataValues.push({ dataElement: this.DATA_ELEMENTS.BP_DIA, value: dia });
       }
     }
 
-    if (record.vitals) {
-      if (record.vitals.bloodPressure) {
-        const parts = String(record.vitals.bloodPressure).split('/');
-        if (parts.length === 2) {
-          dataValues.push({ dataElement: this.DATA_ELEMENTS.BP_SYS, value: parts[0].trim() });
-          dataValues.push({ dataElement: this.DATA_ELEMENTS.BP_DIA, value: parts[1].trim() });
-        }
-      }
-      if (record.vitals.temperature) {
-        dataValues.push({
-          dataElement: this.DATA_ELEMENTS.TEMPERATURE,
-          value: String(record.vitals.temperature)
-        });
-      }
-      if (record.vitals.heartRate) {
-        dataValues.push({
-          dataElement: this.DATA_ELEMENTS.HEART_RATE,
-          value: String(record.vitals.heartRate)
-        });
-      }
-      if (record.vitals.oxygenSaturation) {
-        dataValues.push({
-          dataElement: this.DATA_ELEMENTS.SPO2,
-          value: String(record.vitals.oxygenSaturation) + '%'
-        });
-      }
+    if (vitals.temperature !== null && vitals.temperature !== undefined && !isNaN(vitals.temperature)) {
+      dataValues.push({
+        dataElement: this.DATA_ELEMENTS.TEMPERATURE,
+        value: String(vitals.temperature)
+      });
     }
 
+    if (vitals.heartRate !== null && vitals.heartRate !== undefined && !isNaN(vitals.heartRate)) {
+      dataValues.push({
+        dataElement: this.DATA_ELEMENTS.HEART_RATE,
+        value: String(vitals.heartRate)
+      });
+    }
+
+    if (vitals.oxygenSaturation !== null && vitals.oxygenSaturation !== undefined && !isNaN(vitals.oxygenSaturation)) {
+      dataValues.push({
+        dataElement: this.DATA_ELEMENTS.SPO2,
+        value: String(vitals.oxygenSaturation) + '%'
+      });
+    }
+
+    // 3. Sintomatología
     if (Array.isArray(record.symptoms) && record.symptoms.length > 0) {
       dataValues.push({
         dataElement: this.DATA_ELEMENTS.SYMPTOMS,
@@ -80,6 +101,7 @@ const DHIS2Adapter = {
       });
     }
 
+    // 4. Prescripciones
     if (Array.isArray(record.prescriptions) && record.prescriptions.length > 0) {
       dataValues.push({
         dataElement: this.DATA_ELEMENTS.PRESCRIPTIONS,
@@ -87,10 +109,11 @@ const DHIS2Adapter = {
       });
     }
 
-    if (record.doctorNotes) {
+    // 5. Notas clínicas literales de respaldo
+    if (record.doctorNotes && String(record.doctorNotes).trim().length > 0) {
       dataValues.push({
         dataElement: this.DATA_ELEMENTS.DOCTOR_NOTES,
-        value: record.doctorNotes
+        value: record.doctorNotes.trim()
       });
     }
 
@@ -100,6 +123,7 @@ const DHIS2Adapter = {
       eventDate: record.approvedAt || new Date().toISOString(),
       status: 'COMPLETED_APPROVED_BY_DOCTOR',
       compliance: 'PROTOCOLO_TRANSCRIPCION_FIEL_VERIFICADO',
+      patientIdentifier: patient.name ? String(patient.name).trim() : 'ANONIMO',
       dataValues
     };
   }

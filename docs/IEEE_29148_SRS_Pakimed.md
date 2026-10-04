@@ -97,7 +97,7 @@ flowchart TD
 
 #### RF-02: Extracción Estructurada de Entidades Clínicas (Motor Híbrido Semántico/Heurístico)
 * **RF-02.1:** El motor on-device debe procesar el texto transcrito y extraer los siguientes campos estructurados:
-  * *Datos Demográficos:* Edad (número/unidad) y Género (F/M).
+  * *Identificación y Demográficos:* Nombre del paciente (extraído de fórmulas como "señor...", "doña...", "paciente..."), Edad (número/unidad) y Género (F/M).
   * *Signos Vitales:* Presión arterial (Sistólica/Diastólica en mmHg), Temperatura corporal (°C), Frecuencia cardíaca (lpm) y Saturación de Oxígeno (SpO2 %).
   * *Síntomas y Tiempo de Evolución:* Lista normalizada de sintomatología referida con soporte de matching difuso (Levenshtein) para variantes coloquiales rurales (ej. "dolor de panza", "calentura"), junto con el tiempo de evolución detectado.
   * *Prescripciones:* Nombre de fármacos, dosis y frecuencia dictadas explícitamente por el médico.
@@ -107,13 +107,15 @@ flowchart TD
 #### RF-03: Guardarraíles de Seguridad y Ética (IEEE 7000)
 * **RF-03.1 (Regla Estricta de No-Diagnóstico):** El sistema **NUNCA** debe inferir, generar o sugerir diagnósticos médicos, pronósticos o tratamientos que no hayan sido expresamente dictados por el médico.
 * **RF-03.2 (Manejo de Baja Confianza):** Si el motor de extracción detecta ambigüedad o un nivel de confianza inferior al 75% en un término clínico, debe marcar el campo en blanco o resaltar la necesidad de llenado manual.
-* **RF-03.3 (Human-in-the-Loop Obligatorio):** Ningún registro podrá guardarse o encolarse sin la aprobación explícita mediante el botón de visto bueno por parte del profesional médico.
-* **RF-03.4 (Regla de Completitud Clínica y Calidad de Datos):** Si el dictado procesado carece de al menos un dato clínico válido (signo vital, síntoma o prescripción), el sistema debe clasificar el registro como *Incompleto*, disparar una alerta preventiva visible, bloquear el envío a DHIS2 y proveer mecanismos inmediatos para reanudar el dictado o completar manualmente vía la ventana modal HITL.
-* **RF-03.5 (Validación de Rangos Fisiológicos Plausibles):** El sistema debe auditar automáticamente las constantes vitales extraídas o editadas contra límites biológicos plausibles (PAS: 50-250 mmHg, PAD: 30-140 mmHg, Temp: 32.0-43.0 °C, FC: 30-230 lpm, SpO2: 50-100%). En caso de valores anómalos o incongruentes, emitirá una advertencia de seguridad clínica para revisión médica.
+* **RF-03.3 (Human-in-the-Loop Obligatorio y Candados de Navegación):** Ningún registro podrá guardarse, consolidarse o avanzar a la confirmación (Paso 4) sin la aprobación explícita mediante el botón de visto bueno facultativo.
+* **RF-03.4 (Regla de Identificación Obligatoria y Completitud Clínica para DHIS2):** El sistema exige de forma obligatoria el nombre del paciente y al menos un dato clínico válido (signo vital, síntoma o prescripción) antes de permitir la consolidación. Si falta el nombre o el registro está vacío, se bloquea la aprobación y se requiere la edición manual en el modal HITL.
+* **RF-03.5 (Auditoría Cuantitativa de Rangos Fisiológicos - Cero Diagnóstico):** El sistema audita las constantes vitales en 2 niveles:
+  * *Límites Biológicos Imposibles (Bloqueo):* Detecta valores absurdos (ej. PAS > 250 mmHg, Temp > 43.0 °C) e impide el guardado hasta su corrección.
+  * *Observaciones Cuantitativas Objetivas:* Detecta lecturas fuera de rangos de referencia estándar (ej. PAS 180 mmHg) y emite advertencias cuantitativas descriptivas sin etiquetar diagnósticos clínicos.
 
 #### RF-04: Previsualización Clínica y Ventana de Modificación de Formulario
-* **RF-04.1 (Previsualización Estructurada):** El sistema debe generar una tarjeta de previsualización integral y estética del expediente del paciente antes de la aprobación.
-* **RF-04.2 (Ventana Modal de Modificación y Ajuste):** El profesional de la salud debe poder desplegar una ventana modal interactiva para editar, corregir o complementar cualquier valor demográfico, signo vital, síntoma o fármaco.
+* **RF-04.1 (Previsualización Estructurada):** El sistema debe generar una tarjeta de previsualización integral y estética del expediente del paciente antes de la aprobación, identificando claramente el nombre del paciente y destacando constantes no medidas.
+* **RF-04.2 (Ventana Modal de Modificación y Ajuste):** El profesional de la salud debe poder desplegar una ventana modal interactiva con validación reactiva en tiempo real para editar, corregir o complementar cualquier valor demográfico, signo vital, síntoma o fármaco.
 * **RF-04.3 (Verificación Ética Visible):** La previsualización debe mostrar un distintivo visible de cumplimiento de guardarraíles ("Cero diagnóstico generado automáticamente").
 
 #### RF-05: Almacenamiento Seguro Store-and-Forward
@@ -122,7 +124,7 @@ flowchart TD
 * **RF-05.3:** El sistema debe permitir al usuario alternar entre simulación Offline y detección de red 3G/Wi-Fi.
 
 #### RF-06: Serialización e Integración con DHIS2
-* **RF-06.1:** El sistema debe convertir el registro clínico aprobado en un payload JSON conforme a la especificación estándar de DHIS2 Event / Tracker API.
+* **RF-06.1 (Sanitización de Datos):** El sistema debe convertir el registro clínico aprobado en un payload JSON conforme a la especificación estándar de DHIS2 Event / Tracker API, empaquetando únicamente constantes vitales medidas y válidas (omitiendo valores nulos para proteger la integridad institucional).
 * **RF-06.2:** Al detectar conectividad, el sistema debe permitir la sincronización en lotes de los registros pendientes.
 
 ---

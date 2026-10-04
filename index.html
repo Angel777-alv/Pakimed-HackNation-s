@@ -234,10 +234,17 @@
                   <span id="prevSpO2" class="vital-val">97%</span>
                 </div>
                 <div class="vital-box full-span">
-                  <span class="vital-lbl">Paciente</span>
-                  <span id="prevAge" class="vital-val">34 años</span>
-                  <span id="prevGender" class="vital-sub">Femenino</span>
+                  <span class="vital-lbl">Paciente Identificado</span>
+                  <span id="prevName" class="vital-val" style="font-size: 1.05rem; color: #0f766e;">No indicado</span>
+                  <div class="patient-sub-row" style="font-size: 0.72rem; color: var(--text-muted);">
+                    <span id="prevAge">--</span> &middot; <span id="prevGender">No indicado</span>
+                  </div>
                 </div>
+              </div>
+
+              <!-- Aviso de Constantes No Medidas / Parciales -->
+              <div id="unmeasuredFieldsBox" class="summary-block hidden" style="border-left: 3px solid #0284c7; background: #f0f9ff; font-size: 0.72rem; padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; color: #0369a1;">
+                ℹ️ <strong>Constantes no dictadas en consulta:</strong> <span id="unmeasuredFieldsText">Pulso, SpO2</span>
               </div>
 
               <!-- Síntomas -->
@@ -416,6 +423,11 @@
 
         <!-- Alerta de Validación de Rangos Fisiológicos en el Modal -->
         <div id="modalValidationAlert" class="safety-banner warning hidden" style="margin-bottom: 12px; font-size: 0.75rem; padding: 8px 12px;"></div>
+
+        <div class="form-item">
+          <label class="item-label" for="fieldName">Nombre del Paciente <span style="color: #ef4444;">* (Obligatorio)</span>:</label>
+          <input type="text" id="fieldName" class="clean-input" placeholder="Ej: Luis Morales" required>
+        </div>
 
         <div class="form-row-2">
           <div class="form-item">

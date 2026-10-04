@@ -4,11 +4,11 @@
  * Responsabilidad: Coordinación de vistas y eventos en la interfaz táctil móvil.
  * Arquitectura modular y limpia: Consume servicios especializados de window.Pakimed.*
  * - window.Pakimed.VoiceRecorder (Captura streaming dual-buffer)
- * - window.Pakimed.NER (Extracción clínica híbrida)
- * - window.Pakimed.Guardrails (Auditoría ética y rangos fisiológicos)
+ * - window.Pakimed.NER (Extracción clínica híbrida con identificación de paciente)
+ * - window.Pakimed.Guardrails (Auditoría ética IEEE 7000, no-diagnóstico y completitud)
  * - window.Pakimed.ModalController (Edición manual HITL reactiva)
  * - window.Pakimed.DB (Persistencia local reactiva)
- * - window.Pakimed.DHIS2 (Mapeo de estándar Tracker/Event)
+ * - window.Pakimed.DHIS2 (Mapeo y sanitización Tracker/Event)
  */
 
 class PakimedApp {
@@ -17,6 +17,7 @@ class PakimedApp {
     this.extractedData = null;
     this.voiceEngine = null;
     this.modalController = null;
+    this.isRecordApproved = false;
 
     this.initElements();
     this.initVoiceEngine();
@@ -54,6 +55,7 @@ class PakimedApp {
     ];
 
     // Pantalla 3: Validación y Expediente
+    this.prevName = document.getElementById('prevName');
     this.prevAge = document.getElementById('prevAge');
     this.prevGender = document.getElementById('prevGender');
     this.prevBP = document.getElementById('prevBP');
@@ -63,6 +65,8 @@ class PakimedApp {
     this.prevSymptoms = document.getElementById('prevSymptoms');
     this.prevMeds = document.getElementById('prevMeds');
     this.prevNotes = document.getElementById('prevNotes');
+    this.unmeasuredFieldsBox = document.getElementById('unmeasuredFieldsBox');
+    this.unmeasuredFieldsText = document.getElementById('unmeasuredFieldsText');
     this.guardrailAlert = document.getElementById('guardrailAlert');
     this.incompleteAlert = document.getElementById('incompleteAlert');
     this.incompleteAlertMsg = document.getElementById('incompleteAlertMsg');
@@ -232,6 +236,12 @@ class PakimedApp {
   }
 
   goToScreen(step) {
+    // Candado estricto de navegación hacia la Pantalla 4 (Expediente)
+    if (step === 4 && !this.isRecordApproved) {
+      alert('Debe validar y registrar la consulta médica en la Pantalla 3 antes de ver la confirmación del expediente.');
+      return;
+    }
+
     this.currentScreen = step;
     this.stepTabs.forEach(t => t.classList.toggle('active', parseInt(t.getAttribute('data-step'), 10) === step));
     this.screenViews.forEach(v => v.classList.toggle('active', parseInt(v.getAttribute('data-screen'), 10) === step));
@@ -244,22 +254,23 @@ class PakimedApp {
       return;
     }
 
+    this.isRecordApproved = false;
     this.goToScreen(2);
 
     // Animación visual del pipeline con Small AI (< 25 KB)
-    this.setPipelineStep(1, 'Normalizando transcripción y preparando análisis lingüístico...');
+    this.setPipelineStep(1, 'Normalizando transcripción e identificando paciente...');
     await new Promise(r => setTimeout(r, 400));
 
     this.setPipelineStep(2, 'Extrayendo entidades clínicas mediante ontología on-device (< 25 KB)...');
     await new Promise(r => setTimeout(r, 500));
 
     const NER = window.Pakimed?.NER;
-    this.extractedData = NER ? NER.extract(text) : { rawTranscript: text, vitals: {}, symptoms: [], prescriptions: [] };
+    this.extractedData = NER ? NER.extract(text) : { rawTranscript: text, patient: {}, vitals: {}, symptoms: [], prescriptions: [] };
 
     this.setPipelineStep(3, 'Verificando guardarraíles éticos IEEE 7000 (Cero diagnóstico autónomo)...');
     await new Promise(r => setTimeout(r, 400));
 
-    this.setPipelineStep(4, 'Auditando rangos fisiológicos y completitud clínica para DHIS2...');
+    this.setPipelineStep(4, 'Auditando identificación obligatoria y rangos fisiológicos para DHIS2...');
     await new Promise(r => setTimeout(r, 350));
 
     this.renderPreview(this.extractedData);
@@ -290,14 +301,29 @@ class PakimedApp {
   renderPreview(data) {
     if (!data) return;
 
-    // 1. Demográficos
-    this.prevAge.textContent = data.patient && data.patient.age !== null 
-      ? `${data.patient.age} ${data.patient.ageUnit || 'años'}` 
-      : 'No indicada';
+    // 1. Identificación y Demográficos del Paciente
+    const p = data.patient || {};
+    if (this.prevName) {
+      if (p.name) {
+        this.prevName.textContent = p.name;
+        this.prevName.style.color = '#0f766e';
+      } else {
+        this.prevName.textContent = '⚠️ No identificado (Requiere nombre)';
+        this.prevName.style.color = '#dc2626';
+      }
+    }
+
+    if (this.prevAge) {
+      this.prevAge.textContent = p.age !== null && p.age !== undefined 
+        ? `${p.age} ${p.ageUnit || 'años'}` 
+        : 'Edad no indicada';
+    }
     
-    this.prevGender.textContent = data.patient && data.patient.gender === 'F' 
-      ? 'Femenino' 
-      : (data.patient && data.patient.gender === 'M' ? 'Masculino' : 'No indicado');
+    if (this.prevGender) {
+      this.prevGender.textContent = p.gender === 'F' 
+        ? 'Femenino' 
+        : (p.gender === 'M' ? 'Masculino' : 'Género no indicado');
+    }
 
     // 2. Constantes Vitales
     this.prevBP.textContent = data.vitals?.bloodPressure || '--';
@@ -307,14 +333,25 @@ class PakimedApp {
       this.prevSpO2.textContent = data.vitals?.oxygenSaturation ? `${data.vitals.oxygenSaturation}%` : '--';
     }
 
-    // 3. Síntomas
+    // 3. Aviso de Constantes No Medidas / Parciales
+    if (this.unmeasuredFieldsBox && this.unmeasuredFieldsText) {
+      const missing = data.missingFields || (window.Pakimed?.Guardrails?.detectMissingOptionalFields(data) || []);
+      if (missing.length > 0) {
+        this.unmeasuredFieldsBox.classList.remove('hidden');
+        this.unmeasuredFieldsText.textContent = missing.join(', ');
+      } else {
+        this.unmeasuredFieldsBox.classList.add('hidden');
+      }
+    }
+
+    // 4. Síntomas
     if (data.symptoms?.length > 0) {
       this.prevSymptoms.innerHTML = data.symptoms.map(s => `<span class="tag-pill symptom">${s}</span>`).join('');
     } else {
       this.prevSymptoms.innerHTML = '<span class="text-muted">Ningún síntoma específico identificado</span>';
     }
 
-    // 4. Medicación y Prescripciones
+    // 5. Medicación y Prescripciones
     if (data.prescriptions?.length > 0) {
       this.prevMeds.innerHTML = data.prescriptions.map(p => `
         <div class="rx-row">
@@ -329,17 +366,17 @@ class PakimedApp {
       this.prevMeds.innerHTML = '<p class="text-muted">No se indicó medicación en este registro.</p>';
     }
 
-    // 5. Transcripción original
+    // 6. Transcripción original
     this.prevNotes.textContent = `"${data.rawTranscript || 'Sin notas'}"`;
 
-    // 6. Actualización integral de Guardarraíles y Banners de Alerta
+    // 7. Actualización integral de Guardarraíles y Banners de Alerta
     this.updateAlertsAndSafetyStatus(data);
   }
 
   updateAlertsAndSafetyStatus(data) {
     const telem = window.pakimedTelemetry;
 
-    // Caso A: Registro Incompleto (Cero datos clínicos)
+    // Caso A: Registro Incompleto o Falta de Nombre (Bloqueo de Aprobación)
     if (!data.isComplete) {
       if (this.incompleteAlert) {
         this.incompleteAlert.classList.remove('hidden');
@@ -348,24 +385,24 @@ class PakimedApp {
         }
       }
       if (this.guardrailAlert) this.guardrailAlert.classList.add('hidden');
-      if (telem) telem.setSafetyStatus('Alerta: Registro incompleto (Sin datos clínicos)', true);
+      if (telem) telem.setSafetyStatus('Bloqueo: Requiere identificación o datos clínicos', true);
 
       this.approveBtn.disabled = true;
       this.approveBtn.style.opacity = '0.45';
-      this.approveBtn.title = 'Requiere al menos 1 signo vital, síntoma o prescripción para registrar';
+      this.approveBtn.title = 'Complete el nombre y datos clínicos en "Ajustar Registro" para habilitar la firma';
       return;
     }
 
-    // Caso B: Registro Completo
+    // Caso B: Registro Válido
     if (this.incompleteAlert) this.incompleteAlert.classList.add('hidden');
     if (this.guardrailAlert) {
       this.guardrailAlert.classList.remove('hidden');
 
       if (data.guardrailAlerts && data.guardrailAlerts.length > 0) {
-        // Advertencia de seguridad clínica o rangos atípicos
+        // Observación cuantitativa de rango o inferencia detectada (Cero diagnóstico)
         this.guardrailAlert.className = 'safety-banner warning';
-        this.guardrailAlert.innerHTML = `⚠️ <strong>Observación Médica / Rangos:</strong><br>${data.guardrailAlerts.join('<br>')}`;
-        if (telem) telem.setSafetyStatus('Advertencia: Requiere revisión de constantes vitales', true);
+        this.guardrailAlert.innerHTML = `⚠️ <strong>Observación Médica / Constantes:</strong><br>${data.guardrailAlerts.join('<br>')}`;
+        if (telem) telem.setSafetyStatus('Observación: Constantes vitales fuera de rango estándar', true);
       } else {
         // Protocolo seguro verificado
         this.guardrailAlert.className = 'safety-banner secure';
@@ -394,7 +431,7 @@ class PakimedApp {
 
   approveRecord() {
     if (!this.extractedData || !this.extractedData.isComplete) {
-      alert('No es posible consolidar un expediente sin datos clínicos.');
+      alert('No es posible consolidar un expediente sin nombre del paciente y datos clínicos.');
       return;
     }
 
@@ -419,6 +456,7 @@ class PakimedApp {
       window.pakimedTelemetry.showDHIS2Payload(payload);
     }
 
+    this.isRecordApproved = true;
     this.goToScreen(4);
   }
 

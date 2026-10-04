@@ -3,7 +3,7 @@
  * 
  * Responsabilidades:
  * 1. Control del ciclo de vida del modal de edición manual.
- * 2. Validación reactiva de rangos fisiológicos (PAS, PAD, Temp, FC, SpO2, Edad).
+ * 2. Validación reactiva en vivo de nombre obligatorio y rangos fisiológicos.
  * 3. Bloqueo y señalización de valores anómalos o biológicamente imposibles.
  * 4. Extracción higiénica de datos para actualización del expediente clínico.
  */
@@ -17,6 +17,7 @@ class ModalController {
     this.alertEl = document.getElementById('modalValidationAlert');
 
     // Campos del formulario
+    this.fieldName = document.getElementById('fieldName');
     this.fieldAge = document.getElementById('fieldAge');
     this.fieldGender = document.getElementById('fieldGender');
     this.fieldBP = document.getElementById('fieldBP');
@@ -38,9 +39,9 @@ class ModalController {
     if (this.btnCancel) this.btnCancel.addEventListener('click', () => this.close());
     if (this.btnSave) this.btnSave.addEventListener('click', () => this.handleSave());
 
-    // Validación reactiva en tiempo real sobre los campos de constantes vitales
-    const vitalInputs = [this.fieldBP, this.fieldTemp, this.fieldHR, this.fieldSpO2, this.fieldAge];
-    vitalInputs.forEach(input => {
+    // Validación reactiva en tiempo real sobre nombre y constantes vitales
+    const liveInputs = [this.fieldName, this.fieldBP, this.fieldTemp, this.fieldHR, this.fieldSpO2, this.fieldAge];
+    liveInputs.forEach(input => {
       if (input) {
         input.addEventListener('input', () => this.validateLive());
         input.addEventListener('change', () => this.validateLive());
@@ -72,6 +73,7 @@ class ModalController {
     if (!this.currentData) return;
     const { patient = {}, vitals = {}, symptoms = [], prescriptions = [], doctorNotes = '', rawTranscript = '' } = this.currentData;
 
+    if (this.fieldName) this.fieldName.value = patient.name || '';
     if (this.fieldAge) this.fieldAge.value = patient.age !== null && patient.age !== undefined ? patient.age : '';
     if (this.fieldGender) this.fieldGender.value = patient.gender || '';
     if (this.fieldBP) this.fieldBP.value = vitals.bloodPressure || '';
@@ -84,6 +86,7 @@ class ModalController {
   }
 
   getFormData() {
+    const nameVal = this.fieldName?.value?.trim() || null;
     const ageVal = this.fieldAge?.value?.trim();
     const tempVal = this.fieldTemp?.value?.trim();
     const hrVal = this.fieldHR?.value?.trim();
@@ -91,6 +94,7 @@ class ModalController {
 
     return {
       patient: {
+        name: nameVal,
         age: ageVal ? parseInt(ageVal, 10) : null,
         ageUnit: 'años',
         gender: this.fieldGender?.value || null
@@ -115,25 +119,36 @@ class ModalController {
   validateLive() {
     const formData = this.getFormData();
     const Guardrails = window.Pakimed?.Guardrails;
-    const errors = [];
+    const blockingErrors = [];
+    const observations = [];
     const invalidFields = new Set();
 
+    // 1. Validar Nombre Obligatorio
+    if (!formData.patient.name || formData.patient.name.length < 2) {
+      blockingErrors.push('Identificación requerida: Ingrese el nombre del paciente para habilitar el guardado.');
+      invalidFields.add('name');
+    }
+
     if (Guardrails) {
-      // 1. Validar Rangos Fisiológicos
+      // 2. Validar Rangos Fisiológicos
       const rangeCheck = Guardrails.validatePhysiologicalRanges(formData);
       if (!rangeCheck.isValid) {
-        errors.push(...rangeCheck.warnings);
+        blockingErrors.push(...rangeCheck.criticalErrors);
         rangeCheck.outOfRangeFields.forEach(f => invalidFields.add(f));
       }
+      if (rangeCheck.observations.length > 0) {
+        observations.push(...rangeCheck.observations);
+      }
 
-      // 2. Validar Completitud Clínica
+      // 3. Validar Completitud Clínica
       const compCheck = Guardrails.validateClinicalCompleteness(formData);
-      if (!compCheck.isComplete) {
-        errors.push(compCheck.reason);
+      if (compCheck.missingClinicalData) {
+        blockingErrors.push(compCheck.reason);
       }
     }
 
     // Marcado visual de campos erróneos en el DOM
+    this.setFieldStatus(this.fieldName, invalidFields.has('name'));
     this.setFieldStatus(this.fieldBP, invalidFields.has('bloodPressure'));
     this.setFieldStatus(this.fieldTemp, invalidFields.has('temperature'));
     this.setFieldStatus(this.fieldHR, invalidFields.has('heartRate'));
@@ -142,26 +157,27 @@ class ModalController {
 
     // Mostrar u ocultar panel de alertas del modal
     if (this.alertEl) {
-      if (errors.length > 0) {
+      const allMessages = [...blockingErrors, ...observations];
+      if (allMessages.length > 0) {
         this.alertEl.classList.remove('hidden');
-        this.alertEl.innerHTML = `⚠️ <strong>Observaciones de Validación:</strong><br>${errors.join('<br>')}`;
+        this.alertEl.innerHTML = `⚠️ <strong>Validación de Registro:</strong><br>${allMessages.join('<br>')}`;
       } else {
         this.alertEl.classList.add('hidden');
         this.alertEl.innerHTML = '';
       }
     }
 
-    // Deshabilitar botón de guardar si hay errores críticos de rango
-    const hasCriticalRangeError = invalidFields.size > 0;
+    // Deshabilitar botón de guardar si hay errores de bloqueo
+    const hasBlockingError = blockingErrors.length > 0;
     if (this.btnSave) {
-      this.btnSave.disabled = hasCriticalRangeError;
-      this.btnSave.style.opacity = hasCriticalRangeError ? '0.5' : '1';
-      this.btnSave.title = hasCriticalRangeError 
-        ? 'Corrige los valores atípicos marcados en rojo antes de guardar' 
+      this.btnSave.disabled = hasBlockingError;
+      this.btnSave.style.opacity = hasBlockingError ? '0.5' : '1';
+      this.btnSave.title = hasBlockingError 
+        ? 'Complete el nombre y corrija los valores atípicos antes de guardar' 
         : 'Guardar cambios validados';
     }
 
-    return { isValid: errors.length === 0, hasCriticalRangeError, errors, formData };
+    return { isValid: !hasBlockingError, hasBlockingError, blockingErrors, observations, formData };
   }
 
   setFieldStatus(element, isInvalid) {
@@ -174,7 +190,7 @@ class ModalController {
   }
 
   clearErrors() {
-    [this.fieldBP, this.fieldTemp, this.fieldHR, this.fieldSpO2, this.fieldAge].forEach(el => {
+    [this.fieldName, this.fieldBP, this.fieldTemp, this.fieldHR, this.fieldSpO2, this.fieldAge].forEach(el => {
       if (el) el.classList.remove('input-invalid');
     });
     if (this.alertEl) {
@@ -184,9 +200,9 @@ class ModalController {
   }
 
   handleSave() {
-    const { isValid, hasCriticalRangeError, formData } = this.validateLive();
-    if (hasCriticalRangeError) {
-      alert('No es posible guardar valores de constantes vitales fuera de rangos biológicos plausibles.');
+    const { isValid, hasBlockingError, formData } = this.validateLive();
+    if (hasBlockingError || !isValid) {
+      alert('Por favor ingrese el nombre del paciente y verifique que las constantes vitales sean biológicamente válidas.');
       return;
     }
 
@@ -196,7 +212,8 @@ class ModalController {
       ...this.currentData,
       ...formData,
       guardrailAlerts: [],
-      rangeWarnings: []
+      rangeWarnings: [],
+      missingFields: []
     };
 
     if (Guardrails) {
@@ -207,14 +224,19 @@ class ModalController {
       }
 
       const rangeCheck = Guardrails.validatePhysiologicalRanges(finalData);
-      if (!rangeCheck.isValid) {
-        finalData.rangeWarnings.push(...rangeCheck.warnings);
-        finalData.guardrailAlerts.push(...rangeCheck.warnings);
+      if (rangeCheck.criticalErrors.length > 0) {
+        finalData.guardrailAlerts.push(...rangeCheck.criticalErrors);
       }
+      if (rangeCheck.observations.length > 0) {
+        finalData.guardrailAlerts.push(...rangeCheck.observations);
+      }
+      finalData.rangeWarnings = rangeCheck.warnings;
 
       const compCheck = Guardrails.validateClinicalCompleteness(finalData);
       finalData.isComplete = compCheck.isComplete;
       finalData.completenessMessage = compCheck.reason;
+
+      finalData.missingFields = Guardrails.detectMissingOptionalFields(finalData);
     }
 
     this.close();

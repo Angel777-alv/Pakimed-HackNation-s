@@ -170,7 +170,7 @@ const ClinicalNER = {
 
     const result = {
       rawTranscript: text,
-      patient: { age: null, ageUnit: 'años', gender: null, confidence: 1.0 },
+      patient: { name: null, age: null, ageUnit: 'años', gender: null, confidence: 1.0 },
       vitals: { bloodPressure: null, temperature: null, heartRate: null, oxygenSaturation: null, confidence: 1.0 },
       symptoms: [],
       timeEvolution: null,
@@ -178,6 +178,7 @@ const ClinicalNER = {
       doctorNotes: text,
       guardrailAlerts: [],
       rangeWarnings: [],
+      missingFields: [],
       isAutonomousDiagnosis: false,
       isComplete: true,
       completenessMessage: null
@@ -190,7 +191,22 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 1. EXTRACCIÓN DE TIEMPO DE EVOLUCIÓN
+    // 1. EXTRACCIÓN DEL NOMBRE DEL PACIENTE
+    // ========================================================================
+    const nameMatch = text.match(/(?:señor|sr\.|don|caballero)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+)?)/i)
+      || text.match(/(?:señora|sra\.|doña|dama|señorita)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+)?)/i)
+      || text.match(/(?:paciente|nombre del paciente:?)\s+([a-záéíóúÁÉÍÓÚñÑ]+(?:\s+[a-záéíóúÁÉÍÓÚñÑ]+)?)/i);
+
+    if (nameMatch) {
+      const candidate = nameMatch[1].trim();
+      const forbidden = ['doctor', 'médico', 'medico', 'enfermera', 'femenina', 'femenino', 'masculino', 'varón', 'varon', 'adulto', 'niño', 'niña', 'este', 'bueno'];
+      if (!forbidden.includes(candidate.toLowerCase())) {
+        result.patient.name = candidate.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      }
+    }
+
+    // ========================================================================
+    // 2. EXTRACCIÓN DE TIEMPO DE EVOLUCIÓN
     // ========================================================================
     const timeMatch = text.match(/(?:desde hace|hace|lleva|de evoluci[oó]n|con ese dolor|con ese cuadro)\s*(\d{1,2}|un|dos|tres|cuatro|cinco)\s*(d[ií]as?|horas?|semanas?|meses?)/i)
       || text.match(/(\d{1,2})\s*(?:d[ií]as?|horas?)\s*(?:de evoluci[oó]n|con ese dolor)?/i);
@@ -200,16 +216,16 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 2. EXTRACCIÓN DE GÉNERO
+    // 3. EXTRACCIÓN DE GÉNERO
     // ========================================================================
-    if (/\b(femenina|femenino|mujer|niña|señora|dama|paciente mujer)\b/i.test(normalized)) {
+    if (/\b(femenina|femenino|mujer|niña|señora|dama|paciente mujer|doña|señorita)\b/i.test(normalized)) {
       result.patient.gender = 'F';
     } else if (/\b(masculino|varon|hombre|niño|señor|caballero|paciente varon|don)\b/i.test(normalized)) {
       result.patient.gender = 'M';
     }
 
     // ========================================================================
-    // 3. EXTRACCIÓN DE EDAD
+    // 4. EXTRACCIÓN DE EDAD
     // ========================================================================
     const ageMatch = text.match(/(?:paciente(?:\s+femenina|\s+masculino|\s+de)?\s*(?:de)?\s*)(\d{1,3})\s*(?:años|meses|a)?/i)
       || text.match(/(\d{1,3})\s*(?:años|meses)\s*(?:de edad)?/i)
