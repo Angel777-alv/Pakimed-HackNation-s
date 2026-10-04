@@ -167,18 +167,18 @@ class VoiceRecorder {
     return [
       {
         id: "plantilla_1",
-        title: "Plantilla 1: Infección Respiratoria Aguda (Adulto)",
-        transcript: "Paciente femenina de 34 años con fiebre de 38.5 grados, tos seca y dolor de cabeza desde hace 3 días. Presión arterial de 120 sobre 80, pulso de 78 latidos por minuto, saturación de oxígeno 97%. Se indica Paracetamol 500mg cada 8 horas por 5 días y abundante hidratación oral."
+        title: "Plantilla 1: Infección Respiratoria Aguda (Elena Morales)",
+        transcript: "Buenas tardes doña Elena Morales, paciente femenina de 34 años con fiebre de 38.5 grados, tos seca y dolor de cabeza desde hace 3 días. Presión arterial de 120 sobre 80, pulso de 78 latidos por minuto, saturación de oxígeno 97%. Se indica Paracetamol 500mg cada 8 horas por 5 días y abundante hidratación oral."
       },
       {
         id: "plantilla_2",
-        title: "Plantilla 2: Cuadro Gastrointestinal Pediátrico",
-        transcript: "Paciente masculino de 6 años de edad presenta dolor abdominal, diarrea y vómitos de 24 horas de evolución. Temperatura de 37.8 grados, pulso de 95 latidos por minuto. Indico sales de rehidratación oral y dieta blanda fraccionada. Control en 48 horas."
+        title: "Plantilla 2: Cuadro Gastrointestinal Pediátrico (Mateo Gómez)",
+        transcript: "Paciente Mateo Gómez de 6 años de edad presenta dolor de panza, diarrea y vómitos de 24 horas de evolución. Temperatura de 37.8 grados, pulso de 95 latidos por minuto. Indico sales de rehidratación oral y butilhioscina. Control en 48 horas."
       },
       {
         id: "plantilla_3",
-        title: "Plantilla 3: Control Hipertensión Arterial (Adulto Mayor)",
-        transcript: "Paciente masculino de 68 años acude a control de rutina. Asintomático. Presión arterial de 145 sobre 95, pulso de 72 latidos por minuto. Se mantiene medicación de Losartán 50mg cada 24 horas y reducción estricta de sal."
+        title: "Plantilla 3: Control Hipertensión y Rutina (Don Roberto)",
+        transcript: "Buenos días don Roberto Sánchez de 68 años acude a control de rutina. Asintomático. Presión arterial de 145 sobre 95, pulso de 72 latidos por minuto. Se mantiene medicación de Losartán 50mg cada 24 horas y reducción estricta de sal."
       }
     ];
   }

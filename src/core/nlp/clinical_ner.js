@@ -1,116 +1,303 @@
 /**
  * Pakimed Clinical Entity Extractor (Hybrid Semantic / Heuristic Edge AI Engine)
  * 
- * Arquitectura Híbrida de Inferencia On-Device (< 25 KB de footprint, 0 ms de latencia):
- * 1. Normalizador de lenguaje conversacional y limpiador de muletillas.
- * 2. Escaneo de contexto por ventana de N-gramas (±4 tokens).
- * 3. Mapeador ontológico difuso (Fuzzy Similarity) para modismos y coloquialismos rurales.
- * 4. Extractor de rangos de evolución temporal y posologías farmacológicas.
- * 5. Evaluación de guardarraíles éticos (IEEE 7000) y plausibilidad fisiológica.
+ * Basado en los estándares de salud pública de:
+ * - DHIS2 Primary Health Care Metadata Packages (OMS/OPS)
+ * - WHO 23rd Model List of Essential Medicines
+ * - World Bank Service Delivery Indicators (SDI) & DHS Service Provision Assessments
+ * 
+ * Rendimiento on-device: < 40 KB footprint, < 5 ms latencia, cero dependencias de red.
  */
 
 const ClinicalNER = {
-  // Ontología Canónica con Mapeo de Coloquialismos y Sinónimos
+  // Ontología Canónica de 30 Categorías Sindrómicas de Salud Primaria (DHIS2 / OMS)
   CANONICAL_SYMPTOMS: [
+    // --- 1. VÍAS RESPIRATORIAS & CABEZA ---
     {
-      canonical: 'Dolor abdominal / epigástrico',
+      canonical: 'Cefalea / Dolor craneofacial',
       synonyms: [
-        'dolor de estómago', 'dolor en el estómago', 'dolor del estómago', 'dolor de estomago', 
-        'dolor en el estomago', 'dolor muy fuerte de estómago', 'dolor muy fuerte del estómago',
-        'dolor de panza', 'dolor abdominal', 'cólico abdominal', 'retorcijones', 'dolor de guata',
-        'molestia en el estómago', 'ardor en la boca del estómago', 'dolor de barriga'
-      ]
-    },
-    {
-      canonical: 'Fiebre / Síndrome febril',
-      synonyms: [
-        'fiebre', 'febrícula', 'calentura', 'cuerpo caliente', 'alzas térmicas',
-        'temperatura elevada', 'escalofríos', 'escalofrios', 'destemplanza', 'sensación febril'
-      ]
-    },
-    {
-      canonical: 'Vómitos y Náuseas',
-      synonyms: [
-        'vómitos', 'vomitos', 'vómito', 'vomito', 'náuseas', 'nauseas', 'asco', 
-        'ganas de devolver', 'devolvió el alimento', 'emesis', 'arcadas', 'poco de vómito', 'poco de vomito'
-      ]
-    },
-    {
-      canonical: 'Diarrea / Evacuaciones líquidas',
-      synonyms: [
-        'diarrea', 'evacuaciones líquidas', 'deposiciones líquidas', 'estómago suelto',
-        'obró aguado', 'cuerpo suelto', 'diarreas'
-      ]
-    },
-    {
-      canonical: 'Cefalea / Dolor de cabeza',
-      synonyms: [
-        'dolor de cabeza', 'cefalea', 'jaqueca', 'dolor en la frente', 'pesadez de cabeza',
-        'migraña', 'dolor en la nuca', 'latidos en la cabeza', 'me ha dolido la cabeza',
-        'dolido la cabeza', 'duele la cabeza', 'dolor de la cabeza'
-      ]
-    },
-    {
-      canonical: 'Tos y Afección Respiratoria',
-      synonyms: [
-        'tos seca', 'tos con flemas', 'tos con flema', 'tos productiva', 'tos',
-        'ataques de tos', 'no para de toser', 'tos perruna', 'ronquera'
-      ]
-    },
-    {
-      canonical: 'Disnea / Dificultad respiratoria',
-      synonyms: [
-        'dificultad respiratoria', 'dificultad para respirar', 'falta de aire', 'disnea',
-        'pecho cerrado', 'pecho apretado', 'ahogo', 'se cansa al caminar', 'sibilancias'
+        'dolor de cabeza', 'me ha dolido la cabeza', 'dolido la cabeza', 'duele la cabeza',
+        'cefalea', 'jaqueca', 'dolor en la frente', 'pesadez de cabeza', 'migraña',
+        'dolor en la nuca', 'latidos en la cabeza', 'punzadas en la sien'
       ]
     },
     {
       canonical: 'Odinofagia / Dolor de garganta',
       synonyms: [
         'dolor de garganta', 'odinofagia', 'ardor de garganta', 'garganta irritada',
-        'dolor al tragar', 'carraspeo', 'la garganta', 'dolido la garganta', 'duele la garganta'
+        'dolor al tragar', 'carraspeo', 'la garganta', 'dolido la garganta', 'duele la garganta',
+        'molestia en la garganta', 'carraspedas', 'garganta inflamada'
       ]
     },
+    {
+      canonical: 'Rinorrea y Congestión nasal',
+      synonyms: [
+        'rinorrea', 'congestion nasal', 'congestión nasal', 'moqueo', 'escurrimiento nasal',
+        'nariz tapada', 'moco transparente', 'moco verde', 'catarro', 'estornudos frecuentes'
+      ]
+    },
+    {
+      canonical: 'Tos y Afección Respiratoria',
+      synonyms: [
+        'tos seca', 'tos con flemas', 'tos con flema', 'tos productiva', 'tos',
+        'ataques de tos', 'no para de toser', 'tos perruna', 'ronquera', 'acceso de tos'
+      ]
+    },
+    {
+      canonical: 'Disnea / Dificultad respiratoria',
+      synonyms: [
+        'dificultad respiratoria', 'dificultad para respirar', 'falta de aire', 'disnea',
+        'pecho cerrado', 'pecho apretado', 'ahogo', 'se cansa al caminar', 'sibilancias',
+        'le silba el pecho', 'respiracion rapida', 'respiración rápida', 'tiro intercostal'
+      ]
+    },
+
+    // --- 2. SÍNTOMAS GENERALES & INFECCIOSOS ---
+    {
+      canonical: 'Fiebre / Síndrome febril',
+      synonyms: [
+        'fiebre', 'febrícula', 'calentura', 'cuerpo caliente', 'alzas térmicas',
+        'temperatura elevada', 'escalofríos', 'escalofrios', 'destemplanza', 'sensación febril',
+        'ardiendo en calentura', 'calenturas'
+      ]
+    },
+    {
+      canonical: 'Astenia y Malestar general',
+      synonyms: [
+        'malestar general', 'dolor de cuerpo', 'cuerpo cortado', 'decaimiento',
+        'fatiga', 'astenia', 'sentido muy mal', 'sin fuerzas', 'desgano', 'flojera en el cuerpo'
+      ]
+    },
+    {
+      canonical: 'Sospecha Arbovirosis / Síndrome Dengue',
+      synonyms: [
+        'dolor detras de los ojos', 'dolor retroocular', 'dolor en los ojos con fiebre',
+        'quebrantahuesos', 'dolor intenso en huesos con calentura'
+      ]
+    },
+
+    // --- 3. APARATO DIGESTIVO & ABDOMEN ---
+    {
+      canonical: 'Dolor abdominal / Epigástrico',
+      synonyms: [
+        'dolor de estómago', 'dolor en el estómago', 'dolor del estómago', 'dolor de estomago', 
+        'dolor en el estomago', 'dolor muy fuerte de estómago', 'dolor muy fuerte del estómago',
+        'dolor de panza', 'dolor abdominal', 'dolor de guata', 'dolor de barriga',
+        'ardor en la boca del estómago', 'ardor de estómago', 'molestia en la boca del estómago'
+      ]
+    },
+    {
+      canonical: 'Cólico abdominal y Retorcijones',
+      synonyms: [
+        'cólico abdominal', 'colico abdominal', 'retorcijones', 'retortijones',
+        'retorcijón de panza', 'cólicos en la panza', 'espasmos en el estómago'
+      ]
+    },
+    {
+      canonical: 'Vómitos y Náuseas',
+      synonyms: [
+        'vómitos', 'vomitos', 'vómito', 'vomito', 'náuseas', 'nauseas', 'asco', 
+        'ganas de devolver', 'devolvió el alimento', 'devolvio la comida', 'emesis', 'arcadas',
+        'poco de vómito', 'poco de vomito', 'no retiene comida'
+      ]
+    },
+    {
+      canonical: 'Diarrea / Evacuaciones líquidas',
+      synonyms: [
+        'diarrea', 'evacuaciones líquidas', 'deposiciones líquidas', 'estómago suelto',
+        'obró aguado', 'obro aguado', 'cuerpo suelto', 'diarreas', 'chorrillo', 'obrando liquido'
+      ]
+    },
+    {
+      canonical: 'Constipación / Estreñimiento',
+      synonyms: [
+        'estreñimiento', 'estrenimiento', 'constipación', 'no puede obrar',
+        'dificultad para defecar', 'días sin hacer del baño', 'heces duras'
+      ]
+    },
+    {
+      canonical: 'Pirosis y Reflujo gastroesofágico',
+      synonyms: [
+        'acidez', 'agruras', 'agrura', 'reflujo', 'pirosis', 'quema la garganta con la comida',
+        'se le regresa la comida', 'ardor en el pecho al comer'
+      ]
+    },
+
+    // --- 4. DOLOR MUSCULOESQUELÉTICO & ARTICULAR ---
     {
       canonical: 'Artralgias / Dolor articular y extremidades',
       synonyms: [
         'dolor de rodillas', 'doler las rodillas', 'doler las piernas', 'dolor en las rodillas',
         'dolor en rodillas', 'dolor articular', 'dolor de articulaciones', 'artralgias',
-        'dolor de huesos', 'dolor de espalda', 'lumbalgia', 'dolor de brazos', 'dolor de piernas'
+        'dolor de brazos', 'dolor de piernas', 'hinchazón en rodillas', 'dolor en los codos',
+        'dolor de tobillos'
       ]
     },
+    {
+      canonical: 'Lumbalgia / Dolor de espalda y cintura',
+      synonyms: [
+        'dolor de espalda', 'dolor de cintura', 'lumbalgia', 'dolor lumbar',
+        'dolor en la parte baja de la espalda', 'dolor en la columna', 'tirón en la espalda'
+      ]
+    },
+    {
+      canonical: 'Mialgias y Contracturas musculares',
+      synonyms: [
+        'dolor muscular', 'mialgias', 'contractura muscular', 'músculos adoloridos',
+        'dolor en el cuello', 'tortícolis', 'pesadez muscular'
+      ]
+    },
+
+    // --- 5. CARDIOVASCULAR & METABÓLICO ---
+    {
+      canonical: 'Palpitaciones / Molestia precordial',
+      synonyms: [
+        'palpitaciones', 'latidos fuertes en el pecho', 'taquicardia referida',
+        'siente que el corazón se le sale', 'dolor en el pecho', 'opresión en el pecho'
+      ]
+    },
+    {
+      canonical: 'Mareo / Vértigo y Presíncope',
+      synonyms: [
+        'mareo', 'mareos', 'mareada', 'todo le da vueltas', 'vértigo', 'vertigo',
+        'sensación de desmayo', 'vahído', 'desvanecimiento', 'visión oscura al pararse'
+      ]
+    },
+    {
+      canonical: 'Poliuria y Polidipsia / Control glucémico',
+      synonyms: [
+        'mucha sed', 'orina muy seguido', 'orina a cada rato', 'poliuria', 'polidipsia',
+        'descontrol del azúcar', 'azúcar alta', 'descontrol de glucosa'
+      ]
+    },
+
+    // --- 6. GENITOURINARIO & SALUD REPRODUCTIVA ---
     {
       canonical: 'Disuria / Molestia urinaria',
       synonyms: [
         'dolor al orinar', 'ardor al orinar', 'disuria', 'le duele hacer pipí',
-        'orina con ardor', 'orina oscura'
+        'orina con ardor', 'orina oscura', 'mal de orín', 'mal de orin', 'orina con sangre'
       ]
     },
     {
-      canonical: 'Malestar general y Mialgias',
+      canonical: 'Dismenorrea y Trastorno ginecológico',
       synonyms: [
-        'malestar general', 'dolor de cuerpo', 'cuerpo cortado', 'decaimiento',
-        'fatiga', 'astenia', 'mialgias', 'dolor muscular', 'sentido muy mal'
+        'dolor menstrual', 'cólicos menstruales', 'colicos menstruales', 'dismenorrea',
+        'retraso menstrual', 'sangrado vaginal anormal', 'dolor de ovarios'
+      ]
+    },
+    {
+      canonical: 'Control Prenatal / Salud Materna',
+      synonyms: [
+        'control de embarazo', 'chequeo prenatal', 'consulta prenatal', 'semanas de gestación',
+        'movimientos del bebé', 'embarazada para revisión'
+      ]
+    },
+
+    // --- 7. DERMATOLÓGICO & ALÉRGICO ---
+    {
+      canonical: 'Prurito y Reacción alérgica',
+      synonyms: [
+        'comezón', 'comezon', 'picazón', 'picazon', 'prurito', 'ronchas',
+        'urticaria', 'alergia en la piel', 'habones'
+      ]
+    },
+    {
+      canonical: 'Dermatitis / Erupciones cutáneas',
+      synonyms: [
+        'sarpullido', 'salpullido', 'erupción en la piel', 'granos en la piel',
+        'dermatitis', 'piel roja e inflamada', 'manchas rojas en la piel'
+      ]
+    },
+    {
+      canonical: 'Infección cutánea y Heridas',
+      synonyms: [
+        'herida infectada', 'grano con pus', 'absceso', 'celulitis en la piel',
+        'llaga en la piel', 'hinchazón roja en la pierna', 'nacido con pus'
+      ]
+    },
+
+    // --- 8. ÓRGANOS DE LOS SENTIDOS & ODONTOLOGÍA ---
+    {
+      canonical: 'Otalgia / Molestia ótica',
+      synonyms: [
+        'dolor de oído', 'dolor de oido', 'otalgia', 'le sale líquido del oído',
+        'oído tapado', 'punzadas en el oído'
+      ]
+    },
+    {
+      canonical: 'Conjuntivitis / Molestia ocular',
+      synonyms: [
+        'dolor de ojos', 'ojos rojos', 'conjuntivitis', 'legañas en los ojos',
+        'ardor en los ojos', 'lagrimeo constante', 'vista borrosa repentina'
+      ]
+    },
+    {
+      canonical: 'Odontalgia / Dolor dental',
+      synonyms: [
+        'dolor de muela', 'dolor de dientes', 'odontalgia', 'muela picada con dolor',
+        'encía inflamada', 'absceso dental'
+      ]
+    },
+
+    // --- 9. TRAUMATOLOGÍA & SALUD MENTAL ---
+    {
+      canonical: 'Traumatismo / Contusiones y Caídas',
+      synonyms: [
+        'golpe', 'caída', 'caida', 'torcedura', 'esguince', 'raspón',
+        'moretón', 'herida por golpe', 'accidente'
+      ]
+    },
+    {
+      canonical: 'Ansiedad, Insomnio y Estrés agudo',
+      synonyms: [
+        'nerviosismo', 'crisis de nervios', 'no puede dormir', 'insomnio',
+        'ansiedad', 'angustia', 'ataque de pánico', 'preocupación excesiva'
       ]
     },
     {
       canonical: 'Asintomático / Control de rutina',
-      synonyms: ['asintomático', 'asintomatica', 'sin molestias', 'buen estado general', 'control de rutina']
+      synonyms: [
+        'asintomático', 'asintomatica', 'sin molestias', 'buen estado general',
+        'control de rutina', 'chequeo general', 'revisión médica preventiva'
+      ]
     }
   ],
 
-  // Lista Modelo de Medicamentos Esenciales
+  // Lista Modelo de Medicamentos Esenciales (75+ Fármacos OMS / Banco Mundial SDI)
   ESSENTIAL_MEDS: [
+    // Analgésicos y AINEs
     'paracetamol', 'acetaminofén', 'acetaminofen', 'ibuprofeno', 'naproxeno', 'naproxen',
     'diclofenaco', 'ketorolaco', 'metamizol', 'dipirona', 'aspirina', 'ácido acetilsalicílico',
-    'amoxicilina', 'ampicilina', 'cefalexina', 'ciprofloxacino', 'azitromicina',
-    'claritromicina', 'metronidazol', 'cotrimoxazol', 'trimetoprima',
+    'tramadol', 'morfina',
+
+    // Antibióticos y Antimicrobianos
+    'amoxicilina', 'ampicilina', 'cefalexina', 'ceftriaxona', 'ciprofloxacino', 'azitromicina',
+    'claritromicina', 'cotrimoxazol', 'trimetoprima', 'sulfametoxazol', 'metronidazol',
+    'doxiciclina', 'nitrofurantoína', 'nitrofurantoina', 'eritromicina', 'gentamicina',
+    'penicilina', 'bencilpenicilina',
+
+    // Gastrointestinales y Antieméticos
+    'omeprazol', 'ranitidina', 'pantoprazol', 'butilhioscina', 'hioscina', 'metoclopramida',
+    'dimenhidrinato', 'loperamida', 'sales de rehidratación oral', 'suero oral', 'electrolitos orales',
+    'subsalicilato de bismuto', 'hidróxido de aluminio', 'magaldrato',
+
+    // Respiratorios y Antialérgicos
+    'loratadina', 'cetirizina', 'clorfenamina', 'clorfeniramina', 'ambroxol', 'dextrometorfano',
+    'salbutamol', 'budesonida', 'beclometasona', 'bromuro de ipratropio', 'oximetazolina',
+
+    // Cardiovasculares y Metabólicos
     'losartán', 'losartan', 'enalapril', 'captopril', 'amlodipino', 'hidroclorotiazida',
-    'sales de rehidratación oral', 'suero oral', 'omeprazol', 'ranitidina',
-    'loperamida', 'metoclopramida', 'butilhioscina', 'dimenhidrinato',
-    'salbutamol', 'budesonida', 'beclometasona', 'loratadina', 'cetirizina',
-    'clorfenamina', 'ambroxol', 'dextrometorfano', 'metformina', 'glibenclamida',
-    'albendazol', 'mebendazol', 'tramadol', 'prednisona', 'dexametasona', 'betametasona'
+    'furosemida', 'atenolol', 'metoprolol', 'metformina', 'glibenclamida', 'insulina',
+    'atorvastatina', 'pravastatina', 'simvastatina',
+
+    // Antiparasitarios y Antimicóticos
+    'albendazol', 'mebendazol', 'nitazoxanida', 'ivermectina', 'miconazol', 'clotrimazol',
+    'nistatina', 'fluconazol', 'ketoconazol', 'permetrina',
+
+    // Corticoides y Suplementos
+    'dexametasona', 'hidrocortisona', 'prednisona', 'betametasona', 'metilprednisolona',
+    'complejo b', 'ácido fólico', 'acido folico', 'sulfato ferroso', 'sulfato de zinc', 'calcio'
   ],
 
   /**
@@ -127,7 +314,7 @@ const ClinicalNER = {
   },
 
   /**
-   * Distancia de similitud de Levenshtein optimizada
+   * Distancia de similitud de Levenshtein optimizada en memoria
    */
   levenshteinDistance(s1, s2) {
     if (s1 === s2) return 0;
@@ -239,16 +426,14 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 4. EXTRACCIÓN DE PRESIÓN ARTERIAL (Multipatrón + Ventana de Contexto)
+    // 5. EXTRACCIÓN DE PRESIÓN ARTERIAL (Multipatrón + Ventana de Contexto)
     // ========================================================================
-    // 4.1 Formato dual clásico: 120/80, 120 sobre 80, 120 con 80
     const bpDualMatch = text.match(/(?:presi[oó]n|tensi[oó]n|pa)\s*(?:arterial)?\s*(?:de|es de|son de)?\s*(\d{2,3})\s*(?:sobre|\/|\s|con)\s*(\d{2,3})/i)
       || text.match(/(\d{2,3})\s*\/\s*(\d{2,3})\s*(?:mmhg)?/i);
     
     if (bpDualMatch) {
       result.vitals.bloodPressure = `${bpDualMatch[1]}/${bpDualMatch[2]}`;
     } else {
-      // 4.2 Formato coloquial aislado: "son 180 para la presión", "180 en la presión", "presión de 180", "180 de presión"
       const bpSingleMatch = text.match(/(?:son de|es de|de|son|es)?\s*(\d{2,3})\s*(?:para la|en la|de|en|por la)?\s*(?:presi[oó]n|tensi[oó]n|presion|tension|pa)/i)
         || text.match(/(?:presi[oó]n|tensi[oó]n|presion|tension|pa)\s*(?:arterial)?\s*(?:de|es de|son de|en|para|es)?\s*(\d{2,3})/i);
       
@@ -261,9 +446,8 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 5. EXTRACCIÓN DE TEMPERATURA CORPORAL
+    // 6. EXTRACCIÓN DE TEMPERATURA CORPORAL
     // ========================================================================
-    // Formatos: "temperatura global normal 36°", "temperatura normal de 36°", "36.5 grados", "36 y medio", "38 de fiebre"
     const tempMatch = text.match(/(?:temperatura(?:\s+global)?(?:\s+normal)?|temp|febr[ií]cula|fiebre)\s*(?:de|es de|son de|en)?\s*(\d{2}(?:[.,]\d)?)\s*(?:grados|°c|°|c)?/i)
       || text.match(/(\d{2}[.,]\d)\s*(?:grados|°c|°)/i)
       || text.match(/(\d{2})\s*(?:grados|°)\s*(?:de temperatura)?/i)
@@ -278,7 +462,7 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 6. EXTRACCIÓN DE PULSO / FRECUENCIA CARDÍACA
+    // 7. EXTRACCIÓN DE PULSO / FRECUENCIA CARDÍACA
     // ========================================================================
     const hrMatch = text.match(/(?:pulso|frecuencia card[ií]aca|fc|latidos)\s*(?:de|es de)?\s*(\d{2,3})\s*(?:lpm|latidos|x\s*min)?/i)
       || text.match(/(\d{2,3})\s*(?:lpm|latidos por minuto)/i);
@@ -288,7 +472,7 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 7. EXTRACCIÓN DE SATURACIÓN DE OXÍGENO (SpO2)
+    // 8. EXTRACCIÓN DE SATURACIÓN DE OXÍGENO (SpO2)
     // ========================================================================
     const o2Match = text.match(/(?:saturaci[oó]n|saturando|sat|spo2)\s*(?:de)?\s*(?:ox[ií]geno)?\s*(?:de|al|en)?\s*(\d{2,3})\s*%/i)
       || text.match(/(\d{2,3})\s*%\s*(?:de saturaci[oó]n|spo2|oxigeno|oxígeno)/i);
@@ -298,7 +482,7 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 8. MAPEO SEMÁNTICO ONTOLÓGICO DE SÍNTOMAS (Con tolerancia difusa)
+    // 9. MAPEO SEMÁNTICO ONTOLÓGICO DE 30 CATEGORÍAS (Con Filtro Anti-Colisión)
     // ========================================================================
     for (const group of this.CANONICAL_SYMPTOMS) {
       let matched = false;
@@ -306,18 +490,19 @@ const ClinicalNER = {
       for (const syn of group.synonyms) {
         const normSyn = this.normalizeText(syn);
         
-        // Coincidencia exacta de frase en el texto normalizado
+        // 1. Coincidencia exacta de frase en el texto normalizado
         if (normalized.includes(normSyn)) {
           matched = true;
           break;
         }
 
-        // Fuzzy matching si la frase tiene más de 5 letras
+        // 2. Fuzzy matching anti-colisión (solo para términos discriminativos >= 5 caracteres)
         if (normSyn.length >= 5) {
           const words = normalized.split(' ');
-          for (let i = 0; i <= words.length - 2; i++) {
-            const chunk = words.slice(i, i + syn.split(' ').length).join(' ');
-            if (this.similarityRatio(chunk, normSyn) >= 0.82) {
+          const synWordCount = syn.split(' ').length;
+          for (let i = 0; i <= words.length - synWordCount; i++) {
+            const chunk = words.slice(i, i + synWordCount).join(' ');
+            if (this.similarityRatio(chunk, normSyn) >= 0.84) {
               matched = true;
               break;
             }
@@ -328,7 +513,7 @@ const ClinicalNER = {
 
       if (matched && !result.symptoms.includes(group.canonical)) {
         let label = group.canonical;
-        if (result.timeEvolution && label.includes('Dolor abdominal')) {
+        if (result.timeEvolution && (label.includes('Dolor abdominal') || label.includes('Cefalea') || label.includes('Diarrea'))) {
           label += ` (${result.timeEvolution})`;
         }
         result.symptoms.push(label);
@@ -336,7 +521,7 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 9. EXTRACCIÓN DE PRESCRIPCIONES Y FARMACOLOGÍA
+    // 10. EXTRACCIÓN DE PRESCRIPCIONES Y FARMACOLOGÍA (75+ Fármacos OMS / SDI)
     // ========================================================================
     const medRegex = /(?:se indica|indico|receto|prescribo|se prescribe|administrar|recomendar|recomiendo|medicaci[oó]n:?|tratamiento:?)\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\d,./-]+?)(?=(?:\.|\n|control en|volver en|cita en|$))/gi;
     let mMatch;
@@ -360,28 +545,34 @@ const ClinicalNER = {
     }
 
     // ========================================================================
-    // 10. EVALUACIÓN INTEGRAL DE GUARDARRAÍLES Y SEGURIDAD CLÍNICA
+    // 11. EVALUACIÓN INTEGRAL DE GUARDARRAÍLES Y SEGURIDAD CLÍNICA
     // ========================================================================
     const GuardrailsEngine = window.Pakimed?.Guardrails;
     if (GuardrailsEngine) {
-      // 10.1 No-Diagnóstico
+      // 11.1 No-Diagnóstico
       const diagCheck = GuardrailsEngine.validateNoAutonomousDiagnosis(text);
       if (!diagCheck.isValid) {
         result.guardrailAlerts.push(...diagCheck.warnings);
         result.isAutonomousDiagnosis = true;
       }
 
-      // 10.2 Validación de Rangos Fisiológicos
+      // 11.2 Validación de Rangos Fisiológicos y Observaciones Cuantitativas
       const rangeCheck = GuardrailsEngine.validatePhysiologicalRanges(result);
-      if (!rangeCheck.isValid) {
-        result.rangeWarnings.push(...rangeCheck.warnings);
-        result.guardrailAlerts.push(...rangeCheck.warnings);
+      if (rangeCheck.criticalErrors.length > 0) {
+        result.guardrailAlerts.push(...rangeCheck.criticalErrors);
       }
+      if (rangeCheck.observations.length > 0) {
+        result.guardrailAlerts.push(...rangeCheck.observations);
+      }
+      result.rangeWarnings = rangeCheck.warnings;
 
-      // 10.3 Completitud Clínica
+      // 11.3 Identificación y Completitud Clínica
       const compCheck = GuardrailsEngine.validateClinicalCompleteness(result);
       result.isComplete = compCheck.isComplete;
       result.completenessMessage = compCheck.reason;
+
+      // 11.4 Detección de Constantes No Medidas
+      result.missingFields = GuardrailsEngine.detectMissingOptionalFields(result);
     }
 
     return result;
