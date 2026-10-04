@@ -48,7 +48,7 @@ const ClinicalNER = {
       synonyms: [
         'dificultad respiratoria', 'dificultad para respirar', 'falta de aire', 'disnea',
         'pecho cerrado', 'pecho apretado', 'ahogo', 'se cansa al caminar', 'sibilancias',
-        'le silba el pecho', 'respiracion rapida', 'respiración rápida'
+        'le silba el pecho', 'me chilla el pecho', 'chilla el pecho', 'respiracion rapida', 'respiración rápida'
       ]
     },
     {
@@ -255,7 +255,7 @@ const ClinicalNER = {
     'penicilina', 'bencilpenicilina', 'omeprazol', 'ranitidina', 'pantoprazol',
     'butilhioscina', 'hioscina', 'metoclopramida', 'dimenhidrinato', 'loperamida',
     'sales de rehidratación oral', 'suero oral', 'electrolitos orales', 'subsalicilato de bismuto',
-    'loratadina', 'cetirizina', 'clorfenamina', 'clorfeniramina', 'ambroxol', 'dextrometorfano',
+    'loratadina', 'cetirizina', 'clorfenamina', 'clorfeniramina', 'ambroxol', 'bromhexina', 'dextrometorfano',
     'salbutamol', 'budesonida', 'beclometasona', 'bromuro de ipratropio',
     'losartán', 'losartan', 'enalapril', 'captopril', 'amlodipino', 'hidroclorotiazida',
     'furosemida', 'atenolol', 'metoprolol', 'metformina', 'glibenclamida', 'insulina',
@@ -433,8 +433,8 @@ const ClinicalNER = {
     }
 
     // 4. Saturación de Oxígeno (SpO2)
-    const o2Match = fullText.match(/(?:saturaci[oó]n(?:\s+de\s+ox[ií]geno)?|saturando|sat|spo2|ox[ií]geno)\D{0,15}?(\d{2,3})\s*(?:%|por ciento)?\b/i)
-      || fullText.match(/(\d{2,3})\s*(?:%|por ciento)\s*(?:de saturaci[oó]n|spo2|ox[ií]geno)/i);
+    const o2Match = fullText.match(/(?:saturaci[oó]n(?:\s+de\s+ox[ií]geno)?|saturando|sat|spo2|ox[ií]geno|oxigenaci[oó]n)\D{0,35}?(\d{2,3})\s*(?:%|por ciento)?\b/i)
+      || fullText.match(/(\d{2,3})\s*(?:%|por ciento)\s*(?:de\s+)?(?:saturaci[oó]n|spo2|ox[ií]geno|oxigenaci[oó]n)/i);
 
     if (o2Match) {
       const val = parseInt(o2Match[1], 10);
@@ -483,10 +483,11 @@ const ClinicalNER = {
 
       // 3. Detectar Prescripción Médica Activa
       // Disparadores facultativos estrictos
-      const isRxClause = /(?:recet|indic|vas a tomar|te voy a recetar|iniciar tratamiento|tomar una pastilla|prescrib|agregaremos|le recet|ajustar el tratamiento)/i.test(norm);
+      const isRxClause = clause.intent === 'PLAN_PRESCRIPTION' 
+        || /(?:recet|indic|vas a tomar|te voy a recetar|iniciar tratamiento|tomar una pastilla|prescrib|agregaremos|tambi[eé]n|le recet|ajustar el tratamiento|tableta|jarabe|disparos|aerosol)/i.test(norm);
       if (isRxClause && !/(?:alerg|ronchas|no tengo)/i.test(norm)) {
         // Formato estructurado
-        const rxPattern = /(?:recetar[eé]?|recetamos|receto|prescribo|indico|indicaremos|iniciar un tratamiento con|agregaremos|tomar(?:á|as)?)\s*:?\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\d,.-]+?)(?=(?:\.|\n|ademas|además|necesito que|$))/i;
+        const rxPattern = /(?:recetar[eé]?|recetamos|receto|prescribo|indico|indicaremos|iniciar un tratamiento con|agregaremos|tambi[eé]n|tomar(?:á|as)?)\s*:?\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\d,.-]+?)(?=(?:\.|\n|ademas|además|necesito que|$))/i;
         const rxMatch = text.match(rxPattern);
 
         if (rxMatch && rxMatch[1]) {
@@ -506,17 +507,20 @@ const ClinicalNER = {
 
         // Búsqueda ontológica de apoyo en cláusulas de receta
         for (const med of this.ESSENTIAL_MEDS) {
-          const medFullRegex = new RegExp(`\\b${med}\\b(?:\\s*de)?(?:\\s*\\d+\\s*(?:mg|miligramos|g|ml))?(?:\\s*(?:cada|por|durante|en|después|despues)\\s*[^.\\n,]+)?`, 'i');
-          const found = text.match(medFullRegex);
-          if (found) {
-            const str = found[0].trim();
-            const isAllergy = allergies.some(a => str.toLowerCase().includes(a.toLowerCase()));
-            const isPrior = priorMedications.some(m => str.toLowerCase().includes(m.toLowerCase()));
-            const isSuspended = /(?:suspender|suspenda|quitar)/i.test(text) && str.toLowerCase().includes('omeprazol');
-            const alreadyInRx = prescriptions.some(p => p.toLowerCase().includes(med));
+          const medWordRegex = new RegExp(`\\b${med}\\b`, 'i');
+          if (medWordRegex.test(text)) {
+            const medFullRegex = new RegExp(`(?:\\b${med}\\b)[^.\\n;]*(?:(?:cada|por|durante|en\\s+ayunas|despu[eé]s)[^.\\n;]+)?`, 'i');
+            const found = text.match(medFullRegex);
+            if (found) {
+              const str = found[0].trim().replace(/^[,.\s]+/, '');
+              const isAllergy = allergies.some(a => str.toLowerCase().includes(a.toLowerCase()));
+              const isPrior = priorMedications.some(m => str.toLowerCase().includes(m.toLowerCase()));
+              const isSuspended = /(?:suspender|suspenda|quitar)/i.test(text) && str.toLowerCase().includes(med);
+              const alreadyInRx = prescriptions.some(p => p.toLowerCase().includes(med));
 
-            if (!isAllergy && !isPrior && !isSuspended && !alreadyInRx && str.length > 3) {
-              prescriptions.push(str);
+              if (!isAllergy && !isPrior && !isSuspended && !alreadyInRx && str.length > 3) {
+                prescriptions.push(str);
+              }
             }
           }
         }
@@ -533,15 +537,16 @@ const ClinicalNER = {
     const symptoms = [];
     const normalized = this.normalizeText(fullText);
 
-    // Extraer tiempo de evolución preferentemente en cláusulas de síntoma
+    // Extraer tiempo de evolución preferentemente en cláusulas de síntoma o texto general
     let timeEvolution = null;
-    for (const c of clauses) {
-      if (c.intent === 'CHIEF_COMPLAINT' || c.intent === 'GENERAL') {
-        const timeMatch = c.raw.match(/(?:desde hace|hace|llevo como|llevo|de evoluci[oó]n)\s*(\d{1,2}|un|dos|tres|cuatro|cinco)\s*(d[ií]as?|horas?|semanas?|meses?)/i);
-        if (timeMatch) {
-          timeEvolution = timeMatch[0].replace(/^(?:llevo como|llevo|desde hace|hace)\s*/i, '').trim();
-          break;
-        }
+    const timeMatch = fullText.match(/(?:llevo(?:\s+ya|\s+como)?|desde hace|hace)\s*(\d{1,2}|un|dos|tres|cuatro|cinco|seis|siete)\s*(d[ií]as?|horas?|semanas?|meses?)/i)
+      || fullText.match(/(\d{1,2}|un|dos|tres|cuatro|cinco|seis|siete)\s*(d[ií]as?|horas?|semanas?|meses?)\s*de evoluci[oó]n/i);
+    
+    if (timeMatch) {
+      if (timeMatch[0].toLowerCase().includes('evolución') || timeMatch[0].toLowerCase().includes('evolucion')) {
+        timeEvolution = `${timeMatch[1]} ${timeMatch[2]}`.trim();
+      } else {
+        timeEvolution = timeMatch[0].replace(/^(?:llevo(?:\s+ya|\s+como)?|desde hace|hace)\s*/i, '').trim();
       }
     }
 
@@ -562,7 +567,7 @@ const ClinicalNER = {
 
       if (matched && !symptoms.includes(group.canonical)) {
         let label = group.canonical;
-        if (timeEvolution && (label.includes('Cefalea') || label.includes('Dolor abdominal') || label.includes('Fiebre'))) {
+        if (timeEvolution && (label.includes('Cefalea') || label.includes('Dolor abdominal') || label.includes('Fiebre') || label.includes('Tos'))) {
           label += ` (${timeEvolution})`;
         }
         symptoms.push(label);
