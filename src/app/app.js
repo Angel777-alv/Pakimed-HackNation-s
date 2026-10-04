@@ -549,6 +549,16 @@ class PakimedApp {
     if (this.dockFloatingActionBtn) {
       this.dockFloatingActionBtn.classList.toggle('active-mode', screenNum === 2);
     }
+
+    // 4. Sincronizar pipeline reactivo de telemetría institucional (Live Architecture Flow)
+    const telem = window.pakimedTelemetry;
+    if (telem && typeof telem.setPipelineStep === 'function') {
+      if (screenNum === 1) telem.setPipelineStep(0); // Standby / Ready
+      else if (screenNum === 2) telem.setPipelineStep(1); // Step 1: Voice Input
+      else if (screenNum === 3) telem.setPipelineStep(2); // Step 2: Local AI
+      else if (screenNum === 4) telem.setPipelineStep(3); // Step 3: Clinical Safety
+      else if (screenNum === 5) telem.setPipelineStep(4); // Step 4: Local Vault
+    }
   }
 
   async processDictation() {

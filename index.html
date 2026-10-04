@@ -621,91 +621,170 @@
       
       <div class="console-wrapper">
         
+        <!-- Header: Direct & Punchy English -->
         <div class="console-header">
           <span class="console-tag">
-            <svg class="mono-icon inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><path d="M10 9h4"/><path d="M12 7v4"/></svg>
-            <span data-i18n="telemetry_tag">Centro de Control y Telemetría Institucional</span>
+            <svg class="mono-icon inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>LIVE DATA PIPELINE &middot; ON-DEVICE TO CLOUD</span>
           </span>
-          <h2 class="console-title" data-i18n="telemetry_title">Monitoreo de Datos y Sincronización</h2>
-          <p class="console-subtitle" data-i18n="telemetry_subtitle">Auditoría en tiempo real de procesamiento on-device, validación facultativa y conformidad con estándares de salud pública.</p>
+          <h2 class="console-title">From Voice to Public Health</h2>
+          <p class="console-subtitle">100% offline edge architecture. Zero data leaks, zero cloud dependency, one-click national sync.</p>
         </div>
 
-        <!-- Cuadrícula de Métricas Técnicas -->
-        <div class="metrics-grid">
-          
-          <!-- Métrica 1: Cero Tráfico a Internet -->
-          <div class="metric-card">
-            <div class="metric-top">
-              <span class="metric-name" data-i18n="telemetry_traffic_label">Tráfico Externo Durante Consulta</span>
-              <span class="pill-green" data-i18n="telemetry_traffic_badge">Confinamiento Local</span>
+        <!-- Interactive 5-Node Pipeline Architecture Track -->
+        <div id="pipelineVisualizer" class="pipeline-visualizer-card">
+          <div class="pipeline-track-header">
+            <div class="track-status-indicator">
+              <span id="pipelineStatusDot" class="status-dot-pulse"></span>
+              <span id="pipelineStatusText" class="track-status-label">Pipeline Ready &middot; Standby Mode</span>
             </div>
-            <div id="telemBytes" class="metric-huge">0.0 KB</div>
-            <p class="metric-explain" data-i18n="telemetry_traffic_desc">Total ausencia de peticiones externas durante la atención clínica.</p>
+            <span class="track-hint">Click any node to inspect specs</span>
           </div>
 
-          <!-- Métrica 2: Guardarraíl Ético -->
-          <div class="metric-card">
-            <div class="metric-top">
-              <span class="metric-name" data-i18n="telemetry_supervision_label">Supervisión Clínica y Guardarraíles</span>
-              <span class="pill-green" data-i18n="telemetry_supervision_badge">Validado</span>
-            </div>
-            <div id="telemSafety" class="metric-status-line">
-              <span class="dot-ok"></span> <span data-i18n="telemetry_supervision_text">Protocolo de Transcripción Fiel Activo</span>
-            </div>
-            <p class="metric-explain" data-i18n="telemetry_supervision_desc">Prevención activa de inferencias diagnósticas no avaladas por el facultativo.</p>
-          </div>
+          <div class="pipeline-flow-container">
+            <!-- Node 1: Voice Input -->
+            <button type="button" class="pipeline-flow-node idle" id="nodeVoice" data-step="1" title="Step 1: Voice Input (Edge Moonshine ASR)">
+              <div class="node-badge-number">1</div>
+              <div class="node-icon-circle">
+                <svg class="mono-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+              </div>
+              <span class="node-main-label">Voice Input</span>
+              <span class="node-sub-label">Doctor Speaks</span>
+            </button>
 
-          <!-- Métrica 3: Estado de Red -->
-          <div class="metric-card full-width-metric">
-            <div class="metric-top">
-              <span class="metric-name" data-i18n="telemetry_network_label">Canal de Conectividad</span>
-              <span class="pill-neutral">Store &amp; Forward</span>
+            <!-- Connector 1 -> 2 -->
+            <div class="flow-connector" id="connector1_2">
+              <div class="connector-line"></div>
+              <div class="connector-glow-beam"></div>
             </div>
-            <div id="telemNetwork" class="metric-network-state" data-i18n="telemetry_network_state_offline">
-              Modo Autónomo Local (Almacenamiento Seguro)
-            </div>
-            <p class="metric-explain" data-i18n="telemetry_network_desc">Los expedientes se resguardan en base de datos local cifrada hasta restablecer enlace institucional.</p>
-          </div>
 
+            <!-- Node 2: Local AI (Small AI / NER) -->
+            <button type="button" class="pipeline-flow-node idle" id="nodeAI" data-step="2" title="Step 2: On-Device Small AI & NER (Qwen2.5 / ConText)">
+              <div class="node-badge-number">2</div>
+              <div class="node-icon-circle">
+                <svg class="mono-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+              </div>
+              <span class="node-main-label">Local AI</span>
+              <span class="node-sub-label">On-Device NER</span>
+            </button>
+
+            <!-- Connector 2 -> 3 -->
+            <div class="flow-connector" id="connector2_3">
+              <div class="connector-line"></div>
+              <div class="connector-glow-beam"></div>
+            </div>
+
+            <!-- Node 3: Clinical Safety & Guardrails -->
+            <button type="button" class="pipeline-flow-node idle" id="nodeSafety" data-step="3" title="Step 3: Clinical Safety & IEEE 7000 Guardrails">
+              <div class="node-badge-number">3</div>
+              <div class="node-icon-circle">
+                <svg class="mono-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              </div>
+              <span class="node-main-label">Clinical Safety</span>
+              <span class="node-sub-label">Doctor Validates</span>
+            </button>
+
+            <!-- Connector 3 -> 4 -->
+            <div class="flow-connector" id="connector3_4">
+              <div class="connector-line"></div>
+              <div class="connector-glow-beam"></div>
+            </div>
+
+            <!-- Node 4: Local Vault (Store & Forward) -->
+            <button type="button" class="pipeline-flow-node idle" id="nodeVault" data-step="4" title="Step 4: Encrypted Local Vault (Store & Forward Queue)">
+              <div class="node-badge-number">4</div>
+              <div class="node-icon-circle">
+                <svg class="mono-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <span class="node-main-label">Local Vault</span>
+              <span class="node-sub-label">Encrypted Queue</span>
+            </button>
+
+            <!-- Connector 4 -> 5 -->
+            <div class="flow-connector" id="connector4_5">
+              <div class="connector-line"></div>
+              <div class="connector-glow-beam"></div>
+            </div>
+
+            <!-- Node 5: DHIS2 Cloud (Batch Sync) -->
+            <button type="button" class="pipeline-flow-node idle" id="nodeCloud" data-step="5" title="Step 5: Institutional Health Sync (DHIS2 Cloud)">
+              <div class="node-badge-number">5</div>
+              <div class="node-icon-circle">
+                <svg class="mono-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+              </div>
+              <span class="node-main-label">DHIS2 Cloud</span>
+              <span class="node-sub-label">One-Click Sync</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Sección: Consultas Guardadas en el Teléfono (Store & Forward) -->
+        <!-- Real-Time Active Step Spotlight Card -->
+        <div id="activeStepInspector" class="active-step-inspector-card">
+          <div class="inspector-header">
+            <div class="inspector-title-row">
+              <span id="inspectorStepBadge" class="step-pill-badge">READY · STANDBY</span>
+              <h3 id="inspectorTitle" class="inspector-heading">Edge System Ready for Encounter</h3>
+            </div>
+            <span id="inspectorLatencyBadge" class="inspector-metric-pill">⚡ 0ms Latency</span>
+          </div>
+
+          <p id="inspectorDescription" class="inspector-punchline">
+            System waiting for clinical consultation dictation. All processing runs completely on-device without internet.
+          </p>
+
+          <div class="inspector-metrics-strip">
+            <div class="strip-metric-item">
+              <span class="strip-metric-label">External Traffic</span>
+              <strong id="telemBytes" class="strip-metric-val">0.0 KB</strong>
+            </div>
+            <div class="strip-metric-item">
+              <span class="strip-metric-label">Clinical Safety</span>
+              <strong id="telemSafetyText" class="strip-metric-val text-emerald">Zero AI Diagnosis</strong>
+            </div>
+            <div class="strip-metric-item">
+              <span class="strip-metric-label">Network Channel</span>
+              <strong id="telemNetworkText" class="strip-metric-val">Offline Autonomous</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Encrypted Local Queue (Store & Forward) -->
         <div class="console-card">
           <div class="card-header-actions">
             <div>
               <h3 class="console-card-title">
                 <svg class="mono-icon inline" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-                <span data-i18n="telemetry_queue_title">Cola Local de Expedientes Clínicos</span>
+                <span>Encrypted Local Queue</span>
               </h3>
-              <p class="console-card-desc" data-i18n="telemetry_queue_desc">Registros almacenados localmente a la espera de enlace institucional:</p>
+              <p class="console-card-desc">Records stored in device SQLite/IndexedDB awaiting institutional network link:</p>
             </div>
             <button id="syncAllBtn" class="btn btn-sync-cloud">
               <svg class="mono-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
-              <span data-i18n="telemetry_btn_sync">Sincronizar Lote con DHIS2</span>
+              <span>Sync Batch with DHIS2</span>
             </button>
           </div>
 
-          <div id="syncStatusAlert" class="sync-info-banner" data-i18n="telemetry_sync_banner">
-            Los expedientes se preservan íntegros en almacenamiento local ante cortes de energía o cobertura.
+          <div id="syncStatusAlert" class="sync-info-banner">
+            Records remain preserved intact in local encrypted storage against power outages or coverage loss.
           </div>
 
           <div id="queueList" class="queue-list-items"></div>
         </div>
 
-        <!-- Sección: Formato Oficial de Salud Pública (DHIS2) -->
+        <!-- Section: Official Public Health Format (DHIS2) -->
         <div class="console-card">
           <div class="card-header-actions">
             <div>
               <h3 class="console-card-title">
                 <svg class="mono-icon inline" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/><path d="M10 9h4"/><path d="M12 7v4"/></svg>
-                <span data-i18n="telemetry_dhis2_title">Integración con Sistema de Salud (DHIS2)</span>
+                <span>Public Health Integration (DHIS2)</span>
               </h3>
-              <p class="console-card-desc" data-i18n="telemetry_dhis2_desc">Carga estructurada según estándar oficial DHIS2 Tracker / Event API:</p>
+              <p class="console-card-desc">Structured payload mapped to official DHIS2 Tracker / Event API standard:</p>
             </div>
             <span class="standard-pill">DHIS2 Compliant</span>
           </div>
 
-          <pre id="dhis2JsonViewer" class="json-viewer-screen" data-i18n="telemetry_dhis2_empty">// Al validar una consulta, aquí se generará el objeto estructurado en formato DHIS2</pre>
+          <pre id="dhis2JsonViewer" class="json-viewer-screen">// Once validated, the structured DHIS2 JSON payload will appear here</pre>
         </div>
 
       </div>

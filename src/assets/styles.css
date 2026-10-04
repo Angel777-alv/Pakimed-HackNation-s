@@ -1680,101 +1680,369 @@ body {
   margin-top: 0.25rem;
 }
 
-/* Cuadrícula de Métricas Técnicas */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.metric-card {
-  background: #f8fafc;
+/* ==========================================================================
+   LIVE DATA PIPELINE VISUALIZER & ARCHITECTURE TRACK
+   ========================================================================== */
+.pipeline-visualizer-card {
+  background: #ffffff;
   border: 1px solid var(--border-hairline);
-  border-radius: var(--radius-md);
-  padding: 1rem;
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
 }
 
-.metric-card.full-width-metric {
-  grid-column: span 2;
-}
-
-.metric-top {
+.pipeline-track-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.metric-name {
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-
-.pill-green {
-  background: var(--emerald-light);
-  border: 1px solid var(--emerald-border);
-  color: var(--emerald-text);
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius-pill);
-}
-
-.pill-neutral {
-  background: #e2e8f0;
-  color: var(--text-secondary);
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius-pill);
-}
-
-.metric-huge {
-  font-size: 1.8rem;
-  font-weight: 800;
-  font-family: var(--font-heading);
-  color: var(--teal-primary);
-  line-height: 1;
-  margin-bottom: 0.35rem;
-}
-
-.metric-status-line {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--emerald-text);
+.track-status-indicator {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.35rem;
+  gap: 0.5rem;
 }
 
-.dot-ok {
-  width: 8px;
-  height: 8px;
-  background: var(--emerald-solid);
+.status-dot-pulse {
+  width: 9px;
+  height: 9px;
+  background: var(--teal-primary);
   border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7);
+  animation: pulseGreen 2s infinite;
 }
 
-.dot-warn {
-  width: 8px;
-  height: 8px;
-  background: var(--amber-alert);
-  border-radius: 50%;
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 7px rgba(13, 148, 136, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
 }
 
-.metric-network-state {
-  font-size: 0.88rem;
+.track-status-label {
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 0.35rem;
+  letter-spacing: 0.2px;
 }
 
-.metric-explain {
-  font-size: 0.72rem;
+.track-hint {
+  font-size: 0.68rem;
   color: var(--text-muted);
-  line-height: 1.35;
+  font-style: italic;
+}
+
+/* Contenedor Horizontal de Nodos y Conectores */
+.pipeline-flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  gap: 0.25rem;
+  padding: 0.5rem 0.25rem;
+}
+
+/* Nodos Individuales */
+.pipeline-flow-node {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 0.35rem;
+  border-radius: var(--radius-md);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 72px;
+  text-align: center;
+}
+
+.pipeline-flow-node:hover {
+  transform: translateY(-2px);
+}
+
+.node-badge-number {
+  position: absolute;
+  top: 0;
+  right: 14px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: var(--text-secondary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+.node-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 1.5px solid var(--border-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+  transition: all 0.25s ease;
+}
+
+.node-main-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  line-height: 1.15;
+  transition: color 0.2s ease;
+}
+
+.node-sub-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  line-height: 1.15;
+  margin-top: 1px;
+}
+
+/* Estados del Nodo: Idle, Active, Completed */
+.pipeline-flow-node.idle .node-icon-circle {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: var(--text-dim);
+}
+
+.pipeline-flow-node.active {
+  transform: translateY(-2px) scale(1.04);
+}
+
+.pipeline-flow-node.active .node-badge-number {
+  background: var(--teal-primary);
+  color: #ffffff;
+}
+
+.pipeline-flow-node.active .node-main-label {
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+/* Auras Temáticas por Nodo */
+#nodeVoice.active .node-icon-circle {
+  background: var(--teal-light);
+  border-color: var(--teal-primary);
+  color: var(--teal-primary);
+  box-shadow: 0 0 16px rgba(13, 148, 136, 0.45);
+}
+
+#nodeAI.active .node-icon-circle {
+  background: #eef2ff;
+  border-color: #6366f1;
+  color: #6366f1;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.45);
+}
+#nodeAI.active .node-badge-number {
+  background: #6366f1;
+}
+
+#nodeSafety.active .node-icon-circle {
+  background: var(--emerald-light);
+  border-color: var(--emerald-solid);
+  color: var(--emerald-solid);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+}
+#nodeSafety.active .node-badge-number {
+  background: var(--emerald-solid);
+}
+
+#nodeVault.active .node-icon-circle {
+  background: #fffbeb;
+  border-color: #d97706;
+  color: #d97706;
+  box-shadow: 0 0 16px rgba(217, 119, 6, 0.45);
+}
+#nodeVault.active .node-badge-number {
+  background: #d97706;
+}
+
+#nodeCloud.active .node-icon-circle {
+  background: #f0f9ff;
+  border-color: #0284c7;
+  color: #0284c7;
+  box-shadow: 0 0 16px rgba(2, 132, 199, 0.45);
+}
+#nodeCloud.active .node-badge-number {
+  background: #0284c7;
+}
+
+.pipeline-flow-node.completed .node-icon-circle {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: var(--emerald-solid);
+}
+.pipeline-flow-node.completed .node-badge-number {
+  background: var(--emerald-solid);
+  color: #ffffff;
+}
+
+/* Conectores con Haz de Datos Luminoso */
+.flow-connector {
+  flex: 1;
+  height: 3px;
+  position: relative;
+  background: #e2e8f0;
+  border-radius: 2px;
+  margin: 0 0.2rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.connector-line {
+  position: absolute;
+  inset: 0;
+  background: #e2e8f0;
+}
+
+.connector-glow-beam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -100%;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, var(--teal-primary), transparent);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.flow-connector.active .connector-glow-beam {
+  opacity: 1;
+  animation: beamFlow 1.4s infinite linear;
+}
+
+@keyframes beamFlow {
+  0% { left: -60%; }
+  100% { left: 140%; }
+}
+
+/* ==========================================================================
+   ACTIVE STEP SPOTLIGHT CARD (INSPECTOR EN TIEMPO REAL)
+   ========================================================================== */
+.active-step-inspector-card {
+  background: #ffffff;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-subtle);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.active-step-inspector-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  bottom: 0;
+  background: var(--teal-primary);
+  border-radius: 4px 0 0 4px;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.inspector-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-pill-badge {
+  background: #f0fdfa;
+  border: 1px solid var(--teal-border);
+  color: var(--teal-hover);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.3px;
+}
+
+.inspector-heading {
+  font-size: 0.96rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: var(--text-main);
+}
+
+.inspector-metric-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: #f1f5f9;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-hairline);
+}
+
+.inspector-punchline {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin-bottom: 0.9rem;
+}
+
+.inspector-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.strip-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.strip-metric-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.strip-metric-val {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+}
+
+.strip-metric-val.text-emerald {
+  color: var(--emerald-solid);
 }
 
 /* Tarjetas de Consola */
