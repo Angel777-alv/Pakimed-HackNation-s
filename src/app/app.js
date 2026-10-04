@@ -4,11 +4,20 @@
  * Responsabilidad: Coordinación de vistas y eventos en la interfaz táctil móvil.
  * Arquitectura modular y limpia: Consume servicios especializados de window.Pakimed.*
  * - window.Pakimed.VoiceRecorder (Captura streaming dual-buffer)
- * - window.Pakimed.NER (Extracción clínica híbrida con identificación de paciente)
+ * - window.Pakimed.NER (Extracción clínica heurística ConText)
+ * - window.Pakimed.QwenAdapter (Extracción semántica Small AI Qwen2.5)
+ * - window.Pakimed.FusionEngine (Ensamble cooperativo híbrido y guardarraíles)
  * - window.Pakimed.Guardrails (Auditoría ética IEEE 7000, no-diagnóstico y completitud)
  * - window.Pakimed.ModalController (Edición manual HITL reactiva)
  * - window.Pakimed.DB (Persistencia local reactiva)
  * - window.Pakimed.DHIS2 (Mapeo y sanitización Tracker/Event)
+ * 
+ * Navegación controlada por Bottom Dock:
+ * 1: Homepage / Inicio (Dr. Morales)
+ * 2: Dictado por Voz & Nuevo Paciente (FAB Central +)
+ * 3: Estructuración On-Device (Pipeline)
+ * 4: Validación Médica & Signos Vitales (HITL)
+ * 5: Expediente Clínico Digital & Cola DHIS2
  */
 
 class PakimedApp {
@@ -29,13 +38,19 @@ class PakimedApp {
   }
 
   initElements() {
-    // Smartphone: Header & Nav
+    // Smartphone: Header, Dock & Nav
     this.phoneClock = document.getElementById('phoneClock');
-    this.stepTabs = document.querySelectorAll('.step-tab');
+    this.phoneBadge = document.getElementById('phoneBadge');
     this.screenViews = document.querySelectorAll('.phone-screen-view');
+    this.dockTabs = document.querySelectorAll('.dock-tab');
+    this.dockFloatingActionBtn = document.getElementById('dockFloatingActionBtn');
+    this.promptPills = document.querySelectorAll('.quick-prompt-pill');
+    this.networkToggle = document.getElementById('networkToggle');
 
-    // Pantalla 1: Dictado
+    // Pantalla 1: Inicio
     this.scenarioSelect = document.getElementById('scenarioSelect');
+
+    // Pantalla 2: Dictado
     this.micBtn = document.getElementById('micBtn');
     this.micIcon = document.getElementById('micIcon');
     this.micStatusText = document.getElementById('micStatusText');
@@ -46,7 +61,7 @@ class PakimedApp {
     this.waveVisualizer = document.getElementById('waveVisualizer');
     this.audioProcessingIndicator = document.getElementById('audioProcessingIndicator');
 
-    // Pantalla 2: Estructuración On-Device
+    // Pantalla 3: Estructuración On-Device
     this.processingStepText = document.getElementById('processingStepText');
     this.pipeSteps = [
       document.getElementById('pipeStep1'),
@@ -55,7 +70,7 @@ class PakimedApp {
       document.getElementById('pipeStep4')
     ];
 
-    // Pantalla 3: Validación y Expediente
+    // Pantalla 4: Validación y Expediente
     this.prevName = document.getElementById('prevName');
     this.prevAge = document.getElementById('prevAge');
     this.prevGender = document.getElementById('prevGender');
@@ -88,7 +103,7 @@ class PakimedApp {
   }
 
   setupInitialState() {
-    // 1. Selector en blanco
+    // 1. Selector de plantillas clínicas
     if (this.scenarioSelect) {
       this.scenarioSelect.innerHTML = '<option value="">-- Seleccionar plantilla de consulta (Opcional) --</option>';
       const templates = window.Pakimed && window.Pakimed.VoiceRecorder 
@@ -104,7 +119,7 @@ class PakimedApp {
       this.scenarioSelect.value = '';
     }
 
-    // 2. Área de dictado 100% limpia
+    // 2. Área de dictado limpia
     if (this.dictationText) {
       this.dictationText.value = '';
       this.dictationText.placeholder = 'Presiona el micrófono para iniciar el dictado clínico o redacta las notas de la consulta aquí...';
@@ -146,7 +161,6 @@ class PakimedApp {
   handleVoiceState(state, payload) {
     if (state === 'RECORDING') {
       this.micBtn.classList.add('recording');
-      if (this.micIcon) this.micIcon.textContent = '⏹️';
       if (this.waveVisualizer) {
         this.waveVisualizer.classList.remove('dormant');
         this.waveVisualizer.classList.add('active');
@@ -160,7 +174,6 @@ class PakimedApp {
       }
     } else if (state === 'PROCESSING') {
       this.micBtn.classList.remove('recording');
-      if (this.micIcon) this.micIcon.textContent = '🎤';
       if (this.recordTimerBadge) this.recordTimerBadge.classList.add('hidden');
       if (this.waveVisualizer) {
         this.waveVisualizer.classList.remove('active');
@@ -175,7 +188,6 @@ class PakimedApp {
       }, 800);
     } else if (state === 'IDLE') {
       this.micBtn.classList.remove('recording');
-      if (this.micIcon) this.micIcon.textContent = '🎤';
       if (this.recordTimerBadge) this.recordTimerBadge.classList.add('hidden');
       if (this.waveVisualizer) {
         this.waveVisualizer.classList.remove('active');
@@ -186,13 +198,35 @@ class PakimedApp {
   }
 
   bindEvents() {
-    this.stepTabs.forEach(tab => {
+    // 1. Navegación por Bottom Dock (4 tabs)
+    this.dockTabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        const step = parseInt(tab.getAttribute('data-step'), 10);
-        this.goToScreen(step);
+        const screen = parseInt(tab.getAttribute('data-dock-screen'), 10);
+        if (screen) this.goToScreen(screen);
       });
     });
 
+    // 2. Botón Flotante Central (+) del Dock
+    if (this.dockFloatingActionBtn) {
+      this.dockFloatingActionBtn.addEventListener('click', () => {
+        if (this.currentScreen !== 2) {
+          this.goToScreen(2);
+        } else {
+          this.toggleRecording();
+        }
+      });
+    }
+
+    // 3. Sugerencias rápidas de consulta en Pantalla 1
+    this.promptPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const idx = parseInt(pill.getAttribute('data-case-index'), 10);
+        this.selectScenario(idx);
+        this.goToScreen(2);
+      });
+    });
+
+    // 4. Selector nativo de escenarios
     if (this.scenarioSelect) {
       this.scenarioSelect.addEventListener('change', (e) => {
         const val = e.target.value;
@@ -200,14 +234,12 @@ class PakimedApp {
           this.dictationText.value = '';
           return;
         }
-        const templates = window.Pakimed?.VoiceRecorder?.getTemplates() || [];
         const idx = parseInt(val, 10);
-        if (!isNaN(idx) && templates[idx]) {
-          this.dictationText.value = templates[idx].transcript;
-        }
+        this.selectScenario(idx);
       });
     }
 
+    // 5. Input manual en área de dictado
     if (this.dictationText) {
       this.dictationText.addEventListener('input', (e) => {
         if (this.voiceEngine) {
@@ -216,33 +248,61 @@ class PakimedApp {
       });
     }
 
+    // 6. Micrófono
     if (this.micBtn) {
       this.micBtn.addEventListener('click', () => this.toggleRecording());
     }
 
+    // 7. Estructurar consulta
     if (this.processBtn) {
       this.processBtn.addEventListener('click', () => this.processDictation());
     }
 
+    // 8. Modal de ajustes HITL
     if (this.btnOpenEdit) {
       this.btnOpenEdit.addEventListener('click', () => this.openEditModal());
     }
 
+    // 9. Aprobación de expediente
     if (this.approveBtn) {
       this.approveBtn.addEventListener('click', () => this.approveRecord());
     }
 
+    // 10. Demo guiado para Pitch
     if (this.btnQuickDemo) {
       this.btnQuickDemo.addEventListener('click', () => this.runQuickDemo());
     }
 
-    // Toggle de Motor Small AI
+    // 11. Simulación de conectividad de red
+    if (this.networkToggle) {
+      this.networkToggle.addEventListener('click', () => {
+        const telem = window.pakimedTelemetry;
+        if (telem) telem.toggleNetwork();
+      });
+    }
+
+    // 12. Toggle de Pipeline Small AI
     if (this.btnEngineHeuristic) {
       this.btnEngineHeuristic.addEventListener('click', () => this.setEngine('heuristic'));
     }
     if (this.btnEngineQwen) {
       this.btnEngineQwen.addEventListener('click', () => this.setEngine('hybrid'));
     }
+  }
+
+  selectScenario(idx) {
+    const templates = window.Pakimed?.VoiceRecorder?.getTemplates() || [];
+    if (templates[idx]) {
+      if (this.dictationText) {
+        this.dictationText.value = templates[idx].transcript;
+      }
+      if (this.scenarioSelect) {
+        this.scenarioSelect.value = idx;
+      }
+    }
+    this.promptPills.forEach((p, pIdx) => {
+      p.classList.toggle('active', pIdx === idx);
+    });
   }
 
   async setEngine(engine) {
@@ -296,16 +356,31 @@ class PakimedApp {
     }
   }
 
-  goToScreen(step) {
-    // Candado estricto de navegación hacia la Pantalla 4 (Expediente)
-    if (step === 4 && !this.isRecordApproved) {
-      alert('Debe validar y registrar la consulta médica en la Pantalla 3 antes de ver la confirmación del expediente.');
+  goToScreen(screenNum) {
+    // Candado estricto: la Pantalla 5 (Expediente) requiere validación en Pantalla 4
+    if (screenNum === 5 && !this.isRecordApproved) {
+      alert('Debe validar y firmar la consulta médica en la Pantalla 4 antes de ver la confirmación del expediente.');
       return;
     }
 
-    this.currentScreen = step;
-    this.stepTabs.forEach(t => t.classList.toggle('active', parseInt(t.getAttribute('data-step'), 10) === step));
-    this.screenViews.forEach(v => v.classList.toggle('active', parseInt(v.getAttribute('data-screen'), 10) === step));
+    this.currentScreen = screenNum;
+
+    // 1. Alternar vistas de pantalla
+    this.screenViews.forEach(v => {
+      const vScreen = parseInt(v.getAttribute('data-screen'), 10);
+      v.classList.toggle('active', vScreen === screenNum);
+    });
+
+    // 2. Sincronizar estado activo de las pestañas en el Bottom Dock
+    this.dockTabs.forEach(d => {
+      const targetScreen = parseInt(d.getAttribute('data-dock-screen'), 10);
+      d.classList.toggle('active', targetScreen === screenNum);
+    });
+
+    // 3. Estado visual del botón central flotante (+)
+    if (this.dockFloatingActionBtn) {
+      this.dockFloatingActionBtn.classList.toggle('active-mode', screenNum === 2);
+    }
   }
 
   async processDictation() {
@@ -316,7 +391,7 @@ class PakimedApp {
     }
 
     this.isRecordApproved = false;
-    this.goToScreen(2);
+    this.goToScreen(3); // Pantalla 3: Estructuración On-Device
 
     // Animación visual del pipeline híbrido
     this.setPipelineStep(1, 'Normalizando transcripción y extrayendo ancla determinista con ConText (< 2 ms)...');
@@ -353,7 +428,7 @@ class PakimedApp {
     await new Promise(r => setTimeout(r, 250));
 
     this.renderPreview(this.extractedData);
-    this.goToScreen(3);
+    this.goToScreen(4); // Pantalla 4: Validación Médica & Signos Vitales
   }
 
   setPipelineStep(activeStep, desc) {
@@ -366,13 +441,13 @@ class PakimedApp {
 
       if (stepNum < activeStep) {
         el.classList.add('done');
-        if (checkSpan) checkSpan.textContent = '✓';
+        if (checkSpan) checkSpan.innerHTML = '<svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
       } else if (stepNum === activeStep) {
         el.classList.add('active');
-        if (checkSpan) checkSpan.textContent = '●';
+        if (checkSpan) checkSpan.innerHTML = '<svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>';
       } else {
         el.classList.add('pending');
-        if (checkSpan) checkSpan.textContent = '○';
+        if (checkSpan) checkSpan.innerHTML = '<svg class="mono-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>';
       }
     });
   }
@@ -385,13 +460,13 @@ class PakimedApp {
       const engineName = data.patient?.engine || '';
       if (engineName.includes('Híbrido')) {
         this.prevEngineBadge.textContent = '🧬 Ensamble Híbrido (ConText + Qwen2.5)';
-        this.prevEngineBadge.classList.add('qwen');
+        this.prevEngineBadge.className = 'ai-engine-badge-sub hybrid';
       } else if (engineName.includes('Qwen')) {
         this.prevEngineBadge.textContent = '🧠 Qwen2.5-0.5B (Small AI)';
-        this.prevEngineBadge.classList.add('qwen');
+        this.prevEngineBadge.className = 'ai-engine-badge-sub qwen';
       } else {
         this.prevEngineBadge.textContent = '⚡ ConText Edge AI (25 KB)';
-        this.prevEngineBadge.classList.remove('qwen');
+        this.prevEngineBadge.className = 'ai-engine-badge-sub';
       }
     }
 
@@ -420,11 +495,11 @@ class PakimedApp {
     }
 
     // 2. Constantes Vitales
-    this.prevBP.textContent = data.vitals?.bloodPressure || '--';
-    this.prevTemp.textContent = data.vitals?.temperature ? `${data.vitals.temperature} °C` : '--';
-    this.prevHR.textContent = data.vitals?.heartRate ? `${data.vitals.heartRate} lpm` : '--';
+    if (this.prevBP) this.prevBP.textContent = data.vitals?.bloodPressure || '--';
+    if (this.prevTemp) this.prevTemp.textContent = data.vitals?.temperature ? `${data.vitals.temperature}` : '--';
+    if (this.prevHR) this.prevHR.textContent = data.vitals?.heartRate ? `${data.vitals.heartRate}` : '--';
     if (this.prevSpO2) {
-      this.prevSpO2.textContent = data.vitals?.oxygenSaturation ? `${data.vitals.oxygenSaturation}%` : '--';
+      this.prevSpO2.textContent = data.vitals?.oxygenSaturation ? `${data.vitals.oxygenSaturation}` : '--';
     }
 
     // 3. Aviso de Constantes No Medidas / Parciales
@@ -452,29 +527,38 @@ class PakimedApp {
     }
 
     // 4. Síntomas
-    if (data.symptoms?.length > 0) {
-      this.prevSymptoms.innerHTML = data.symptoms.map(s => `<span class="tag-pill symptom">${s}</span>`).join('');
-    } else {
-      this.prevSymptoms.innerHTML = '<span class="text-muted">Ningún síntoma específico identificado</span>';
+    if (this.prevSymptoms) {
+      if (data.symptoms?.length > 0) {
+        this.prevSymptoms.innerHTML = data.symptoms.map(s => `<span class="tag-pill symptom">${s}</span>`).join('');
+      } else {
+        this.prevSymptoms.innerHTML = '<span class="text-muted">Ningún síntoma específico identificado</span>';
+      }
     }
 
     // 5. Medicación y Prescripciones
-    if (data.prescriptions?.length > 0) {
-      this.prevMeds.innerHTML = data.prescriptions.map(p => `
-        <div class="rx-row">
-          <span class="rx-badge">💊 Receta</span>
-          <div>
-            <strong>${p}</strong>
-            <p class="rx-sub">Indicación facultativa verificada</p>
+    if (this.prevMeds) {
+      if (data.prescriptions?.length > 0) {
+        this.prevMeds.innerHTML = data.prescriptions.map(p => `
+          <div class="rx-row">
+            <span class="rx-badge">
+              <svg class="mono-icon rx-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+              Receta
+            </span>
+            <div>
+              <strong>${p}</strong>
+              <p class="rx-sub">Indicación facultativa verificada</p>
+            </div>
           </div>
-        </div>
-      `).join('');
-    } else {
-      this.prevMeds.innerHTML = '<p class="text-muted">No se indicó medicación en este registro.</p>';
+        `).join('');
+      } else {
+        this.prevMeds.innerHTML = '<p class="text-muted">No se indicó medicación en este registro.</p>';
+      }
     }
 
     // 6. Transcripción original
-    this.prevNotes.textContent = `"${data.rawTranscript || 'Sin notas'}"`;
+    if (this.prevNotes) {
+      this.prevNotes.textContent = `"${data.rawTranscript || 'Sin notas'}"`;
+    }
 
     // 7. Actualización integral de Guardarraíles y Banners de Alerta
     this.updateAlertsAndSafetyStatus(data);
@@ -506,14 +590,12 @@ class PakimedApp {
       this.guardrailAlert.classList.remove('hidden');
 
       if (data.guardrailAlerts && data.guardrailAlerts.length > 0) {
-        // Observación cuantitativa de rango o inferencia detectada (Cero diagnóstico)
         this.guardrailAlert.className = 'safety-banner warning';
         this.guardrailAlert.innerHTML = `⚠️ <strong>Observación Médica / Constantes:</strong><br>${data.guardrailAlerts.join('<br>')}`;
         if (telem) telem.setSafetyStatus('Observación: Constantes vitales fuera de rango estándar', true);
       } else {
-        // Protocolo seguro verificado
         this.guardrailAlert.className = 'safety-banner secure';
-        this.guardrailAlert.innerHTML = `🛡️ <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión y firma médica.`;
+        this.guardrailAlert.innerHTML = `<svg class="mono-icon banner-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg><div><strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión facultativa.</div>`;
         if (telem) telem.setSafetyStatus('Protocolo de Transcripción Fiel Activo', false);
       }
     }
@@ -564,7 +646,7 @@ class PakimedApp {
     }
 
     this.isRecordApproved = true;
-    this.goToScreen(4);
+    this.goToScreen(5); // Pantalla 5: Expediente Clínico Digital Resguardado
   }
 
   startClock() {
@@ -579,13 +661,11 @@ class PakimedApp {
   }
 
   async runQuickDemo() {
-    this.goToScreen(1);
-    const templates = window.Pakimed?.VoiceRecorder?.getTemplates() || [];
-    if (templates[0]) {
-      this.scenarioSelect.value = '0';
-      this.dictationText.value = templates[0].transcript;
-    }
+    // 1. Ir a pantalla 2 y cargar caso representativo
+    this.goToScreen(2);
+    this.selectScenario(0);
 
+    // 2. Simular captura de audio clínico
     if (this.voiceEngine) {
       this.voiceEngine.start();
       await new Promise(r => setTimeout(r, 1100));
@@ -593,9 +673,11 @@ class PakimedApp {
       await new Promise(r => setTimeout(r, 850));
     }
 
+    // 3. Estructurar con el pipeline híbrido (pantalla 3 y luego 4)
     await this.processDictation();
     await new Promise(r => setTimeout(r, 900));
 
+    // 4. Consolidar en expediente si está completo (pantalla 5)
     if (this.extractedData && this.extractedData.isComplete) {
       this.approveRecord();
     }
