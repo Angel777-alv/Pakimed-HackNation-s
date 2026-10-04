@@ -127,7 +127,10 @@ class ModalController {
 
     // 1. Validar Nombre Obligatorio
     if (!formData.patient.name || formData.patient.name.length < 2) {
-      blockingErrors.push('Identificación requerida: Ingrese el nombre del paciente para habilitar el guardado.');
+      const nameErr = (window.I18nManager && typeof window.I18nManager.get === 'function')
+        ? window.I18nManager.get('modal_alert_name_required')
+        : 'Identificación requerida: Ingrese el nombre del paciente para habilitar el guardado.';
+      blockingErrors.push(nameErr);
       invalidFields.add('name');
     }
 
@@ -162,7 +165,10 @@ class ModalController {
       const allMessages = [...blockingErrors, ...observations];
       if (allMessages.length > 0) {
         this.alertEl.classList.remove('hidden');
-        this.alertEl.innerHTML = `⚠️ <strong>Validación de Registro:</strong><br>${allMessages.join('<br>')}`;
+        const alertTitle = (window.I18nManager && typeof window.I18nManager.get === 'function')
+          ? window.I18nManager.get('modal_alert_title')
+          : 'Validación de Registro';
+        this.alertEl.innerHTML = `⚠️ <strong>${alertTitle}:</strong><br>${allMessages.join('<br>')}`;
       } else {
         this.alertEl.classList.add('hidden');
         this.alertEl.innerHTML = '';
@@ -175,7 +181,9 @@ class ModalController {
       this.btnSave.disabled = hasBlockingError;
       this.btnSave.style.opacity = hasBlockingError ? '0.5' : '1';
       this.btnSave.title = hasBlockingError 
-        ? 'Complete el nombre y corrija los valores atípicos antes de guardar' 
+        ? ((window.I18nManager && typeof window.I18nManager.get === 'function')
+            ? window.I18nManager.get('modal_alert_name_required')
+            : 'Complete el nombre y corrija los valores atípicos antes de guardar')
         : 'Guardar cambios validados';
     }
 
@@ -204,7 +212,10 @@ class ModalController {
   handleSave() {
     const { isValid, hasBlockingError, formData } = this.validateLive();
     if (hasBlockingError || !isValid) {
-      alert('Por favor ingrese el nombre del paciente y verifique que las constantes vitales sean biológicamente válidas.');
+      const saveAlert = (window.I18nManager && typeof window.I18nManager.get === 'function')
+        ? window.I18nManager.get('alert_invalid_save')
+        : 'Por favor ingrese el nombre del paciente y verifique que las constantes vitales sean biológicamente válidas.';
+      alert(saveAlert);
       return;
     }
 

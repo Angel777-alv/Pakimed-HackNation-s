@@ -411,6 +411,10 @@ class PakimedApp {
     }
 
     this.selectScenario(0);
+
+    if (this.extractedData) {
+      this.renderPreview(this.extractedData);
+    }
   }
 
   renderScenarios() {
@@ -619,18 +623,19 @@ class PakimedApp {
 
   renderPreview(data) {
     if (!data) return;
+    const i18n = window.I18nManager;
 
     // 0. Distintivo del Motor de Extracción Realmente Utilizado
     if (this.prevEngineBadge) {
       const engineName = data.patient?.engine || '';
       if (engineName.includes('Híbrido')) {
-        this.prevEngineBadge.textContent = '🧬 Ensamble Híbrido (ConText + Qwen2.5)';
+        this.prevEngineBadge.textContent = i18n ? i18n.get('engine_badge_hybrid') : '🧬 Ensamble Híbrido (ConText + Qwen2.5)';
         this.prevEngineBadge.className = 'ai-engine-badge-sub hybrid';
       } else if (engineName.includes('Qwen')) {
-        this.prevEngineBadge.textContent = '🧠 Qwen2.5-0.5B (Small AI)';
+        this.prevEngineBadge.textContent = i18n ? i18n.get('engine_badge_qwen') : '🧠 Qwen2.5-0.5B (Small AI)';
         this.prevEngineBadge.className = 'ai-engine-badge-sub qwen';
       } else {
-        this.prevEngineBadge.textContent = '⚡ ConText Edge AI (25 KB)';
+        this.prevEngineBadge.textContent = i18n ? i18n.get('engine_badge_context') : '⚡ ConText Edge AI (25 KB)';
         this.prevEngineBadge.className = 'ai-engine-badge-sub';
       }
     }
@@ -642,21 +647,29 @@ class PakimedApp {
         this.prevName.textContent = p.name;
         this.prevName.style.color = '#0f766e';
       } else {
-        this.prevName.textContent = '⚠️ No identificado (Requiere nombre)';
+        this.prevName.textContent = i18n ? `⚠️ ${i18n.get('demographic_unidentified')}` : '⚠️ No identificado (Requiere nombre)';
         this.prevName.style.color = '#dc2626';
       }
     }
 
     if (this.prevAge) {
-      this.prevAge.textContent = p.age !== null && p.age !== undefined 
-        ? `${p.age} ${p.ageUnit || 'años'}` 
-        : 'Edad no indicada';
+      const ageUnitStr = i18n ? i18n.get('demographic_age_unit') : (p.ageUnit || 'años');
+      const unspecAge = i18n ? i18n.get('demographic_age_unspecified') : 'Edad no indicada';
+      this.prevAge.textContent = (p.age !== null && p.age !== undefined)
+        ? `${p.age} ${ageUnitStr}` 
+        : unspecAge;
     }
     
     if (this.prevGender) {
-      this.prevGender.textContent = p.gender === 'F' 
-        ? 'Femenino' 
-        : (p.gender === 'M' ? 'Masculino' : 'Género no indicado');
+      let genderStr;
+      if (p.gender === 'F') {
+        genderStr = i18n ? i18n.get('demographic_gender_female') : 'Femenino';
+      } else if (p.gender === 'M') {
+        genderStr = i18n ? i18n.get('demographic_gender_male') : 'Masculino';
+      } else {
+        genderStr = i18n ? i18n.get('demographic_gender_unspecified') : 'Género no indicado';
+      }
+      this.prevGender.textContent = genderStr;
     }
 
     // 2. Constantes Vitales
@@ -672,7 +685,18 @@ class PakimedApp {
       const missing = data.missingFields || (window.Pakimed?.Guardrails?.detectMissingOptionalFields(data) || []);
       if (missing.length > 0) {
         this.unmeasuredFieldsBox.classList.remove('hidden');
-        this.unmeasuredFieldsText.textContent = missing.join(', ');
+        const translatedMissing = missing.map(m => {
+          if (!i18n) return m;
+          if (m === 'Edad' || m === 'Age' || m === 'Alter') return i18n.get('vital_name_age');
+          if (m === 'Género' || m === 'Gender' || m === 'Geschlecht') return i18n.get('vital_name_gender');
+          if (m === 'Presión Arterial' || m === 'Blood Pressure' || m === 'Blutdruck') return i18n.get('vital_name_bp');
+          if (m === 'Presión Diastólica' || m === 'Diastolic BP' || m === 'Diastolischer Blutdruck') return i18n.get('vital_name_dia');
+          if (m === 'Temperatura' || m === 'Temperature' || m === 'Temperatur') return i18n.get('vital_name_temp');
+          if (m === 'Pulso (FC)' || m === 'Heart Rate (Pulse)' || m === 'Puls (Herzfrequenz)') return i18n.get('vital_name_hr');
+          if (m === 'Sat. O₂ (SpO2)' || m === 'O₂ Saturation (SpO2)' || m === 'Sauerstoffsättigung (SpO2)') return i18n.get('vital_name_spo2');
+          return m;
+        });
+        this.unmeasuredFieldsText.textContent = translatedMissing.join(', ');
       } else {
         this.unmeasuredFieldsBox.classList.add('hidden');
       }
@@ -696,27 +720,31 @@ class PakimedApp {
       if (data.symptoms?.length > 0) {
         this.prevSymptoms.innerHTML = data.symptoms.map(s => `<span class="tag-pill symptom">${s}</span>`).join('');
       } else {
-        this.prevSymptoms.innerHTML = '<span class="text-muted">Ningún síntoma específico identificado</span>';
+        const emptySymText = i18n ? i18n.get('empty_symptoms') : 'Ningún síntoma específico identificado';
+        this.prevSymptoms.innerHTML = `<span class="text-muted">${emptySymText}</span>`;
       }
     }
 
     // 5. Medicación y Prescripciones
     if (this.prevMeds) {
       if (data.prescriptions?.length > 0) {
+        const rxBadgeText = i18n ? i18n.get('rx_badge_title') : 'Receta';
+        const rxSubText = i18n ? i18n.get('rx_sub_verified') : 'Indicación facultativa verificada';
         this.prevMeds.innerHTML = data.prescriptions.map(p => `
           <div class="rx-row">
             <span class="rx-badge">
               <svg class="mono-icon rx-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
-              Receta
+              ${rxBadgeText}
             </span>
             <div>
               <strong>${p}</strong>
-              <p class="rx-sub">Indicación facultativa verificada</p>
+              <p class="rx-sub">${rxSubText}</p>
             </div>
           </div>
         `).join('');
       } else {
-        this.prevMeds.innerHTML = '<p class="text-muted">No se indicó medicación en este registro.</p>';
+        const emptyRxText = i18n ? i18n.get('empty_prescriptions') : 'No se indicó medicación en este registro.';
+        this.prevMeds.innerHTML = `<p class="text-muted">${emptyRxText}</p>`;
       }
     }
 
@@ -731,6 +759,7 @@ class PakimedApp {
 
   updateAlertsAndSafetyStatus(data) {
     const telem = window.pakimedTelemetry;
+    const i18n = window.I18nManager;
 
     // Caso A: Registro Incompleto o Falta de Nombre (Bloqueo de Aprobación)
     if (!data.isComplete) {
@@ -745,7 +774,8 @@ class PakimedApp {
 
       this.approveBtn.disabled = true;
       this.approveBtn.style.opacity = '0.45';
-      this.approveBtn.title = 'Complete el nombre y datos clínicos en "Ajustar Registro" para habilitar la firma';
+      const blockTitle = i18n ? i18n.get('alert_approve_blocked') : 'Complete el nombre y datos clínicos en "Ajustar Registro" para habilitar la firma';
+      this.approveBtn.title = blockTitle;
       return;
     }
 
@@ -756,18 +786,21 @@ class PakimedApp {
 
       if (data.guardrailAlerts && data.guardrailAlerts.length > 0) {
         this.guardrailAlert.className = 'safety-banner warning';
-        this.guardrailAlert.innerHTML = `⚠️ <strong>Observación Médica / Constantes:</strong><br>${data.guardrailAlerts.join('<br>')}`;
+        const obsTitle = i18n ? i18n.get('safety_observation_title') : 'Observación Médica / Constantes:';
+        this.guardrailAlert.innerHTML = `⚠️ <strong>${obsTitle}</strong><br>${data.guardrailAlerts.join('<br>')}`;
         if (telem) telem.setSafetyStatus('Observación: Constantes vitales fuera de rango estándar', true);
       } else {
         this.guardrailAlert.className = 'safety-banner secure';
-        this.guardrailAlert.innerHTML = `<svg class="mono-icon banner-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg><div><strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión facultativa.</div>`;
+        const verifiedTitle = i18n ? i18n.get('safety_protocol_verified_title') : 'Protocolo Clínico Verificado:';
+        const verifiedDesc = i18n ? i18n.get('safety_protocol_verified_desc') : 'Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión facultativa.';
+        this.guardrailAlert.innerHTML = `<svg class="mono-icon banner-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg><div><strong>${verifiedTitle}</strong> ${verifiedDesc}</div>`;
         if (telem) telem.setSafetyStatus('Protocolo de Transcripción Fiel Activo', false);
       }
     }
 
     this.approveBtn.disabled = false;
     this.approveBtn.style.opacity = '1';
-    this.approveBtn.title = 'Validar y registrar en expediente';
+    this.approveBtn.title = i18n ? i18n.get('btn_approve') : 'Validar y registrar en expediente';
   }
 
   openEditModal() {

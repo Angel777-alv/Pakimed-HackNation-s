@@ -362,17 +362,22 @@ const ClinicalNER = {
     }
 
     // 3. Extracción de Género (ES, EN, DE)
-    const norm = this.normalizeText(fullText);
+    // Se filtran tratamientos dirigidos al profesional de la salud para no atribuir el género al paciente
+    const filteredText = fullText
+      .replace(/\b(?:herr|frau)\s+(?:doktor|dr|arzt|ärztin)\b/gi, ' ')
+      .replace(/\b(?:doctor|doctora|dr|dra)\b/gi, ' ');
+    const norm = this.normalizeText(filteredText);
+
     if (/\b(femenina|femenino|mujer|niña|señora|dama|doña|senorita|señorita|female|woman|weiblich|frau)\b/i.test(norm)) {
       gender = 'F';
     } else if (/\b(masculino|varon|hombre|niño|señor|caballero|don|male|man|männlich|herr)\b/i.test(norm)) {
       gender = 'M';
     } else if (name) {
-      // Inferencia por primer nombre si no está explícito
+      // Inferencia por primer nombre si no está explícito en el texto
       const firstName = name.split(' ')[0].toLowerCase();
-      if (['laura', 'maria', 'ana', 'elena', 'sarah', 'emma', 'julia'].includes(firstName)) {
+      if (['laura', 'maria', 'ana', 'elena', 'sarah', 'emma', 'julia', 'sophie', 'marie'].includes(firstName)) {
         gender = 'F';
-      } else if (['javier', 'roberto', 'carlos', 'juan', 'robert', 'john', 'michael'].includes(firstName)) {
+      } else if (['javier', 'roberto', 'carlos', 'juan', 'robert', 'john', 'michael', 'thomas', 'stefan', 'hans'].includes(firstName)) {
         gender = 'M';
       }
     }

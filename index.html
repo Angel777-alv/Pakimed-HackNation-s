@@ -321,15 +321,15 @@
               <div class="alert-content">
                 <strong>
                   <svg class="mono-icon inline" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  Registro Clínico Incompleto
+                  <span data-i18n="safety_incomplete_title">Registro Clínico Incompleto</span>
                 </strong>
-                <p id="incompleteAlertMsg">No se identificaron signos vitales ni síntomas en el audio. Se requiere revisión facultativa.</p>
+                <p id="incompleteAlertMsg" data-i18n="safety_incomplete_msg">No se identificaron signos vitales ni síntomas en el audio. Se requiere revisión facultativa.</p>
               </div>
               <div class="incomplete-actions">
                 <button class="btn btn-secondary-clean btn-sm" onclick="window.pakimedApp.goToScreen(2)" data-i18n="btn_dictate_again">
                   Dictar nuevamente
                 </button>
-                <button class="btn btn-action-main btn-sm" onclick="window.pakimedApp.openEditModal()">
+                <button class="btn btn-action-main btn-sm" onclick="window.pakimedApp.openEditModal()" data-i18n="btn_manual_complete">
                   Completar manual
                 </button>
               </div>
@@ -339,7 +339,7 @@
             <div id="guardrailAlert" class="safety-banner secure">
               <svg class="mono-icon banner-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
               <div>
-                <strong>Protocolo Clínico Verificado:</strong> Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión facultativa.
+                <strong data-i18n="safety_protocol_verified_title">Protocolo Clínico Verificado:</strong> <span data-i18n="safety_protocol_verified_desc">Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión facultativa.</span>
               </div>
             </div>
 
@@ -381,7 +381,7 @@
                     </svg>
                   </div>
                   <div class="dash-card-footer">
-                    <span>Sistólica / Diastólica</span>
+                    <span id="bpSubtitle" data-i18n="vital_bp_subtitle">Sistólica / Diastólica</span>
                   </div>
                 </div>
 
@@ -455,12 +455,12 @@
 
               <!-- Alerta de Alergias Detectadas -->
               <div id="allergiesBox" class="allergies-alert-card hidden">
-                🚨 <strong>Alergias Medicamentosas:</strong> <span id="allergiesText"></span>
+                🚨 <strong data-i18n="vital_allergies_banner_title">Alergias Medicamentosas:</strong> <span id="allergiesText"></span>
               </div>
 
               <!-- Aviso de Constantes No Medidas -->
               <div id="unmeasuredFieldsBox" class="unmeasured-alert-card hidden">
-                ℹ️ <strong>Constantes no dictadas en consulta:</strong> <span id="unmeasuredFieldsText"></span>
+                ℹ️ <strong data-i18n="vital_missing_banner_title">Constantes no dictadas en consulta:</strong> <span id="unmeasuredFieldsText"></span>
               </div>
 
               <!-- Síntomas -->

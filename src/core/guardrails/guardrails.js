@@ -79,6 +79,20 @@ const Guardrails = {
    * @returns {{isValid: boolean, criticalErrors: string[], observations: string[], outOfRangeFields: string[]}}
    */
   validatePhysiologicalRanges(data = {}) {
+    const _t = (key, params, fallback) => {
+      if (typeof window !== 'undefined' && window.I18nManager && typeof window.I18nManager.get === 'function') {
+        const res = window.I18nManager.get(key, params);
+        if (res && res !== key) return res;
+      }
+      let text = fallback || key;
+      if (params && typeof params === 'object') {
+        Object.keys(params).forEach(k => {
+          text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), params[k]);
+        });
+      }
+      return text;
+    };
+
     const criticalErrors = [];
     const observations = [];
     const outOfRangeFields = [];
@@ -94,20 +108,20 @@ const Guardrails = {
       if (!isNaN(sys)) {
         // Límite extremo (Bloqueo)
         if (sys < this.PHYSIOLOGICAL_RANGES.BP_SYS.min || sys > this.PHYSIOLOGICAL_RANGES.BP_SYS.max) {
-          criticalErrors.push(`Presión sistólica (${sys} mmHg) fuera de rango biológico posible (50 - 250 mmHg).`);
+          criticalErrors.push(_t('guardrail_err_bp_sys', { val: sys }, `Presión sistólica (${sys} mmHg) fuera de rango biológico posible (50 - 250 mmHg).`));
           outOfRangeFields.push('bloodPressure');
         } else if (sys > this.STANDARD_REFERENCE.BP_SYS.max || sys < this.STANDARD_REFERENCE.BP_SYS.min) {
           // Observación cuantitativa objetiva (Cero diagnóstico)
-          observations.push(`Presión sistólica registrada en ${sys} mmHg (rango de referencia estándar: 90–130 mmHg).`);
+          observations.push(_t('guardrail_obs_bp_sys', { val: sys }, `Presión sistólica registrada en ${sys} mmHg (rango de referencia estándar: 90–130 mmHg).`));
         }
       }
 
       if (dia !== null && !isNaN(dia)) {
         if (dia < this.PHYSIOLOGICAL_RANGES.BP_DIA.min || dia > this.PHYSIOLOGICAL_RANGES.BP_DIA.max) {
-          criticalErrors.push(`Presión diastólica (${dia} mmHg) fuera de rango biológico posible (30 - 140 mmHg).`);
+          criticalErrors.push(_t('guardrail_err_bp_dia', { val: dia }, `Presión diastólica (${dia} mmHg) fuera de rango biológico posible (30 - 140 mmHg).`));
           if (!outOfRangeFields.includes('bloodPressure')) outOfRangeFields.push('bloodPressure');
         } else if (dia > this.STANDARD_REFERENCE.BP_DIA.max || dia < this.STANDARD_REFERENCE.BP_DIA.min) {
-          observations.push(`Presión diastólica registrada en ${dia} mmHg (rango de referencia estándar: 60–85 mmHg).`);
+          observations.push(_t('guardrail_obs_bp_dia', { val: dia }, `Presión diastólica registrada en ${dia} mmHg (rango de referencia estándar: 60–85 mmHg).`));
         }
       }
     }
@@ -117,10 +131,10 @@ const Guardrails = {
       const temp = parseFloat(vitals.temperature);
       if (!isNaN(temp)) {
         if (temp < this.PHYSIOLOGICAL_RANGES.TEMPERATURE.min || temp > this.PHYSIOLOGICAL_RANGES.TEMPERATURE.max) {
-          criticalErrors.push(`Temperatura (${temp} °C) inverosímil o fuera de rango biológico (32.0 - 43.0 °C).`);
+          criticalErrors.push(_t('guardrail_err_temp', { val: temp }, `Temperatura (${temp} °C) inverosímil o fuera de rango biológico (32.0 - 43.0 °C).`));
           outOfRangeFields.push('temperature');
         } else if (temp > this.STANDARD_REFERENCE.TEMPERATURE.max || temp < this.STANDARD_REFERENCE.TEMPERATURE.min) {
-          observations.push(`Temperatura registrada en ${temp} °C (rango de referencia estándar: 36.0–37.5 °C).`);
+          observations.push(_t('guardrail_obs_temp', { val: temp }, `Temperatura registrada en ${temp} °C (rango de referencia estándar: 36.0–37.5 °C).`));
         }
       }
     }
@@ -130,10 +144,10 @@ const Guardrails = {
       const hr = parseInt(vitals.heartRate, 10);
       if (!isNaN(hr)) {
         if (hr < this.PHYSIOLOGICAL_RANGES.HEART_RATE.min || hr > this.PHYSIOLOGICAL_RANGES.HEART_RATE.max) {
-          criticalErrors.push(`Frecuencia cardíaca (${hr} lpm) fuera de rango biológico posible (30 - 230 lpm).`);
+          criticalErrors.push(_t('guardrail_err_hr', { val: hr }, `Frecuencia cardíaca (${hr} lpm) fuera de rango biológico posible (30 - 230 lpm).`));
           outOfRangeFields.push('heartRate');
         } else if (hr > this.STANDARD_REFERENCE.HEART_RATE.max || hr < this.STANDARD_REFERENCE.HEART_RATE.min) {
-          observations.push(`Frecuencia cardíaca registrada en ${hr} lpm (rango de referencia estándar: 60–100 lpm).`);
+          observations.push(_t('guardrail_obs_hr', { val: hr }, `Frecuencia cardíaca registrada en ${hr} lpm (rango de referencia estándar: 60–100 lpm).`));
         }
       }
     }
@@ -143,10 +157,10 @@ const Guardrails = {
       const o2 = parseInt(vitals.oxygenSaturation, 10);
       if (!isNaN(o2)) {
         if (o2 < this.PHYSIOLOGICAL_RANGES.SPO2.min || o2 > this.PHYSIOLOGICAL_RANGES.SPO2.max) {
-          criticalErrors.push(`Saturación de O₂ (${o2}%) fuera de rango biológico (50 - 100%).`);
+          criticalErrors.push(_t('guardrail_err_spo2', { val: o2 }, `Saturación de O₂ (${o2}%) fuera de rango biológico (50 - 100%).`));
           outOfRangeFields.push('oxygenSaturation');
         } else if (o2 < this.STANDARD_REFERENCE.SPO2.min) {
-          observations.push(`Saturación de O₂ registrada en ${o2}% (rango de referencia estándar: ≥ 94%).`);
+          observations.push(_t('guardrail_obs_spo2', { val: o2 }, `Saturación de O₂ registrada en ${o2}% (rango de referencia estándar: ≥ 94%).`));
         }
       }
     }
@@ -156,7 +170,7 @@ const Guardrails = {
       const age = parseInt(patient.age, 10);
       if (!isNaN(age)) {
         if (age < this.PHYSIOLOGICAL_RANGES.AGE_YEARS.min || age > this.PHYSIOLOGICAL_RANGES.AGE_YEARS.max) {
-          criticalErrors.push(`Edad dictada (${age} años) fuera de rango plausible.`);
+          criticalErrors.push(_t('guardrail_err_age', { val: age }, `Edad dictada (${age} años) fuera de rango plausible.`));
           outOfRangeFields.push('age');
         }
       }
@@ -177,6 +191,14 @@ const Guardrails = {
    * @returns {{isComplete: boolean, reason: string|null, missingName: boolean, missingClinicalData: boolean}}
    */
   validateClinicalCompleteness(data = {}) {
+    const _t = (key, fallback) => {
+      if (typeof window !== 'undefined' && window.I18nManager && typeof window.I18nManager.get === 'function') {
+        const res = window.I18nManager.get(key);
+        if (res && res !== key) return res;
+      }
+      return fallback;
+    };
+
     const patient = data.patient || {};
     const vitals = data.vitals || {};
     
@@ -196,11 +218,11 @@ const Guardrails = {
 
     let reason = null;
     if (!hasPatientName && !hasClinicalData) {
-      reason = 'Se requiere el nombre del paciente y al menos un dato clínico (signos, síntomas o prescripciones) para consolidar el expediente.';
+      reason = _t('safety_incomplete_both', 'Se requiere el nombre del paciente y al menos un dato clínico (signos, síntomas o prescripciones) para consolidar el expediente.');
     } else if (!hasPatientName) {
-      reason = 'Identificación requerida: Ingrese el nombre del paciente en "Ajustar Registro" para habilitar la firma del expediente.';
+      reason = _t('safety_incomplete_name', 'Identificación requerida: Ingrese el nombre del paciente en "Ajustar Registro" para habilitar la firma del expediente.');
     } else if (!hasClinicalData) {
-      reason = 'Registro clínico vacío: No se detectaron signos vitales, sintomatología ni prescripciones en el dictado.';
+      reason = _t('safety_incomplete_data', 'Registro clínico vacío: No se detectaron signos vitales, sintomatología ni prescripciones en el dictado.');
     }
 
     return {
@@ -217,17 +239,25 @@ const Guardrails = {
    * @returns {string[]} Lista de campos ausentes
    */
   detectMissingOptionalFields(data = {}) {
+    const _t = (key, fallback) => {
+      if (typeof window !== 'undefined' && window.I18nManager && typeof window.I18nManager.get === 'function') {
+        const res = window.I18nManager.get(key);
+        if (res && res !== key) return res;
+      }
+      return fallback;
+    };
+
     const missing = [];
     const vitals = data.vitals || {};
     const patient = data.patient || {};
 
-    if (!patient.age) missing.push('Edad');
-    if (!patient.gender) missing.push('Género');
-    if (!vitals.bloodPressure) missing.push('Presión Arterial');
-    else if (String(vitals.bloodPressure).includes('/--')) missing.push('Presión Diastólica');
-    if (!vitals.temperature) missing.push('Temperatura');
-    if (!vitals.heartRate) missing.push('Pulso (FC)');
-    if (!vitals.oxygenSaturation) missing.push('Sat. O₂ (SpO2)');
+    if (!patient.age) missing.push(_t('vital_name_age', 'Edad'));
+    if (!patient.gender) missing.push(_t('vital_name_gender', 'Género'));
+    if (!vitals.bloodPressure) missing.push(_t('vital_name_bp', 'Presión Arterial'));
+    else if (String(vitals.bloodPressure).includes('/--')) missing.push(_t('vital_name_dia', 'Presión Diastólica'));
+    if (!vitals.temperature) missing.push(_t('vital_name_temp', 'Temperatura'));
+    if (!vitals.heartRate) missing.push(_t('vital_name_hr', 'Pulso (FC)'));
+    if (!vitals.oxygenSaturation) missing.push(_t('vital_name_spo2', 'Sat. O₂ (SpO2)'));
 
     return missing;
   }

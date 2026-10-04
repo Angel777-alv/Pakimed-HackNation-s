@@ -189,6 +189,64 @@ const I18nManager = {
       status_fever_mild: 'Estado febril leve',
       status_normoxemia: 'Normoxemia',
       status_no_record: 'Sin registro en consulta',
+      vital_bp_subtitle: 'Sistólica / Diastólica',
+      vital_missing_banner_title: 'Constantes no dictadas en consulta:',
+      vital_allergies_banner_title: 'Alergias Medicamentosas:',
+      
+      // Insignias del motor de extracción en validación
+      engine_badge_hybrid: '🧬 Ensamble Híbrido (ConText + Qwen2.5)',
+      engine_badge_qwen: '🧠 Inferencia Small AI Qwen2.5',
+      engine_badge_context: '⚡ ConText Edge AI (25 KB)',
+      
+      // Demografía localizada
+      demographic_age_unit: 'años',
+      demographic_age_unspecified: 'Edad no indicada',
+      demographic_gender_female: 'Femenino',
+      demographic_gender_male: 'Masculino',
+      demographic_gender_unspecified: 'Género no indicado',
+      demographic_name_missing: '⚠️ No identificado (Requiere nombre)',
+      
+      // Nombres de constantes no dictadas
+      vital_name_bp: 'Presión Arterial',
+      vital_name_dia: 'Presión Diastólica',
+      vital_name_temp: 'Temperatura',
+      vital_name_hr: 'Pulso (FC)',
+      vital_name_spo2: 'Sat. O₂ (SpO2)',
+      vital_name_age: 'Edad',
+      vital_name_gender: 'Género',
+      
+      // Estados vacíos y etiquetas de consulta
+      empty_symptoms: 'Ningún síntoma específico identificado',
+      empty_prescriptions: 'No se indicó medicación en este registro.',
+      rx_badge_title: 'Receta',
+      rx_sub_verified: 'Indicación facultativa verificada',
+      notes_empty: 'Sin notas',
+      
+      // Banners de seguridad clínica y guardarraíles
+      safety_protocol_verified_title: 'Protocolo Clínico Verificado:',
+      safety_protocol_verified_desc: 'Registro generado fielmente a partir del dictado. Toda decisión terapéutica permanece bajo supervisión facultativa.',
+      safety_observation_title: 'Observación Médica / Constantes:',
+      safety_incomplete_title: 'Registro Incompleto',
+      safety_incomplete_msg: 'No se identificaron signos vitales ni síntomas en el audio. Se requiere revisión facultativa.',
+      
+      // Alertas y tooltips
+      btn_approve_tooltip: 'Validar y registrar en expediente',
+      btn_approve_blocked_tooltip: 'Complete el nombre y datos clínicos en "Ajustar" para habilitar la firma',
+      alert_approve_blocked: 'No es posible consolidar un expediente sin nombre del paciente y datos clínicos.',
+      alert_invalid_save: 'Por favor ingrese el nombre del paciente y verifique que las constantes vitales sean biológicamente válidas.',
+      
+      // Errores de guardarraíles fisiológicos
+      guardrail_err_bp_sys: 'Presión sistólica ({val} mmHg) fuera de rango biológico (50–250 mmHg).',
+      guardrail_err_bp_dia: 'Presión diastólica ({val} mmHg) fuera de rango biológico (30–140 mmHg).',
+      guardrail_err_temp: 'Temperatura ({val} °C) fuera de rango biológico (32.0–43.0 °C).',
+      guardrail_err_hr: 'Frecuencia cardíaca ({val} lpm) fuera de rango biológico (30–230 lpm).',
+      guardrail_err_spo2: 'Saturación de O₂ ({val}%) fuera de rango biológico (50–100%).',
+      guardrail_err_age: 'Edad dictada ({val} años) fuera de rango plausible (0–120 años).',
+      guardrail_obs_bp_sys: 'Presión sistólica en {val} mmHg (referencia estándar: 90–130 mmHg).',
+      guardrail_obs_bp_dia: 'Presión diastólica en {val} mmHg (referencia estándar: 60–85 mmHg).',
+      guardrail_obs_temp: 'Temperatura en {val} °C (referencia estándar: 36.0–37.5 °C).',
+      guardrail_obs_hr: 'Frecuencia cardíaca en {val} lpm (referencia estándar: 60–100 lpm).',
+      guardrail_obs_spo2: 'Saturación de O₂ en {val}% (referencia estándar: ≥ 94%).',
       
       // Screen 5 - Confirmed Record
       screen5_title: 'Expediente Clínico Resguardado',
@@ -200,28 +258,28 @@ const I18nManager = {
       pipeline_step_ner: 'Small AI NER',
       pipeline_step_validated: 'Validado',
       
-      // Telemetry Right Side
-      telemetry_tag: 'Centro de Control y Telemetría Institucional',
-      telemetry_title: 'Monitoreo de Datos y Sincronización',
-      telemetry_subtitle: 'Auditoría en tiempo real de procesamiento on-device, validación facultativa y conformidad con estándares de salud pública.',
-      telemetry_traffic_label: 'Tráfico Externo Durante Consulta',
-      telemetry_traffic_badge: 'Confinamiento Local',
-      telemetry_traffic_desc: 'Total ausencia de peticiones externas durante la atención clínica.',
-      telemetry_supervision_label: 'Supervisión Clínica y Guardarraíles',
-      telemetry_supervision_badge: 'Validado',
-      telemetry_supervision_text: 'Protocolo de Transcripción Fiel Activo',
-      telemetry_supervision_desc: 'Prevención activa de inferencias diagnósticas no avaladas por el facultativo.',
-      telemetry_network_label: 'Canal de Conectividad',
-      telemetry_network_state_offline: 'Modo Autónomo Local (Almacenamiento Seguro)',
-      telemetry_network_state_online: 'Enlace institucional 3G disponible (Listo para sincronizar)',
-      telemetry_network_desc: 'Los expedientes se resguardan en base de datos local cifrada hasta restablecer enlace institucional.',
-      telemetry_queue_title: 'Cola Local de Expedientes Clínicos',
-      telemetry_queue_desc: 'Registros almacenados localmente a la espera de enlace institucional:',
-      telemetry_btn_sync: 'Sincronizar Lote con DHIS2',
-      telemetry_sync_banner: 'Los expedientes se preservan íntegros en almacenamiento local ante cortes de energía o cobertura.',
-      telemetry_dhis2_title: 'Integración con Sistema de Salud (DHIS2)',
-      telemetry_dhis2_desc: 'Carga estructurada según estándar oficial DHIS2 Tracker / Event API:',
-      telemetry_dhis2_empty: '// Al validar una consulta, aquí se generará el objeto estructurado en formato DHIS2',
+      // Telemetry Right Side (Preservado en estándar inglés oficial)
+      telemetry_tag: 'Institutional Control & Telemetry Center',
+      telemetry_title: 'Data Monitoring & Synchronization',
+      telemetry_subtitle: 'Real-time auditing of on-device processing, clinician review, and public health standards.',
+      telemetry_traffic_label: 'External Traffic During Visit',
+      telemetry_traffic_badge: 'Local Confinement',
+      telemetry_traffic_desc: 'Total absence of external network calls during clinical care.',
+      telemetry_supervision_label: 'Clinical Supervision & Guardrails',
+      telemetry_supervision_badge: 'Validated',
+      telemetry_supervision_text: 'Faithful Transcription Protocol Active',
+      telemetry_supervision_desc: 'Active prevention of diagnostic inferences not endorsed by clinician.',
+      telemetry_network_label: 'Connectivity Channel',
+      telemetry_network_state_offline: 'Local Autonomous Mode (Secure Storage)',
+      telemetry_network_state_online: '3G Health Network Available (Ready to Sync)',
+      telemetry_network_desc: 'Records remain in encrypted local database until institutional link is restored.',
+      telemetry_queue_title: 'Local Clinical Record Queue',
+      telemetry_queue_desc: 'Records stored locally awaiting institutional network link:',
+      telemetry_btn_sync: 'Sync Batch with DHIS2',
+      telemetry_sync_banner: 'Records remain preserved intact in local storage against power outages or coverage loss.',
+      telemetry_dhis2_title: 'Public Health Integration (DHIS2)',
+      telemetry_dhis2_desc: 'Structured payload mapped to official DHIS2 Tracker / Event API:',
+      telemetry_dhis2_empty: '// Once validated, the structured DHIS2 JSON payload will appear here',
       
       // Modal HITL
       modal_title: 'Ajustar Registro Clínico del Paciente',
@@ -245,7 +303,13 @@ const I18nManager = {
       modal_meds_placeholder: 'Ej: Nitrofurantoína 100mg cada 6 horas',
       modal_notes_label: 'Observaciones clínicas de respaldo:',
       modal_cancel: 'Cancelar',
-      modal_save: 'Guardar Registro'
+      modal_save: 'Guardar Registro',
+      modal_alert_title: 'Validación de Registro:',
+      modal_alert_name_required: 'Identificación requerida: Ingrese el nombre del paciente para habilitar el guardado.',
+      modal_alert_clinical_required: 'Se requiere el nombre del paciente y al menos un dato clínico para consolidar el expediente.',
+      modal_alert_empty_record: 'Registro clínico vacío: No se detectaron signos vitales, sintomatología ni prescripciones.',
+      btn_save_modal_tooltip: 'Guardar cambios validados',
+      btn_save_modal_blocked_tooltip: 'Complete el nombre y corrija los valores atípicos antes de guardar'
     },
 
     en: {
@@ -327,6 +391,64 @@ const I18nManager = {
       status_fever_mild: 'Mild fever state',
       status_normoxemia: 'Normoxemia',
       status_no_record: 'No value dictated in visit',
+      vital_bp_subtitle: 'Systolic / Diastolic',
+      vital_missing_banner_title: 'Vitals not dictated in visit:',
+      vital_allergies_banner_title: 'Drug Allergies:',
+      
+      // Extraction engine badges
+      engine_badge_hybrid: '🧬 Hybrid Ensemble (ConText + Qwen2.5)',
+      engine_badge_qwen: '🧠 Small AI Qwen2.5 Inference',
+      engine_badge_context: '⚡ ConText Edge AI (25 KB)',
+      
+      // Localized demographics
+      demographic_age_unit: 'years old',
+      demographic_age_unspecified: 'Age not specified',
+      demographic_gender_female: 'Female',
+      demographic_gender_male: 'Male',
+      demographic_gender_unspecified: 'Gender not specified',
+      demographic_name_missing: '⚠️ Not identified (Name required)',
+      
+      // Missing vitals names
+      vital_name_bp: 'Blood Pressure',
+      vital_name_dia: 'Diastolic Pressure',
+      vital_name_temp: 'Temperature',
+      vital_name_hr: 'Heart Rate (HR)',
+      vital_name_spo2: 'O₂ Sat. (SpO2)',
+      vital_name_age: 'Age',
+      vital_name_gender: 'Gender',
+      
+      // Empty states & labels
+      empty_symptoms: 'No specific symptoms identified',
+      empty_prescriptions: 'No medication indicated in this encounter.',
+      rx_badge_title: 'Prescription',
+      rx_sub_verified: 'Verified clinician instruction',
+      notes_empty: 'No notes',
+      
+      // Safety guardrails & banners
+      safety_protocol_verified_title: 'Clinical Protocol Verified:',
+      safety_protocol_verified_desc: 'Record generated faithfully from dictation. All clinical decisions remain under clinician supervision.',
+      safety_observation_title: 'Clinical Observation / Vitals:',
+      safety_incomplete_title: 'Incomplete Record',
+      safety_incomplete_msg: 'No vital signs or symptoms identified in audio. Clinician review required.',
+      
+      // Alerts & tooltips
+      btn_approve_tooltip: 'Validate and record encounter',
+      btn_approve_blocked_tooltip: 'Enter name and findings in "Adjust" to enable approval',
+      alert_approve_blocked: 'Cannot finalize record without patient name and clinical findings.',
+      alert_invalid_save: 'Please enter patient name and ensure vital signs are biologically valid.',
+      
+      // Physiological guardrail errors
+      guardrail_err_bp_sys: 'Systolic pressure ({val} mmHg) out of plausible range (50–250 mmHg).',
+      guardrail_err_bp_dia: 'Diastolic pressure ({val} mmHg) out of plausible range (30–140 mmHg).',
+      guardrail_err_temp: 'Temperature ({val} °C) out of plausible range (32.0–43.0 °C).',
+      guardrail_err_hr: 'Heart rate ({val} bpm) out of plausible range (30–230 bpm).',
+      guardrail_err_spo2: 'O₂ saturation ({val}%) out of plausible range (50–100%).',
+      guardrail_err_age: 'Reported age ({val} years) out of plausible range (0–120 years).',
+      guardrail_obs_bp_sys: 'Systolic pressure at {val} mmHg (standard reference: 90–130 mmHg).',
+      guardrail_obs_bp_dia: 'Diastolic pressure at {val} mmHg (standard reference: 60–85 mmHg).',
+      guardrail_obs_temp: 'Temperature at {val} °C (standard reference: 36.0–37.5 °C).',
+      guardrail_obs_hr: 'Heart rate at {val} bpm (standard reference: 60–100 bpm).',
+      guardrail_obs_spo2: 'O₂ saturation at {val}% (standard reference: ≥ 94%).',
       
       // Screen 5 - Confirmed Record
       screen5_title: 'Encounter Record Secured',
@@ -338,7 +460,7 @@ const I18nManager = {
       pipeline_step_ner: 'Small AI NER',
       pipeline_step_validated: 'Validated',
       
-      // Telemetry Right Side
+      // Telemetry Right Side (Preserved in official standard English)
       telemetry_tag: 'Institutional Control & Telemetry Center',
       telemetry_title: 'Data Monitoring & Synchronization',
       telemetry_subtitle: 'Real-time auditing of on-device processing, clinician review, and public health standards.',
@@ -383,7 +505,13 @@ const I18nManager = {
       modal_meds_placeholder: 'E.g. Nitrofurantoin 100mg every 6 hours',
       modal_notes_label: 'Clinical reference notes:',
       modal_cancel: 'Cancel',
-      modal_save: 'Save Record'
+      modal_save: 'Save Record',
+      modal_alert_title: 'Record Validation:',
+      modal_alert_name_required: 'Identification required: Enter patient name to enable saving.',
+      modal_alert_clinical_required: 'Patient name and at least one clinical finding are required to save record.',
+      modal_alert_empty_record: 'Empty encounter: No vitals, symptoms or prescriptions detected.',
+      btn_save_modal_tooltip: 'Save validated changes',
+      btn_save_modal_blocked_tooltip: 'Complete name and fix outliers before saving'
     },
 
     de: {
@@ -465,6 +593,64 @@ const I18nManager = {
       status_fever_mild: 'Leichtes Fieber erfasst',
       status_normoxemia: 'Normoxämie',
       status_no_record: 'Kein Wert im Diktat',
+      vital_bp_subtitle: 'Systolisch / Diastolisch',
+      vital_missing_banner_title: 'In der Visite nicht erfasste Vitalwerte:',
+      vital_allergies_banner_title: 'Medikamentenallergien:',
+      
+      // Insignias del motor de extracción en validación
+      engine_badge_hybrid: '🧬 Hybrides Ensemble (ConText + Qwen2.5)',
+      engine_badge_qwen: '🧠 Small AI Qwen2.5 Inferenz',
+      engine_badge_context: '⚡ ConText Edge AI (25 KB)',
+      
+      // Demografía localizada
+      demographic_age_unit: 'Jahre alt',
+      demographic_age_unspecified: 'Alter nicht angegeben',
+      demographic_gender_female: 'Weiblich',
+      demographic_gender_male: 'Männlich',
+      demographic_gender_unspecified: 'Geschlecht nicht angegeben',
+      demographic_name_missing: '⚠️ Nicht identifiziert (Name erforderlich)',
+      
+      // Nombres de constantes no dictadas
+      vital_name_bp: 'Blutdruck',
+      vital_name_dia: 'Diastolischer Druck',
+      vital_name_temp: 'Temperatur',
+      vital_name_hr: 'Puls (HF)',
+      vital_name_spo2: 'O₂-Sättigung (SpO2)',
+      vital_name_age: 'Alter',
+      vital_name_gender: 'Geschlecht',
+      
+      // Estados vacíos y etiquetas de consulta
+      empty_symptoms: 'Keine spezifischen Symptome erfasst',
+      empty_prescriptions: 'Keine Medikation in dieser Konsultation verordnet.',
+      rx_badge_title: 'Rezept',
+      rx_sub_verified: 'Geprüfte ärztliche Verordnung',
+      notes_empty: 'Keine Notizen',
+      
+      // Banners de seguridad clínica y guardarraíles
+      safety_protocol_verified_title: 'Geprüftes Klinisches Protokoll:',
+      safety_protocol_verified_desc: 'Befund getreu aus dem Diktat erfasst. Alle therapeutischen Entscheidungen verbleiben unter ärztlicher Aufsicht.',
+      safety_observation_title: 'Medizinische Beobachtung / Vitalwerte:',
+      safety_incomplete_title: 'Unvollständige Akte',
+      safety_incomplete_msg: 'Keine Vitalparameter oder Symptome im Audio erfasst. Ärztliche Prüfung erforderlich.',
+      
+      // Alertas y tooltips
+      btn_approve_tooltip: 'Validieren und in Akte speichern',
+      btn_approve_blocked_tooltip: 'Namen und Befunde in "Anpassen" vervollständigen',
+      alert_approve_blocked: 'Akte kann ohne Patientennamen und klinische Daten nicht gespeichert werden.',
+      alert_invalid_save: 'Bitte Patientennamen eingeben und auf biologisch valide Vitalwerte achten.',
+      
+      // Errores de guardarraíles fisiológicos
+      guardrail_err_bp_sys: 'Systolischer Blutdruck ({val} mmHg) außerhalb des physiologischen Bereichs (50–250 mmHg).',
+      guardrail_err_bp_dia: 'Diastolischer Blutdruck ({val} mmHg) außerhalb des physiologischen Bereichs (30–140 mmHg).',
+      guardrail_err_temp: 'Temperatur ({val} °C) außerhalb des physiologischen Bereichs (32.0–43.0 °C).',
+      guardrail_err_hr: 'Herzfrequenz ({val} bpm) außerhalb des physiologischen Bereichs (30–230 bpm).',
+      guardrail_err_spo2: 'Sauerstoffsättigung ({val}%) außerhalb des physiologischen Bereichs (50–100%).',
+      guardrail_err_age: 'Eingegebenes Alter ({val} Jahre) außerhalb des plausiblen Bereichs (0–120 Jahre).',
+      guardrail_obs_bp_sys: 'Systolischer Blutdruck bei {val} mmHg (Standardreferenz: 90–130 mmHg).',
+      guardrail_obs_bp_dia: 'Diastolischer Blutdruck bei {val} mmHg (Standardreferenz: 60–85 mmHg).',
+      guardrail_obs_temp: 'Temperatur bei {val} °C (Standardreferenz: 36.0–37.5 °C).',
+      guardrail_obs_hr: 'Herzfrequenz bei {val} bpm (Standardreferenz: 60–100 bpm).',
+      guardrail_obs_spo2: 'Sauerstoffsättigung bei {val}% (Standardreferenz: ≥ 94%).',
       
       // Screen 5 - Confirmed Record
       screen5_title: 'Patientenakte lokal gesichert',
@@ -476,28 +662,28 @@ const I18nManager = {
       pipeline_step_ner: 'Small AI NER',
       pipeline_step_validated: 'Geprüft',
       
-      // Telemetry Right Side
-      telemetry_tag: 'Institutionelles Kontroll- & Telemetriezentrum',
-      telemetry_title: 'Datenüberwachung & Synchronisation',
-      telemetry_subtitle: 'Echtzeit-Auditierung der On-Device-Verarbeitung, ärztlichen Validierung und DHIS2-Konformität.',
-      telemetry_traffic_label: 'Externer Datenverkehr bei Visite',
-      telemetry_traffic_badge: 'Vollständig Lokal',
-      telemetry_traffic_desc: 'Keine externen Netzwerkanfragen während der Patientenbehandlung.',
-      telemetry_supervision_label: 'Klinische Aufsicht & Guardrails',
-      telemetry_supervision_badge: 'Geprüft',
-      telemetry_supervision_text: 'Getreues Transkriptionsprotokoll aktiv',
-      telemetry_supervision_desc: 'Verhinderung unautorisierter Diagnoseinferenzen ohne Arzt.',
-      telemetry_network_label: 'Verbindungskanal',
-      telemetry_network_state_offline: 'Lokaler autonomer Modus (Sicherer Speicher)',
-      telemetry_network_state_online: '3G-Netzverbindung verfügbar (Synchronisationsbereit)',
-      telemetry_network_desc: 'Akten verbleiben in verschlüsselter lokaler Datenbank bis Netzverbindung steht.',
-      telemetry_queue_title: 'Lokale Warteschlange der Akten',
-      telemetry_queue_desc: 'Lokal gespeicherte Akten vor der Übertragung ins Gesundheitssystem:',
-      telemetry_btn_sync: 'Stapel mit DHIS2 abgleichen',
-      telemetry_sync_banner: 'Akten bleiben auch bei Strom- oder Netzunterbrechung vollständig lokal geschützt.',
-      telemetry_dhis2_title: 'Integration ins Gesundheitssystem (DHIS2)',
-      telemetry_dhis2_desc: 'Strukturierte Übertragung gemäß offiziellem DHIS2 Tracker / Event API Standard:',
-      telemetry_dhis2_empty: '// Nach Validierung erscheint hier der strukturierte DHIS2-Datensatz',
+      // Telemetry Right Side (Preservado en estándar inglés oficial)
+      telemetry_tag: 'Institutional Control & Telemetry Center',
+      telemetry_title: 'Data Monitoring & Synchronization',
+      telemetry_subtitle: 'Real-time auditing of on-device processing, clinician review, and public health standards.',
+      telemetry_traffic_label: 'External Traffic During Visit',
+      telemetry_traffic_badge: 'Local Confinement',
+      telemetry_traffic_desc: 'Total absence of external network calls during clinical care.',
+      telemetry_supervision_label: 'Clinical Supervision & Guardrails',
+      telemetry_supervision_badge: 'Validated',
+      telemetry_supervision_text: 'Faithful Transcription Protocol Active',
+      telemetry_supervision_desc: 'Active prevention of diagnostic inferences not endorsed by clinician.',
+      telemetry_network_label: 'Connectivity Channel',
+      telemetry_network_state_offline: 'Local Autonomous Mode (Secure Storage)',
+      telemetry_network_state_online: '3G Health Network Available (Ready to Sync)',
+      telemetry_network_desc: 'Records remain in encrypted local database until institutional link is restored.',
+      telemetry_queue_title: 'Local Clinical Record Queue',
+      telemetry_queue_desc: 'Records stored locally awaiting institutional network link:',
+      telemetry_btn_sync: 'Sync Batch with DHIS2',
+      telemetry_sync_banner: 'Records remain preserved intact in local storage against power outages or coverage loss.',
+      telemetry_dhis2_title: 'Public Health Integration (DHIS2)',
+      telemetry_dhis2_desc: 'Structured payload mapped to official DHIS2 Tracker / Event API:',
+      telemetry_dhis2_empty: '// Once validated, the structured DHIS2 JSON payload will appear here',
       
       // Modal HITL
       modal_title: 'Patientenakte anpassen',
@@ -521,13 +707,25 @@ const I18nManager = {
       modal_meds_placeholder: 'Z.B. Nitrofurantoin 100mg alle 6 Stunden',
       modal_notes_label: 'Klinische Notizen:',
       modal_cancel: 'Abbrechen',
-      modal_save: 'Akte speichern'
+      modal_save: 'Akte speichern',
+      modal_alert_title: 'Validierungsübersicht:',
+      modal_alert_name_required: 'Identifikation erforderlich: Bitte Patientennamen eingeben.',
+      modal_alert_clinical_required: 'Patientenname und mindestens ein klinischer Befund sind erforderlich.',
+      modal_alert_empty_record: 'Leere Visite: Keine Vitalwerte, Symptome oder Rezepte erkannt.',
+      btn_save_modal_tooltip: 'Validierte Änderungen speichern',
+      btn_save_modal_blocked_tooltip: 'Namen und Ausreißer vor Speichern korrigieren'
     }
   },
 
-  get(key) {
+  get(key, params = {}) {
     const dict = this.translations[this.currentLang] || this.translations.es;
-    return dict[key] || key;
+    let text = dict[key] || key;
+    if (params && typeof params === 'object') {
+      Object.keys(params).forEach(p => {
+        text = text.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]);
+      });
+    }
+    return text;
   },
 
   getCurrentLanguage() {
